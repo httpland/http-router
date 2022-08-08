@@ -20,12 +20,7 @@ types:
 
 ```ts
 import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-import {
-  serve,
-  Status,
-  STATUS_TEXT,
-} from "https://deno.land/std@$VERSION/http/mod.ts";
-
+import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
 const router = createRouter({
   "/api/students/:name": {
     GET: (req, params) => {
@@ -33,9 +28,8 @@ const router = createRouter({
       return new Response(greeting);
     },
   },
-  "/api/status": () => new Response(STATUS_TEXT[Status.OK]), // Any HTTP request method
+  "/api/status": () => new Response("OK"), // Any HTTP request method
 });
-
 await serve(router);
 ```
 
@@ -49,3 +43,6 @@ with `deno bench --unstable`.
 Copyright © 2022-present [TomokiMiyauci](https://github.com/TomokiMiyauci).
 
 Released under the [MIT](./LICENSE) license
+
+```
+```
