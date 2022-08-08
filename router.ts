@@ -55,10 +55,11 @@ function methods(methodRouteHandler: MethodRouteHandler): RouteHandler {
     } else {
       const allows = Object.keys(methodRouteHandler);
 
-      return new Response(STATUS_TEXT[Status.MethodNotAllowed], {
+      return new Response(null, {
         status: Status.MethodNotAllowed,
+        statusText: STATUS_TEXT[Status.MethodNotAllowed],
         headers: {
-          Allow: allows.join(","),
+          allow: allows.join(","),
         },
       });
     }
@@ -86,6 +87,8 @@ function methods(methodRouteHandler: MethodRouteHandler): RouteHandler {
  *
  * await serve(router);
  * ```
+ * @throws TypeError
+ * - The given route path is invalid url path.
  */
 export function createRouter(routes: Routes): Router {
   const routeMap = new Map<URLPattern, RouteHandler>();
@@ -109,15 +112,17 @@ export function createRouter(routes: Routes): Router {
         try {
           return handler(req, params ?? {});
         } catch {
-          return new Response(STATUS_TEXT[Status.InternalServerError], {
+          return new Response(null, {
             status: Status.InternalServerError,
+            statusText: STATUS_TEXT[Status.InternalServerError],
           });
         }
       }
     }
 
-    return new Response(STATUS_TEXT[Status.InternalServerError], {
-      status: Status.InternalServerError,
+    return new Response(null, {
+      status: Status.NotFound,
+      statusText: STATUS_TEXT[Status.NotFound],
     });
   };
 }
