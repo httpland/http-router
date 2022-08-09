@@ -1,3 +1,10 @@
+# [1.0.0-beta.3](https://github.com/httpland/http-router/compare/1.0.0-beta.2...1.0.0-beta.3) (2022-08-09)
+
+
+### Features
+
+* **_tools:** add npm release script ([7d0664e](https://github.com/httpland/http-router/commit/7d0664e2e2914ea3d343acabcf2879048007fd8f))
+
 # [1.0.0-beta.2](https://github.com/TomokiMiyauci/http-router/compare/1.0.0-beta.1...1.0.0-beta.2) (2022-08-08)
 
 
