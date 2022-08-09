@@ -1,5 +1,10 @@
 # http-router
 
+[![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/http_router)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/http_router/mod.ts)
+![npm](https://img.shields.io/npm/v/@httpland/http-router)
+![GitHub](https://img.shields.io/github/license/httpland/http-router)
+
 HTTP request router for standard `Request` and `Response`.
 
 - URL pattern matching
@@ -40,9 +45,6 @@ with `deno bench --unstable`.
 
 ## License
 
-Copyright © 2022-present [TomokiMiyauci](https://github.com/TomokiMiyauci).
+Copyright © 2022-present [httpland](https://github.com/httpland).
 
 Released under the [MIT](./LICENSE) license
-
-```
-```
