@@ -1,3 +1,10 @@
+# [1.0.0-beta.4](https://github.com/httpland/http-router/compare/1.0.0-beta.3...1.0.0-beta.4) (2022-08-10)
+
+
+### Features
+
+* **router:** add registering HEAD request handler automatically ([207aae7](https://github.com/httpland/http-router/commit/207aae7c33149572ba06c5a40a071ccd81664893))
+
 # [1.0.0-beta.3](https://github.com/httpland/http-router/compare/1.0.0-beta.2...1.0.0-beta.3) (2022-08-09)
 
 
