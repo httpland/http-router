@@ -1,4 +1,4 @@
-import { isFunction, Status, STATUS_TEXT } from "./deps.ts";
+import { isEmpty, isFunction, Status, STATUS_TEXT } from "./deps.ts";
 
 /** HTTP request method. */
 export type Method =
@@ -46,27 +46,42 @@ export interface Routes {
   readonly [k: string]: RouteHandler | MethodRouteHandler;
 }
 
+/** Create router options. */
+export interface Options {
+  /** If a `GET` handler is defined, it will be used to generate a response to the `HEAD` request.
+   *
+   * This feature is based on RFC 9110, 9.1
+   * > All general-purpose servers MUST support the methods GET and HEAD.
+   * @default true
+   */
+  withHead: boolean;
+}
+
 type MethodRouteHandler = { [k in Method]?: RouteHandler };
 
-function methods(methodRouteHandler: MethodRouteHandler): RouteHandler {
+function methods(
+  methodRouteHandler: Readonly<MethodRouteHandler>,
+): RouteHandler {
   return (req, params) => {
-    if (req.method in methodRouteHandler) {
-      return methodRouteHandler[req.method]!(req, params);
-    } else {
-      const allows = Object.keys(methodRouteHandler);
-
-      return new Response(null, {
-        status: Status.MethodNotAllowed,
-        statusText: STATUS_TEXT[Status.MethodNotAllowed],
-        headers: {
-          allow: allows.join(","),
-        },
-      });
+    const handler = methodRouteHandler[req.method];
+    if (handler) {
+      return handler(req, params);
     }
+
+    const allows = Object.keys(methodRouteHandler);
+
+    return new Response(null, {
+      status: Status.MethodNotAllowed,
+      statusText: STATUS_TEXT[Status.MethodNotAllowed],
+      headers: {
+        allow: allows.join(","),
+      },
+    });
   };
 }
 
 /** Create HTTP request router.
+ *
  * ```ts
  * import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
  * import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
@@ -84,7 +99,10 @@ function methods(methodRouteHandler: MethodRouteHandler): RouteHandler {
  * @throws TypeError
  * - The given route path is invalid url path.
  */
-export function createRouter(routes: Routes): Router {
+export function createRouter(
+  routes: Routes,
+  { withHead = true }: Partial<Options> = {},
+): Router {
   const routeMap = new Map<URLPattern, RouteHandler>();
 
   for (const route in routes) {
@@ -94,22 +112,22 @@ export function createRouter(routes: Routes): Router {
     if (isFunction(handler)) {
       routeMap.set(url, handler);
     } else {
-      routeMap.set(url, methods(handler));
+      const methodRouteHandlers = withHead ? withHeadHandler(handler) : handler;
+      if (!isEmpty(methodRouteHandlers)) {
+        routeMap.set(url, methods(methodRouteHandlers));
+      }
     }
   }
 
-  return (req) => {
+  return async (req) => {
     for (const [pattern, handler] of routeMap) {
       if (pattern.test(req.url)) {
         const params = pattern.exec(req.url)?.pathname.groups;
 
         try {
-          return handler(req, params ?? {});
+          return await handler(req, params ?? {});
         } catch {
-          return new Response(null, {
-            status: Status.InternalServerError,
-            statusText: STATUS_TEXT[Status.InternalServerError],
-          });
+          return new Response(null, ResponseInit500);
         }
       }
     }
@@ -120,3 +138,27 @@ export function createRouter(routes: Routes): Router {
     });
   };
 }
+
+function withHeadHandler(
+  methodRouteHandler: Readonly<MethodRouteHandler>,
+): MethodRouteHandler {
+  if (methodRouteHandler.HEAD || !methodRouteHandler.GET) {
+    return methodRouteHandler;
+  }
+
+  const headHandler: RouteHandler = async (req: Request, params) => {
+    try {
+      const res = await methodRouteHandler.GET!(req, params);
+      return new Response(null, res.clone());
+    } catch {
+      return new Response(null, ResponseInit500);
+    }
+  };
+
+  return { ...methodRouteHandler, HEAD: headHandler };
+}
+
+const ResponseInit500: ResponseInit = {
+  status: Status.InternalServerError,
+  statusText: STATUS_TEXT[Status.InternalServerError],
+};
