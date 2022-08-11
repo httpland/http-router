@@ -14,7 +14,7 @@
   },
   "test": {
     "files": {
-      "exclude": ["CHANGELOG.md", "CODE_OF_CONDUCT.md"]
+      "exclude": ["dev_deps.ts", "CHANGELOG.md", "CODE_OF_CONDUCT.md"]
     }
   },
   "importMap": "_test_import_map.json"
