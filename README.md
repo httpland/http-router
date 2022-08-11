@@ -2,13 +2,18 @@
 
 [![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/http_router)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/http_router/mod.ts)
-[![npm](https://img.shields.io/npm/v/@httpland/http-router)](https://www.npmjs.com/package/@httpland/http-router)
+![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/httpland/http-router?include_prereleases)
+[![codecov](https://codecov.io/gh/httpland/http-router/branch/main/graph/badge.svg?token=nan4NUrx1V)](https://codecov.io/gh/httpland/http-router)
 [![GitHub](https://img.shields.io/github/license/httpland/http-router)](https://github.com/httpland/http-router/blob/main/LICENSE)
+
+[![test](https://github.com/httpland/http-router/actions/workflows/test.yaml/badge.svg)](https://github.com/httpland/http-router/actions/workflows/test.yaml)
+[![NPM](https://nodei.co/npm/@httpland/http-router.png?mini=true)](https://nodei.co/npm/@httpland/http-router/)
 
 HTTP request router for standard `Request` and `Response`.
 
-- URL pattern matching
+- Based on URL pattern API
 - Tiny, lean
+- Automatically `HEAD` request handler
 
 ## HTTP router
 
@@ -28,6 +33,19 @@ const router = createRouter({
 });
 await serve(router);
 ```
+
+## URL match pattern
+
+URL patterns can be defined using the
+[URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API).
+
+- Literal strings which will be matched exactly.
+- Wildcards (`/posts/*`) that match any character.
+- Named groups (`/books/:id`) which extract a part of the matched URL.
+- Non-capturing groups (`/books{/old}?`) which make parts of a pattern optional
+  or be matched multiple times.
+- RegExp groups (`/books/(\\d+)`) which make arbitrarily complex regex matches
+  with a few limitations.
 
 ## HEAD request handler
 
@@ -70,8 +88,11 @@ createRouter({}, { withHead: false });
 
 ## Performance
 
-Benchmark script with comparison to several popular routers is available. Run it
-with `deno bench --unstable`.
+Benchmark script with comparison to several popular routers is available.
+
+```bash
+deno bench --unstable
+```
 
 ## License
 
