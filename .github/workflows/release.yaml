@@ -49,7 +49,7 @@ jobs:
 
       - name: Generate coverage
         if: ${{ matrix.deno == 'v1.x' }}
-        run: deno coverage coverage --lcov > cov_profile.lcov
+        run: deno task coverage coverage --output=cov_profile.lcov --lcov
 
       - uses: codecov/codecov-action@v2
         if: ${{ matrix.deno == 'v1.x' }}

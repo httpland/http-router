@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "test": "deno test --doc"
+    "test": "deno test --doc",
+    "coverage": "deno coverage --include=router.ts"
   },
   "fmt": {
     "files": {
@@ -14,7 +15,7 @@
   },
   "test": {
     "files": {
-      "exclude": ["dev_deps.ts", "CHANGELOG.md", "CODE_OF_CONDUCT.md"]
+      "exclude": ["CHANGELOG.md", "CODE_OF_CONDUCT.md"]
     }
   },
   "importMap": "_test_import_map.json"
