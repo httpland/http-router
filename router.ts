@@ -2,23 +2,23 @@ import { isEmpty, isFunction, Status, STATUS_TEXT } from "./deps.ts";
 
 /** HTTP request method. */
 export type Method =
-  /** RFC 7231, 4.3.1 */
+  /** RFC 9110, 9.3.1 */
   | "GET"
-  /** RFC 7231, 4.3.2 */
+  /** RFC 9110, 9.3.2 */
   | "HEAD"
-  /** RFC 7231, 4.3.3 */
+  /** RFC 9110, 9.3.3 */
   | "POST"
-  /** RFC 7231, 4.3.4 */
+  /** RFC 9110, 9.3.4 */
   | "PUT"
-  /** RFC 7231, 4.3.5 */
+  /** RFC 9110, 9.3.5 */
   | "DELETE"
-  /** RFC 7231, 4.3.6 */
+  /** RFC 9110, 9.3.6 */
   | "CONNECT"
-  /** RFC 7231, 4.3.7 */
+  /** RFC 9110, 9.3.7 */
   | "OPTIONS"
-  /** RFC 7231, 4.3.8 */
+  /** RFC 9110, 9.3.8 */
   | "TRACE"
-  /** RFC 7231, */
+  /** RFC 5789 */
   | "PATCH"
   // deno-lint-ignore ban-types
   | ({} & string);
@@ -43,7 +43,7 @@ export type RouteHandler = (
 
 /** HTTP router routes. */
 export interface Routes {
-  readonly [k: string]: RouteHandler | MethodRouteHandler;
+  readonly [k: string]: RouteHandler | MethodRouteHandlers;
 }
 
 /** Create router options. */
@@ -57,18 +57,19 @@ export interface Options {
   withHead: boolean;
 }
 
-type MethodRouteHandler = { [k in Method]?: RouteHandler };
+/** Map for HTTP method and {@link RouteHandler} */
+export type MethodRouteHandlers = { [k in Method]?: RouteHandler };
 
 function methods(
-  methodRouteHandler: Readonly<MethodRouteHandler>,
+  methodRouteHandlers: Readonly<MethodRouteHandlers>,
 ): RouteHandler {
   return (req, params) => {
-    const handler = methodRouteHandler[req.method];
-    if (handler) {
-      return handler(req, params);
+    const routeHandler = methodRouteHandlers[req.method];
+    if (routeHandler) {
+      return routeHandler(req, params);
     }
 
-    const allows = Object.keys(methodRouteHandler);
+    const allows = Object.keys(methodRouteHandlers);
 
     return new Response(null, {
       status: Status.MethodNotAllowed,
@@ -140,8 +141,8 @@ export function createRouter(
 }
 
 function withHeadHandler(
-  methodRouteHandler: Readonly<MethodRouteHandler>,
-): MethodRouteHandler {
+  methodRouteHandler: Readonly<MethodRouteHandlers>,
+): MethodRouteHandlers {
   if (methodRouteHandler.HEAD || !methodRouteHandler.GET) {
     return methodRouteHandler;
   }
