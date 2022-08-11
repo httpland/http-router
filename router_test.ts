@@ -267,3 +267,27 @@ it(
     );
   },
 );
+
+it(
+  describeTests,
+  `should return 500 when head handler using get handler throws error`,
+  async () => {
+    const router = createRouter({
+      "/": {
+        "GET": () => {
+          throw Error();
+        },
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/", { method: "HEAD" }),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.InternalServerError,
+        statusText: STATUS_TEXT[Status.InternalServerError],
+      }),
+    );
+  },
+);
