@@ -1,3 +1,10 @@
+# [1.0.0-beta.5](https://github.com/httpland/http-router/compare/1.0.0-beta.4...1.0.0-beta.5) (2022-08-11)
+
+
+### Features
+
+* **router:** export `MethodRouteHandlers` types ([5148d04](https://github.com/httpland/http-router/commit/5148d04a1744c2ae7bc002ede6ad575478c52321))
+
 # [1.0.0-beta.4](https://github.com/httpland/http-router/compare/1.0.0-beta.3...1.0.0-beta.4) (2022-08-10)
 
 
