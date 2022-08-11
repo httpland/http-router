@@ -11,9 +11,17 @@
 
 HTTP request router for standard `Request` and `Response`.
 
-- Based on URL pattern API
+- Based on
+  [URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API)
 - Tiny, lean
 - Automatically `HEAD` request handler
+
+## Packages
+
+The package supports multiple platforms.
+
+- deno.land/x - `https://deno.land/x/http_router/mod.ts`
+- npm - `@httpland/http-router`
 
 ## HTTP router
 
@@ -85,6 +93,11 @@ This can be disabled by setting `withHead` to `false`.
 import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 createRouter({}, { withHead: false });
 ```
+
+## API
+
+All APIs can be found in the
+[deno doc](https://doc.deno.land/https/deno.land/x/http_router/mod.ts).
 
 ## Performance
 
