@@ -32,8 +32,8 @@ import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
 const router = createRouter({
   "/api/students/:name": {
-    GET: (req, { params }) => {
-      const greeting = `Hello! ${params.name!}`;
+    GET: (req, ctx) => {
+      const greeting = `Hello! ${ctx.params.name!}`;
       return new Response(greeting);
     },
   },
