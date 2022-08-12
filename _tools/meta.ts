@@ -38,7 +38,8 @@ export const makeOptions = (version: string): BuildOptions => ({
       access: "public",
     },
     dependencies: {
-      "urlpattern-polyfill": "latest",
+      // ^5.0.6 will occur type error
+      "urlpattern-polyfill": "5.0.5",
     },
   },
   packageManager: "pnpm",
