@@ -42,6 +42,16 @@ const router = createRouter({
 await serve(router);
 ```
 
+## Route handler context
+
+The route handler receives the following context.
+
+| Name    | Description                                                      |
+| ------- | ---------------------------------------------------------------- |
+| params  | `{ readonly [k in string]?: string }`<br>URL matched parameters. |
+| route   | `string`<br> Route pathname.                                     |
+| pattern | `URLPattern`<br>URL pattern.                                     |
+
 ## URL match pattern
 
 URL patterns can be defined using the
