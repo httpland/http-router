@@ -1,3 +1,10 @@
+# [1.1.0-beta.1](https://github.com/httpland/http-router/compare/1.0.0...1.1.0-beta.1) (2022-08-12)
+
+
+### Features
+
+* **router:** change route handler context ([c59dc21](https://github.com/httpland/http-router/commit/c59dc21980df76c33949eb0271dc58a4472b5cb3))
+
 # 1.0.0 (2022-08-11)
 
 
