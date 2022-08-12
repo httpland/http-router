@@ -119,7 +119,18 @@ export function createRouter(
   routes: Routes,
   { withHead = true }: Partial<Options> = {},
 ): Router {
-  const routeMap = new Map<URLPattern, RouteHandler>();
+  const routeMap = createRouteMap(routes, { withHead });
+
+  return createHandler(routeMap);
+}
+
+type RouteMap = Map<URLPattern, RouteHandler>;
+
+function createRouteMap(
+  routes: Routes,
+  { withHead }: Options,
+): RouteMap {
+  const routeMap: RouteMap = new Map<URLPattern, RouteHandler>();
 
   for (const route in routes) {
     const url = new URLPattern({ pathname: route });
@@ -135,6 +146,12 @@ export function createRouter(
     }
   }
 
+  return routeMap;
+}
+
+function createHandler(
+  routeMap: Iterable<[pattern: URLPattern, routeHandler: RouteHandler]>,
+): Router {
   return async (req) => {
     for (const [pattern, handler] of routeMap) {
       if (pattern.test(req.url)) {
