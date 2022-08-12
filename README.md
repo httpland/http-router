@@ -2,7 +2,7 @@
 
 [![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/http_router)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/http_router/mod.ts)
-![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/httpland/http-router?include_prereleases)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/httpland/http-router)
 [![codecov](https://codecov.io/gh/httpland/http-router/branch/main/graph/badge.svg?token=nan4NUrx1V)](https://codecov.io/gh/httpland/http-router)
 [![GitHub](https://img.shields.io/github/license/httpland/http-router)](https://github.com/httpland/http-router/blob/main/LICENSE)
 
@@ -32,8 +32,8 @@ import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
 const router = createRouter({
   "/api/students/:name": {
-    GET: (req, params) => {
-      const greeting = `Hello! ${params.name!}`;
+    GET: (req, ctx) => {
+      const greeting = `Hello! ${ctx.params.name!}`;
       return new Response(greeting);
     },
   },
@@ -41,6 +41,16 @@ const router = createRouter({
 });
 await serve(router);
 ```
+
+## Route handler context
+
+The route handler receives the following context.
+
+| Name    | Description                                                      |
+| ------- | ---------------------------------------------------------------- |
+| params  | `{ readonly [k in string]?: string }`<br>URL matched parameters. |
+| route   | `string`<br> Route pathname.                                     |
+| pattern | `URLPattern`<br>URL pattern.                                     |
 
 ## URL match pattern
 

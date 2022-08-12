@@ -38,8 +38,20 @@ export interface Router {
  */
 export type RouteHandler = (
   req: Request,
-  params: { readonly [k in string]?: string },
+  ctx: Readonly<RouteHandlerContext>,
 ) => Promise<Response> | Response;
+
+/** The {@link RouteHandler} context. */
+export interface RouteHandlerContext {
+  /** URL matched parameters.  */
+  readonly params: { readonly [k in string]?: string };
+
+  /** Route pathname. */
+  readonly route: string;
+
+  /** URL pattern. */
+  readonly pattern: URLPattern;
+}
 
 /** HTTP router routes. */
 export interface Routes {
@@ -88,8 +100,8 @@ function methods(
  * import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
  * const router = createRouter({
  *   "/api/students/:name": {
- *     GET: (req, params) => {
- *       const greeting = `Hello! ${params.name!}`;
+ *     GET: (req, ctx) => {
+ *       const greeting = `Hello! ${ctx.params.name!}`;
  *       return new Response(greeting);
  *     },
  *   },
@@ -123,10 +135,13 @@ export function createRouter(
   return async (req) => {
     for (const [pattern, handler] of routeMap) {
       if (pattern.test(req.url)) {
-        const params = pattern.exec(req.url)?.pathname.groups;
+        const { input: route = "", groups: params = {} } =
+          pattern.exec(req.url)?.pathname ?? {};
+
+        const ctx: RouteHandlerContext = { params, route, pattern };
 
         try {
-          return await handler(req, params ?? {});
+          return await handler(req, ctx);
         } catch {
           return new Response(null, ResponseInit500);
         }
