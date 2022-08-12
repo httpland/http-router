@@ -92,9 +92,10 @@ it(
   describeTests,
   "should return 200 when url path match",
   async () => {
+    const mock = fn();
     const router = createRouter({
-      "/": (_, params) => {
-        expect(params).toEqual({});
+      "/": (_, ctx) => {
+        mock(ctx);
 
         return new Response("Hello");
       },
@@ -103,6 +104,11 @@ it(
       new Request("http://localhost/"),
     );
 
+    expect(mock).toHaveBeenCalledWith({
+      route: "/",
+      params: {},
+      pattern: new URLPattern({ pathname: "/" }),
+    });
     expect(res).toEqualResponse(
       new Response("Hello", {
         status: Status.OK,
@@ -115,9 +121,11 @@ it(
   describeTests,
   "should pass params when url patten include",
   async () => {
+    const mock = fn();
     const router = createRouter({
-      "/api/:id": (_, params) => {
-        expect(params).toEqual({ id: "test" });
+      "/api/:id": (_, ctx) => {
+        mock(ctx);
+
         return new Response(null);
       },
     });
@@ -125,6 +133,11 @@ it(
       new Request("http://localhost/api/test"),
     );
 
+    expect(mock).toHaveBeenCalledWith({
+      params: { id: "test" },
+      route: "/api/test",
+      pattern: new URLPattern({ pathname: "/api/:id" }),
+    });
     expect(res).toEqualResponse(
       new Response(null, {
         status: Status.OK,
@@ -152,19 +165,19 @@ it(
     const mock1 = fn();
     const mock2 = fn();
     const router = createRouter({
-      "/api/:id": (_, params) => {
-        mock1(params);
+      "/api/:id": (_, ctx) => {
+        mock1(ctx);
         return new Response();
       },
-      "/api/:name": (_, params) => {
-        mock2(params);
+      "/api/:name": (_, ctx) => {
+        mock2(ctx);
         return new Response();
       },
     });
 
     router(new Request("http://localhost/api/test"));
 
-    expect(mock1).toHaveBeenCalledWith({ id: "test" });
+    expect(mock1).toHaveBeenCalled();
     expect(mock2).not.toHaveBeenCalled();
   },
 );
