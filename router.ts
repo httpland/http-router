@@ -128,25 +128,44 @@ type RouteMap = Map<URLPattern, RouteHandler>;
 
 function createRouteMap(
   routes: Routes,
-  { withHead }: Options,
+  options: Options,
 ): RouteMap {
-  const routeMap: RouteMap = new Map<URLPattern, RouteHandler>();
+  const entries = Object.entries(routes).filter(isValidRouteEntry).map(
+    ([route, handlerLike]) => {
+      const handler = resolveHandlerLike(handlerLike, options);
 
-  for (const route in routes) {
-    const url = new URLPattern({ pathname: route });
-    const handler = routes[route];
+      return [route, handler] as const;
+    },
+  ).map(([route, handler]) => {
+    return [new URLPattern({ pathname: route }), handler] as const;
+  });
 
-    if (isFunction(handler)) {
-      routeMap.set(url, handler);
-    } else {
-      const methodRouteHandlers = withHead ? withHeadHandler(handler) : handler;
-      if (!isEmpty(methodRouteHandlers)) {
-        routeMap.set(url, methods(methodRouteHandlers));
-      }
-    }
+  return new Map<URLPattern, RouteHandler>(entries);
+}
+
+type RouteEntry = readonly [
+  route: string,
+  handler: RouteHandler | MethodRouteHandlers,
+];
+
+function isValidRouteEntry(
+  [_, handler]: RouteEntry,
+): boolean {
+  return isFunction(handler) || !isEmpty(handler);
+}
+
+function resolveHandlerLike(
+  handlerLike: RouteHandler | MethodRouteHandlers,
+  options: Options,
+): RouteHandler {
+  if (isFunction(handlerLike)) {
+    return handlerLike;
   }
+  const methodHandler = options.withHead
+    ? withHeadHandler(handlerLike)
+    : handlerLike;
 
-  return routeMap;
+  return methods(methodHandler);
 }
 
 function createHandler(
