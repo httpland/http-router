@@ -1,3 +1,15 @@
+# [1.2.0-beta.1](https://github.com/httpland/http-router/compare/1.1.0...1.2.0-beta.1) (2022-09-11)
+
+
+### Features
+
+* **router:** add `basePath` option that change router base path ([329c2bf](https://github.com/httpland/http-router/commit/329c2bfbc7c75cbce64a7f434fbcb6afd06ba480))
+
+
+### Performance Improvements
+
+* **router:** remove unnessesary url pattern test ([704228d](https://github.com/httpland/http-router/commit/704228d61819388379768ef280c3b510d733f8c5))
+
 # [1.1.0](https://github.com/httpland/http-router/compare/1.0.0...1.1.0) (2022-08-12)
 
 
