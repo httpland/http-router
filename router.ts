@@ -121,7 +121,7 @@ export function createRouter(
 ): Router {
   const routeMap = createRouteMap(routes, { withHead });
 
-  return createHandler(routeMap);
+  return (req) => resolveRequest(routeMap, req);
 }
 
 type RouteMap = Map<URLPattern, RouteHandler>;
@@ -168,28 +168,31 @@ function resolveHandlerLike(
   return methods(methodHandler);
 }
 
-function createHandler(
+async function resolveRequest(
   routeMap: Iterable<[pattern: URLPattern, routeHandler: RouteHandler]>,
-): Router {
-  return async (req) => {
-    for (const [pattern, handler] of routeMap) {
-      const { input: route = "", groups: params = {} } =
-        pattern.exec(req.url)?.pathname ?? {};
+  req: Request,
+): Promise<Response> {
+  for (const [pattern, handler] of routeMap) {
+    const result = pattern.exec(req.url);
+    if (!result) continue;
 
-      const ctx: RouteHandlerContext = { params, route, pattern };
+    const ctx: RouteHandlerContext = {
+      params: result.pathname.groups,
+      route: result.pathname.input,
+      pattern,
+    };
 
-      try {
-        return await handler(req, ctx);
-      } catch {
-        return new Response(null, ResponseInit500);
-      }
+    try {
+      return await handler(req, ctx);
+    } catch {
+      return new Response(null, ResponseInit500);
     }
+  }
 
-    return new Response(null, {
-      status: Status.NotFound,
-      statusText: STATUS_TEXT[Status.NotFound],
-    });
-  };
+  return new Response(null, {
+    status: Status.NotFound,
+    statusText: STATUS_TEXT[Status.NotFound],
+  });
 }
 
 function withHeadHandler(
