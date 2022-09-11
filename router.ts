@@ -69,7 +69,7 @@ export interface Options {
    * > All general-purpose servers MUST support the methods GET and HEAD.
    * @default true
    */
-  withHead: boolean;
+  withHead?: boolean;
 }
 
 /** Map for HTTP method and {@link RouteHandler} */
@@ -117,7 +117,7 @@ function methods(
  */
 export function createRouter(
   routes: Routes,
-  { withHead = true }: Partial<Options> = {},
+  { withHead = true }: Options = {},
 ): Router {
   const routeMap = createRouteMap(routes, { withHead });
 
@@ -173,17 +173,15 @@ function createHandler(
 ): Router {
   return async (req) => {
     for (const [pattern, handler] of routeMap) {
-      if (pattern.test(req.url)) {
-        const { input: route = "", groups: params = {} } =
-          pattern.exec(req.url)?.pathname ?? {};
+      const { input: route = "", groups: params = {} } =
+        pattern.exec(req.url)?.pathname ?? {};
 
-        const ctx: RouteHandlerContext = { params, route, pattern };
+      const ctx: RouteHandlerContext = { params, route, pattern };
 
-        try {
-          return await handler(req, ctx);
-        } catch {
-          return new Response(null, ResponseInit500);
-        }
+      try {
+        return await handler(req, ctx);
+      } catch {
+        return new Response(null, ResponseInit500);
       }
     }
 
