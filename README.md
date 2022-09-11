@@ -124,6 +124,17 @@ assertEquals(res.ok, true);
 
 The `basePath` and route path are merged without overlapping slashes.
 
+## Spec
+
+In addition to user-defined responses, routers may return the following
+responses:
+
+| Status | Headers | Condition                             |
+| ------ | :-----: | ------------------------------------- |
+| 404    |    -    | If not all route paths match.         |
+| 405    | `allow` | If no HTTP method handler is defined. |
+| 500    |    -    | If an internal error occurs.          |
+
 ## API
 
 All APIs can be found in the
