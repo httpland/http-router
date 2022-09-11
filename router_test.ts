@@ -304,3 +304,41 @@ it(
     );
   },
 );
+
+it(
+  describeTests,
+  `should return 200 when basePath is joined`,
+  async () => {
+    const router = createRouter({
+      "/hello": () => new Response(null),
+    }, {
+      basePath: "/api",
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return 200 when basePath is dirty`,
+  async () => {
+    const router = createRouter({
+      "/hello": () => new Response(null),
+    }, {
+      basePath: "/api///",
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);

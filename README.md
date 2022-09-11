@@ -104,6 +104,26 @@ import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 createRouter({}, { withHead: false });
 ```
 
+## Handle base path
+
+Change the router base path.
+
+Just as you could use baseURL or base tags on the Web, you can change the
+`basePath` of your router.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+const api = createRouter({
+  "/hello": () => new Response("world"),
+}, { basePath: "/api" });
+
+const res = await api(new Request("http://localhost/api/hello"));
+assertEquals(res.ok, true);
+```
+
+The `basePath` and route path are merged without overlapping slashes.
+
 ## API
 
 All APIs can be found in the

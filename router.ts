@@ -1,7 +1,14 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isEmpty, isFunction, Status, STATUS_TEXT } from "./deps.ts";
+import {
+  isEmpty,
+  isFunction,
+  isString,
+  join,
+  Status,
+  STATUS_TEXT,
+} from "./deps.ts";
 
 /** HTTP request method. */
 export type Method =
@@ -70,6 +77,21 @@ export interface Options {
    * @default true
    */
   withHead?: boolean;
+
+  /** Change the router base path.
+   * The `basePath` and route path are merged without overlapping slashes.
+   * ```ts
+   * import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   * import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+   * const api = createRouter({
+   *   "/hello": () => new Response("world"),
+   * }, { basePath: "/api" });
+   *
+   * const res = await api(new Request("http://localhost/api/hello"));
+   * assertEquals(res.ok, true);
+   * ```
+   */
+  basePath?: string;
 }
 
 /** Map for HTTP method and {@link RouteHandler} */
@@ -117,30 +139,15 @@ function methods(
  */
 export function createRouter(
   routes: Routes,
-  { withHead = true }: Options = {},
+  { withHead = true, basePath }: Options = {},
 ): Router {
-  const routeMap = createRouteMap(routes, { withHead });
+  const entries = Object.entries(routes).filter(isValidRouteEntry).map(
+    createResolvedHandlerEntry(withHead),
+  ).map(createUrlPatternHandlerEntry(basePath));
+
+  const routeMap = new Map<URLPattern, RouteHandler>(entries);
 
   return (req) => resolveRequest(routeMap, req);
-}
-
-type RouteMap = Map<URLPattern, RouteHandler>;
-
-function createRouteMap(
-  routes: Routes,
-  options: Options,
-): RouteMap {
-  const entries = Object.entries(routes).filter(isValidRouteEntry).map(
-    ([route, handlerLike]) => {
-      const handler = resolveHandlerLike(handlerLike, options);
-
-      return [route, handler] as const;
-    },
-  ).map(([route, handler]) => {
-    return [new URLPattern({ pathname: route }), handler] as const;
-  });
-
-  return new Map<URLPattern, RouteHandler>(entries);
 }
 
 type RouteEntry = readonly [
@@ -156,16 +163,40 @@ function isValidRouteEntry(
 
 function resolveHandlerLike(
   handlerLike: RouteHandler | MethodRouteHandlers,
-  options: Options,
+  withHead: Options["withHead"],
 ): RouteHandler {
   if (isFunction(handlerLike)) {
     return handlerLike;
   }
-  const methodHandler = options.withHead
-    ? withHeadHandler(handlerLike)
-    : handlerLike;
+  const methodHandler = withHead ? withHeadHandler(handlerLike) : handlerLike;
 
   return methods(methodHandler);
+}
+
+function createResolvedHandlerEntry(withHead: Options["withHead"]) {
+  function createEntry(
+    [route, handlerLike]: RouteEntry,
+  ): [route: string, handler: RouteHandler] {
+    const handler = resolveHandlerLike(handlerLike, withHead);
+
+    return [route, handler];
+  }
+
+  return createEntry;
+}
+
+function createUrlPatternHandlerEntry(basePath: Options["basePath"]) {
+  function createEntry(
+    [route, handler]: [route: string, handler: RouteHandler],
+  ): [pattern: URLPattern, handler: RouteHandler] {
+    const pathname = isString(basePath) ? join(basePath, route) : route;
+    return [
+      new URLPattern({ pathname }),
+      handler,
+    ];
+  }
+
+  return createEntry;
 }
 
 async function resolveRequest(
