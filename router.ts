@@ -5,10 +5,10 @@ import {
   isEmptyObject,
   isFunction,
   isString,
-  join,
   Status,
   STATUS_TEXT,
 } from "./deps.ts";
+import { joinUrlPath } from "./utils.ts";
 
 /** HTTP request method. */
 export type Method =
@@ -189,7 +189,7 @@ function createUrlPatternHandlerEntry(basePath: Options["basePath"]) {
   function createEntry(
     [route, handler]: [route: string, handler: RouteHandler],
   ): [pattern: URLPattern, handler: RouteHandler] {
-    const pathname = isString(basePath) ? join(basePath, route) : route;
+    const pathname = isString(basePath) ? joinUrlPath(basePath, route) : route;
     return [
       new URLPattern({ pathname }),
       handler,
