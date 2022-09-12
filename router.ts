@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import {
-  isEmpty,
+  isEmptyObject,
   isFunction,
   isString,
   join,
@@ -158,7 +158,7 @@ type RouteEntry = readonly [
 function isValidRouteEntry(
   [_, handler]: RouteEntry,
 ): boolean {
-  return isFunction(handler) || !isEmpty(handler);
+  return isFunction(handler) || !isEmptyObject(handler);
 }
 
 function resolveHandlerLike(
