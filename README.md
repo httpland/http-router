@@ -225,6 +225,13 @@ All APIs can be found in the
 
 ## Performance
 
+version 1.2 or later
+
+Caches URL matching results internally. This speeds up the response time for
+requests that have already been matched by `^20X`.
+
+### Benchmark
+
 Benchmark script with comparison to several popular routers is available.
 
 ```bash

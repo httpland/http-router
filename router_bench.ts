@@ -51,3 +51,26 @@ Deno.bench("POST reno", { group: "post" }, async () => {
     new Request("http://localhost/endpoint2/123123123", { method: "POST" }),
   );
 });
+
+const cachedRouter = createRouter({
+  "/": () => new Response(),
+});
+const req = new Request("http://localhost");
+
+Deno.bench("Enable cache matching", { group: "cache" }, async () => {
+  await cachedRouter(req);
+});
+
+import * as prev from "https://deno.land/x/http_router@1.1.0/mod.ts";
+
+const nonCachedRouter = prev.createRouter({
+  "/": () => new Response(),
+});
+
+Deno.bench(
+  "Disable cache matching",
+  { group: "cache" },
+  async () => {
+    await nonCachedRouter(req);
+  },
+);
