@@ -1,14 +1,14 @@
-import { createRouter, getRouteInfo, RouteHandler } from "./router.ts";
+import { createRouter, normalizeRoutes, RouteHandler } from "./router.ts";
 import { anyFunction, describe, expect, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
 
 const handler: RouteHandler = () => new Response();
 
 const describeTests = describe("createRouter");
-describe("getRouteInfo", () => {
+describe("normalizeRoutes", () => {
   it("should return route info", () => {
     const table: [
-      ...Parameters<typeof getRouteInfo>,
+      ...Parameters<typeof normalizeRoutes>,
       { route: string; handler: unknown; method?: string }[],
     ][] = [
       [{ "/": handler }, [{ route: "/", handler }]],
@@ -177,7 +177,7 @@ describe("getRouteInfo", () => {
     ];
 
     table.forEach(([routes, result]) => {
-      expect(getRouteInfo(routes)).toEqual(result);
+      expect(normalizeRoutes(routes)).toEqual(result);
     });
   });
 });
