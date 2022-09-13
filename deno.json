@@ -1,7 +1,8 @@
 {
   "tasks": {
     "test": "deno test --doc",
-    "coverage": "deno coverage --include=router.ts"
+    "coverage": "deno coverage --exclude=dev_deps.ts --exclude=deps.ts --exclude=test.ts",
+    "bench": "deno bench --unstable"
   },
   "fmt": {
     "files": {
@@ -18,5 +19,10 @@
       "exclude": ["CHANGELOG.md", "CODE_OF_CONDUCT.md"]
     }
   },
-  "importMap": "_test_import_map.json"
+  "importMap": "_test_import_map.json",
+  "compilerOptions": {
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true
+  }
 }

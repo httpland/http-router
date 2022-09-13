@@ -56,8 +56,27 @@ jobs:
         with:
           files: cov_profile.lcov
 
+  bench:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        deno: [v1.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: ${{ matrix.deno }}
+
+      - name: Benchmark
+        run: deno task bench
+
   release:
-    needs: [lint, test]
+    needs: [lint, test, bench]
     runs-on: ${{ matrix.os }}
 
     strategy:
