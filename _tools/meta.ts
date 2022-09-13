@@ -8,6 +8,10 @@ export const makeOptions = (version: string): BuildOptions => ({
       module: "urlpattern-polyfill",
       globalNames: ["URLPattern"],
     }],
+    deno: true,
+  },
+  compilerOptions: {
+    lib: ["es2022"],
   },
   typeCheck: false,
   entryPoints: ["./mod.ts"],
