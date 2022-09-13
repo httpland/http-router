@@ -1,3 +1,19 @@
+# [1.2.0-beta.2](https://github.com/httpland/http-router/compare/1.2.0-beta.1...1.2.0-beta.2) (2022-09-13)
+
+
+### Bug Fixes
+
+* **router:** use url path join instread of std/path join ([29ef6a2](https://github.com/httpland/http-router/commit/29ef6a2548bb4efce1a3fb2955fd9a8d744a008e))
+
+
+### Features
+
+* **constants:** add set of http method ([3d97f9a](https://github.com/httpland/http-router/commit/3d97f9a23455bf9ec928f3ef4bb928f5aabaa822))
+* **errors:** add basic router error ([4987665](https://github.com/httpland/http-router/commit/49876650c7ad49c1f01300bc5dee0dc077ff97e4))
+* **router:** accept nested route literal ([d2cc85b](https://github.com/httpland/http-router/commit/d2cc85bccdb0e431c7c01235ad0a9d05eda6407f)), closes [#6](https://github.com/httpland/http-router/issues/6)
+* **router:** add detect routing table error ([0f70875](https://github.com/httpland/http-router/commit/0f708757e33714a00bbfd28d0884fb46dcadbdf5)), closes [#6](https://github.com/httpland/http-router/issues/6)
+* **types:** rename `Method` to `HttpMethod`, mark deprecate ([62ae347](https://github.com/httpland/http-router/commit/62ae347be9b0ba4f7ebcfd9a331a579c85cc228f))
+
 # [1.2.0-beta.1](https://github.com/httpland/http-router/compare/1.1.0...1.2.0-beta.1) (2022-09-11)
 
 
