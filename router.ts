@@ -139,13 +139,20 @@ export function createRouter(
     );
   }
 
-  const result = groupRouteInfo(routeInfos);
-  const entries = Object.entries(result).map(
+  routes = groupRouteInfo(routeInfos);
+  const entries = Object.entries(routes).map(
     createResolvedHandlerEntry(withHead),
-  ).map(
-    createUrlPatternHandlerEntry(basePath),
-  );
-  const routeMap = new Map<URLPattern, RouteHandler>(entries);
+  ).map(createJoinedBasePathEntry(basePath));
+
+  const result = toUrlPatternEntries(entries);
+  if (!result[0]) {
+    throw new AggregateError(
+      result[1],
+      `One or more errors has occurred.`,
+    );
+  }
+
+  const routeMap = new Map<URLPattern, RouteHandler>(result[1]);
 
   return (req) => resolveRequest(routeMap, req);
 }
@@ -358,18 +365,45 @@ function createResolvedHandlerEntry(withHead: Options["withHead"]) {
   return createEntry;
 }
 
-function createUrlPatternHandlerEntry(basePath: Options["basePath"]) {
+function createJoinedBasePathEntry(basePath: Options["basePath"]) {
   function createEntry(
     [route, handler]: [route: string, handler: RouteHandler],
-  ): [pattern: URLPattern, handler: RouteHandler] {
+  ): [route: string, handler: RouteHandler] {
     const pathname = isString(basePath) ? joinUrlPath(basePath, route) : route;
     return [
-      new URLPattern({ pathname }),
+      pathname,
       handler,
     ];
   }
 
   return createEntry;
+}
+
+function toUrlPatternEntries(
+  entries: [route: string, handler: RouteHandler][],
+): [valid: true, data: [pattern: URLPattern, handler: RouteHandler][]] | [
+  valid: false,
+  errors: RouterError[],
+] {
+  const result: [pattern: URLPattern, handler: RouteHandler][] = [];
+  const errors: RouterError[] = [];
+  entries.forEach(([pathname, handler]) => {
+    try {
+      const pattern = new URLPattern({ pathname });
+      result.push([pattern, handler]);
+    } catch (e) {
+      const error = new RouterError(`Fail to create URLPattern instance.`, {
+        cause: e,
+      });
+      errors.push(error);
+    }
+  });
+
+  if (errors.length) {
+    return [false, errors];
+  }
+
+  return [true, result];
 }
 
 async function resolveRequest(
