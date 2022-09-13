@@ -235,7 +235,7 @@ requests that have already been matched by `^20X`.
 Benchmark script with comparison to several popular routers is available.
 
 ```bash
-deno bench --unstable
+deno task bench
 ```
 
 ## License
