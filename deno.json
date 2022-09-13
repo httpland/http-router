@@ -1,7 +1,8 @@
 {
   "tasks": {
     "test": "deno test --doc",
-    "coverage": "deno coverage --exclude=dev_deps.ts"
+    "coverage": "deno coverage --exclude=dev_deps.ts",
+    "bench": "deno bench --unstable"
   },
   "fmt": {
     "files": {
