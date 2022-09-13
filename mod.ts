@@ -3,6 +3,7 @@
 
 export {
   createRouter,
+  type MethodHandlers,
   type MethodRouteHandlers,
   type RouteHandler,
   type RouteHandlerContext,
