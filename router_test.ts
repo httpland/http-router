@@ -1,9 +1,240 @@
-import { createRouter } from "./router.ts";
-import { describe, expect, fn, it } from "./dev_deps.ts";
+import {
+  createRouter,
+  normalizeRoutes,
+  RouteHandler,
+  validateRouteInfos,
+} from "./router.ts";
+import { anyFunction, describe, expect, Fn, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
+import { RouterError } from "./errors.ts";
+
+const handler: RouteHandler = () => new Response();
+
+describe("validateRouteInfos", () => {
+  it("should pass", () => {
+    const table: Fn<typeof validateRouteInfos>[] = [
+      [[], [true]],
+      [[{ handler, route: "" }], [false, [new RouterError()]]],
+      [[{ handler, route: "" }, { handler, route: "" }], [false, [
+        new RouterError(),
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/" }, { handler, route: "/" }], [false, [
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+        method: "GET",
+      }], [false, [
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+      }], [false, [
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/" }, { handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+        method: "GET",
+      }], [
+        false,
+        [new RouterError(), new RouterError()],
+      ]],
+
+      [[{ handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+        method: "POST",
+      }], [true]],
+      [[{ handler, route: "/api" }, { handler, route: "/" }], [true]],
+    ];
+
+    table.forEach(([value, result]) => {
+      expect(validateRouteInfos(value)).toEqual(result);
+    });
+  });
+});
 
 const describeTests = describe("createRouter");
+describe("normalizeRoutes", () => {
+  it("should return route info", () => {
+    const table: [
+      ...Parameters<typeof normalizeRoutes>,
+      { route: string; handler: unknown; method?: string }[],
+    ][] = [
+      [{ "/": handler }, [{ route: "/", handler }]],
+      [{ "": {} }, []],
+      [{ "/": {} }, []],
+      [{ "/": {}, "": {}, "a": { "a": {} } }, []],
+      [{ "": handler }, [{ route: "", handler: anyFunction() }]],
+      [{ "/": { "/api": handler } }, [{ route: "/api", handler }]],
+      [{ "/": { "/api": { "/hello": handler } } }, [{
+        route: "/api/hello",
+        handler,
+      }]],
+      [{ "GET": { "/": handler } }, [{
+        route: "GET/",
+        handler,
+      }]],
+      [{ "": { "": { "": { "/": handler } } } }, [{
+        route: "/",
+        handler,
+      }]],
+      [{ "GET": { "/": handler } }, [{
+        route: "GET/",
+        handler,
+      }]],
+      [{ "/": { GET: handler } }, [{
+        route: "/",
+        handler: anyFunction(),
+        method: "GET",
+      }]],
+      [{ "/": { GET: handler, HEAD: handler } }, [
+        { route: "/", handler: anyFunction(), method: "GET" },
+        { route: "/", handler: anyFunction(), method: "HEAD" },
+      ]],
+      [{ "/": { GET: handler, HEAD: handler, "/api": handler } }, [
+        { route: "/", handler: anyFunction(), method: "GET" },
+        { route: "/", handler: anyFunction(), method: "HEAD" },
+        { route: "/api", handler: anyFunction() },
+      ]],
+      [{ "/": { "/api": { "/hello": handler } } }, [
+        { route: "/api/hello", handler: anyFunction() },
+      ]],
+      [{ "/api": { "/hello": { "/hello2": handler } } }, [
+        { route: "/api/hello/hello2", handler: anyFunction() },
+      ]],
+      [{ "/api": { "/hello": { "/hello2": { GET: handler } } } }, [
+        { route: "/api/hello/hello2", handler: anyFunction(), method: "GET" },
+      ]],
+      [
+        { "/api": { "/hello": { GET: handler, POST: handler, "/": handler } } },
+        [
+          { route: "/api/hello", handler: anyFunction(), method: "GET" },
+          { route: "/api/hello", handler: anyFunction(), method: "POST" },
+          { route: "/api/hello/", handler: anyFunction() },
+        ],
+      ],
+      [
+        {
+          "/api": { "GET": handler },
+          "/graphql": handler,
+          "/hello": { GET: handler },
+        },
+        [
+          { route: "/graphql", handler: anyFunction() },
+          { route: "/api", handler: anyFunction(), method: "GET" },
+          { route: "/hello", handler: anyFunction(), method: "GET" },
+        ],
+      ],
+      [
+        {
+          "/api": {
+            "/api2": handler,
+            "/api3": { GET: handler, PATCH: handler },
+          },
+          "/graphql": handler,
+          "/hello": { GET: handler, "/hello2": { "/hello3": handler } },
+        },
+        [
+          { route: "/graphql", handler: anyFunction() },
+          { route: "/api/api2", handler: anyFunction() },
+          { route: "/api/api3", handler: anyFunction(), method: "GET" },
+          { route: "/api/api3", handler: anyFunction(), method: "PATCH" },
+          { route: "/hello", handler: anyFunction(), method: "GET" },
+          { route: "/hello/hello2/hello3", handler: anyFunction() },
+        ],
+      ],
+      [{ "": { "": { "": { GET: handler } } } }, [{
+        route: "",
+        method: "GET",
+        handler: anyFunction(),
+      }]],
+      [{ "": { "": { "/": handler } } }, [{
+        route: "/",
+        handler: anyFunction(),
+      }]],
+      [{ "": { "": { "/": { GET: handler } } } }, [{
+        route: "/",
+        handler: anyFunction(),
+        method: "GET",
+      }]],
+      [{ "": { "": { "/": { GET: handler } } }, "/": { GET: handler } }, [{
+        route: "/",
+        handler: anyFunction(),
+        method: "GET",
+      }, {
+        route: "/",
+        handler: anyFunction(),
+        method: "GET",
+      }]],
+      [{
+        "/": {
+          GET: handler,
+          HEAD: handler,
+          POST: handler,
+          PUT: handler,
+          PATCH: handler,
+          DELETE: handler,
+          CONNECT: handler,
+          OPTIONS: handler,
+          TRACE: handler,
+          ORIGIN: handler,
+        },
+      }, [
+        { method: "GET", handler: anyFunction(), route: "/" },
+        { method: "HEAD", handler: anyFunction(), route: "/" },
+        { method: "POST", handler: anyFunction(), route: "/" },
+        { method: "PUT", handler: anyFunction(), route: "/" },
+        { method: "PATCH", handler: anyFunction(), route: "/" },
+        { method: "DELETE", handler: anyFunction(), route: "/" },
+        { method: "CONNECT", handler: anyFunction(), route: "/" },
+        { method: "OPTIONS", handler: anyFunction(), route: "/" },
+        { method: "TRACE", handler: anyFunction(), route: "/" },
+        { handler: anyFunction(), route: "/ORIGIN" },
+      ]],
+      [{
+        "/": {
+          GET: {},
+        },
+      }, []],
 
+      [{
+        "/api": {
+          GET: handler,
+
+          "/hello": {
+            POST: handler,
+
+            "hello2": {
+              PUT: handler,
+            },
+
+            "hello3": {
+              PATCH: handler,
+            },
+          },
+        },
+        "/graphql": {
+          HEAD: { "/": handler },
+        },
+      }, [
+        { method: "GET", handler: anyFunction(), route: "/api" },
+        { method: "POST", handler: anyFunction(), route: "/api/hello" },
+        { method: "PUT", handler: anyFunction(), route: "/api/hello/hello2" },
+        { method: "PATCH", handler: anyFunction(), route: "/api/hello/hello3" },
+        { handler: anyFunction(), route: "/graphql/HEAD/" },
+      ]],
+    ];
+
+    table.forEach(([routes, result]) => {
+      expect(normalizeRoutes(routes)).toEqual(result);
+    });
+  });
+});
 it(
   describeTests,
   "should return 404 when url path does not match",
@@ -112,6 +343,45 @@ it(
     expect(res).toEqualResponse(
       new Response("Hello", {
         status: Status.OK,
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  "should return 200 when async response",
+  async () => {
+    const router = createRouter({
+      "/": () => Promise.resolve(new Response()),
+    });
+    const res = await router(
+      new Request("http://localhost/"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.OK,
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  "should return 500 when promise is rejected",
+  async () => {
+    const router = createRouter({
+      "/": () => Promise.reject(new Response()),
+    });
+    const res = await router(
+      new Request("http://localhost/"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.InternalServerError,
+        statusText: STATUS_TEXT[Status.InternalServerError],
       }),
     );
   },
@@ -300,6 +570,300 @@ it(
       new Response(null, {
         status: Status.InternalServerError,
         statusText: STATUS_TEXT[Status.InternalServerError],
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return 200 when basePath is joined`,
+  async () => {
+    const router = createRouter({
+      "/hello": () => new Response(null),
+    }, {
+      basePath: "/api",
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return 200 when basePath is dirty`,
+  async () => {
+    const router = createRouter({
+      "/hello": () => new Response(null),
+    }, {
+      basePath: "/api///",
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return simple nested route`,
+  async () => {
+    const router = createRouter({
+      "/api": {
+        "/hello": () => new Response(),
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return simple nested route with POST method`,
+  async () => {
+    const router = createRouter({
+      "/api": {
+        "/hello": {
+          POST: () => new Response(),
+        },
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello", { method: "POST" }),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return success when the nested route leaf is not method handler`,
+  async () => {
+    const router = createRouter({
+      "/api": {
+        GET: {
+          "/hello": () => new Response(),
+        },
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/api/GET/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return 404 when the nested route is empty`,
+  async () => {
+    const router = createRouter({
+      "/api": {
+        "/hello": {},
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.NotFound,
+        statusText: STATUS_TEXT[Status.NotFound],
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return head response when the nested route of GET method is exists`,
+  async () => {
+    const router = createRouter({
+      "/api": {
+        "/hello": {
+          GET: () => new Response(),
+        },
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello", { method: "HEAD" }),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, { status: Status.OK }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should return 405 response when the nested routes does not define the method`,
+  async () => {
+    const router = createRouter({
+      "/api": {
+        "/hello": {
+          GET: () => new Response(),
+        },
+      },
+    });
+    const res = await router(
+      new Request("http://localhost/api/hello", { method: "POST" }),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.MethodNotAllowed,
+        statusText: STATUS_TEXT[Status.MethodNotAllowed],
+        headers: { allow: "GET,HEAD" },
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  `should throw when the route is deprecated`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": {
+          "/api": () => new Response(),
+        },
+        "/api": () => new Response(),
+      })
+    ).toThrow(`One or more errors were detected in the routing table.`);
+  },
+);
+
+it(
+  describeTests,
+  `should throw when the route and method is deprecated`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": {
+          "/api": {
+            GET: () => new Response(),
+          },
+        },
+        "/api": {
+          GET: () => new Response(),
+        },
+      })
+    ).toThrow();
+  },
+);
+
+it(
+  describeTests,
+  `should throw multiple error when the route and method is deprecated`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": {
+          "/api": {
+            GET: () => new Response(),
+            POST: () => new Response(),
+          },
+        },
+        "/api": {
+          GET: () => new Response(),
+          POST: () => new Response(),
+        },
+      })
+    ).toThrow();
+  },
+);
+
+it(
+  describeTests,
+  `should throw error when the catch all handler and method handler exists`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": handler,
+        "": {
+          "/": {
+            GET: handler,
+          },
+        },
+      })
+    ).toThrow();
+  },
+);
+
+it(
+  describeTests,
+  `should throw error when the path is invalid`,
+  () => {
+    expect(() =>
+      createRouter({
+        "+": handler,
+      })
+    ).toThrow(`One or more errors has occurred.`);
+  },
+);
+
+it(describeTests, `should call cached handler`, async () => {
+  const mock = fn();
+  const router = createRouter({
+    "/api": handler,
+    "/api2": handler,
+    "/api3": handler,
+    "/": () => {
+      mock();
+      return new Response();
+    },
+  });
+
+  await router(new Request("http://localhost"));
+  const result = await router(new Request("http://localhost"));
+  expect(result.ok).toBeTruthy();
+  expect(mock).toHaveBeenCalledTimes(2);
+});
+
+it(
+  describeTests,
+  `should return response with debug info when debug flag is true`,
+  async () => {
+    const router = createRouter({
+      "/": () => {
+        throw "test";
+      },
+    }, {
+      debug: true,
+    });
+
+    const result = await router(new Request("http://localhost"));
+    expect(result).toEqualResponse(
+      new Response("test", {
+        status: Status.InternalServerError,
+        statusText: STATUS_TEXT[Status.InternalServerError],
+        headers: {
+          "content-type": "text/plain;charset=UTF-8",
+        },
       }),
     );
   },

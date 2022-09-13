@@ -14,7 +14,9 @@ HTTP request router for standard `Request` and `Response`.
 - Based on
   [URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API)
 - Tiny, lean
+- Nested route
 - Automatically `HEAD` request handler
+- Debug mode
 
 ## Packages
 
@@ -51,6 +53,89 @@ The route handler receives the following context.
 | params  | `{ readonly [k in string]?: string }`<br>URL matched parameters. |
 | route   | `string`<br> Route pathname.                                     |
 | pattern | `URLPattern`<br>URL pattern.                                     |
+
+## Nested route
+
+Nested route is supported.
+
+The nested root is a flat route syntax sugar. Nesting can be as deep as desired.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "/api": {
+    "status": () => new Response("OK"),
+    "hello": {
+      GET: () => new Response("world!"),
+    },
+  },
+});
+```
+
+This matches the following pattern:
+
+- /api/status
+- [GET] /api/hello
+- [HEAD] /api/hello (if [withHead](#head-request-handler) is not `false`)
+
+### Joining path segment
+
+Path segments are joined without overlapping slashes.
+
+The result is the same with or without slashes between path segments.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "/api": {
+    "status": () => new Response("OK"),
+    "/status": () => new Response("OK"),
+  },
+  "/api/status": () => new Response("OK"),
+});
+```
+
+They all represent the same URL pattern.
+
+## Throwing error
+
+Routers may throw an error during initialization.
+
+If an error is detected in the user-defined routing table, an error is thrown.
+
+Error in the routing table:
+
+- Duplicate route
+- Duplicate route and HTTP method pairs
+
+These prevent you from writing multiple routing tables with the same meaning and
+protect you from unexpected bugs.
+
+Throwing error patterns:
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "/api": {
+    "status": () => new Response("OK"),
+    "/status": () => new Response("OK"),
+  },
+  "/api/status": () => new Response("OK"),
+}); // duplicate /api/status
+createRouter({
+  "/api": {
+    "status": {
+      GET: () => new Response("OK"),
+    },
+  },
+  "/api/status": {
+    GET: () => new Response("OK"),
+  },
+}); // duplicate [GET] /api/status
+```
+
+router detects as many errors as possible and throws errors. In this case, it
+throws `AggregateError`, which has `RouterError` as a child.
 
 ## URL match pattern
 
@@ -104,6 +189,60 @@ import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 createRouter({}, { withHead: false });
 ```
 
+## Handle base path
+
+Change the router base path.
+
+Just as you could use baseURL or base tags on the Web, you can change the
+`basePath` of your router.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+const api = createRouter({
+  "/hello": () => new Response("world"),
+}, { basePath: "/api" });
+
+const res = await api(new Request("http://localhost/api/hello"));
+assertEquals(res.ok, true);
+```
+
+The `basePath` and route path are merged without overlapping slashes.
+
+## Debug
+
+If an error occurs internally, router always catch the error.
+
+In this case, the response status code will automatically be 500, but no further
+information is provided.
+
+Normally, details of unexpected errors should not be disclosed in production.
+
+If you are in development and want to know what happened when an error occurs,
+you can use the `debug` flag.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "*": () => Promise.reject(Error("Something wrong")),
+}, { debug: true });
+```
+
+The response body contains a string serializing the errors caught.
+
+Again, this should not be used in production.
+
+## Spec
+
+In addition to user-defined responses, routers may return the following
+responses:
+
+| Status | Headers                               | Condition                             |
+| ------ | ------------------------------------- | ------------------------------------- |
+| 404    |                                       | If not all route paths match.         |
+| 405    | `allow`                               | If no HTTP method handler is defined. |
+| 500    | `content-type` (if `debug` is `true`) | If an internal error occurs.          |
+
 ## API
 
 All APIs can be found in the
@@ -111,11 +250,21 @@ All APIs can be found in the
 
 ## Performance
 
+version 1.2 or later
+
+Caches URL matching results internally. This speeds up the response time for
+requests that have already been matched by `^20X`.
+
+### Benchmark
+
 Benchmark script with comparison to several popular routers is available.
 
 ```bash
-deno bench --unstable
+deno task bench
 ```
+
+Benchmark results can be found
+[here](https://github.com/httpland/http-router/actions/runs/3043238906/jobs/4902286626#step:4:60).
 
 ## License
 
