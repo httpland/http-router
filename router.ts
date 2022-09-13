@@ -2,36 +2,18 @@
 // This module is browser compatible.
 
 import {
-  isEmptyObject,
+  groupBy,
   isFunction,
   isString,
+  mapValues,
+  partition,
   Status,
   STATUS_TEXT,
 } from "./deps.ts";
 import { joinUrlPath } from "./utils.ts";
-
-/** HTTP request method. */
-export type Method =
-  /** RFC 9110, 9.3.1 */
-  | "GET"
-  /** RFC 9110, 9.3.2 */
-  | "HEAD"
-  /** RFC 9110, 9.3.3 */
-  | "POST"
-  /** RFC 9110, 9.3.4 */
-  | "PUT"
-  /** RFC 9110, 9.3.5 */
-  | "DELETE"
-  /** RFC 9110, 9.3.6 */
-  | "CONNECT"
-  /** RFC 9110, 9.3.7 */
-  | "OPTIONS"
-  /** RFC 9110, 9.3.8 */
-  | "TRACE"
-  /** RFC 5789 */
-  | "PATCH"
-  // deno-lint-ignore ban-types
-  | ({} & string);
+import { Method } from "./types.ts";
+import { HttpMethods } from "./constants.ts";
+import { RouterError } from "./errors.ts";
 
 /** HTTP request router API. */
 export interface Router {
@@ -65,7 +47,10 @@ export interface RouteHandlerContext {
 
 /** HTTP router routes. */
 export interface Routes {
-  readonly [k: string]: RouteHandler | MethodRouteHandlers;
+  readonly [k: string]:
+    | RouteHandler
+    | MethodRouteHandlers
+    | Routes;
 }
 
 /** Create router options. */
@@ -101,7 +86,7 @@ function methods(
   methodRouteHandlers: Readonly<MethodRouteHandlers>,
 ): RouteHandler {
   return (req, params) => {
-    const routeHandler = methodRouteHandlers[req.method];
+    const routeHandler = methodRouteHandlers[req.method as Method];
     if (routeHandler) {
       return routeHandler(req, params);
     }
@@ -141,25 +126,111 @@ export function createRouter(
   routes: Routes,
   { withHead = true, basePath }: Options = {},
 ): Router {
-  const entries = Object.entries(routes).filter(isValidRouteEntry).map(
+  const routeInfos = getRouteInfo(routes);
+  const result = groupRouteInfo(routeInfos);
+
+  if (!result.valid) {
+    throw new AggregateError(result.errors);
+  }
+
+  const entries = Object.entries(result.data).map(
     createResolvedHandlerEntry(withHead),
-  ).map(createUrlPatternHandlerEntry(basePath));
+  ).map(
+    createUrlPatternHandlerEntry(basePath),
+  );
 
   const routeMap = new Map<URLPattern, RouteHandler>(entries);
 
   return (req) => resolveRequest(routeMap, req);
 }
 
+interface RouteInfo {
+  readonly route: string;
+  readonly handler: RouteHandler;
+  readonly method?: Method;
+}
+
+export function getRouteInfo(routes: Routes): RouteInfo[] {
+  function run(routes: Routes, parentKey = ""): RouteInfo[] {
+    const [flatRoutes, nestedRoutes] = partition(
+      Object.entries(routes),
+      ([, handlerLike]) => isFunction(handlerLike),
+    ) as [
+      [route: string, handler: RouteHandler][],
+      [key: string, routes: Routes][],
+    ];
+
+    const result = flatRoutes.map(([key, handler]) => {
+      if (isHttpMethod(key)) {
+        return <RouteInfo> {
+          method: key,
+          handler,
+          route: parentKey,
+        };
+      }
+      return <RouteInfo> {
+        handler,
+        route: joinUrlPath(parentKey, key),
+      };
+    });
+
+    const nestedResults = nestedRoutes.map(([key, routes]) =>
+      run(routes, joinUrlPath(parentKey, key))
+    );
+
+    return [result, nestedResults].flat(2);
+  }
+
+  return run(routes);
+}
+
+type GroupedResult = {
+  errors: [RouterError, ...RouterError[]];
+
+  valid: false;
+} | { valid: true; data: Record<string, RouteHandler | MethodRouteHandlers> };
+
+export function groupRouteInfo(
+  routeInfo: Iterable<RouteInfo>,
+): GroupedResult {
+  const [withMethodHandlers, rawHandlers] = partition(
+    Array.from(routeInfo),
+    ({ method }) => !!method,
+  );
+
+  const routeGroup = groupBy(withMethodHandlers, ({ route }) => route);
+  const groupedRouteInfo = groupBy(rawHandlers, ({ route }) => route);
+
+  const routeHandlers = mapValues(
+    groupedRouteInfo,
+    (value) => value!.reduce((_, cur) => cur).handler,
+  );
+
+  const methodRouteHandlers = mapValues(
+    routeGroup,
+    (routeInfos) =>
+      routeInfos!.reduce((acc, cur) => {
+        if (cur.method) {
+          acc[cur.method] = cur.handler;
+        }
+        return acc;
+      }, {} as MethodRouteHandlers) ?? {},
+  );
+
+  return {
+    valid: true,
+    data: { ...routeHandlers, ...methodRouteHandlers },
+  };
+}
+
+function isHttpMethod(value: string): value is Method {
+  return (HttpMethods as string[]).includes(value);
+}
+
 type RouteEntry = readonly [
   route: string,
   handler: RouteHandler | MethodRouteHandlers,
 ];
-
-function isValidRouteEntry(
-  [_, handler]: RouteEntry,
-): boolean {
-  return isFunction(handler) || !isEmptyObject(handler);
-}
 
 function resolveHandlerLike(
   handlerLike: RouteHandler | MethodRouteHandlers,
