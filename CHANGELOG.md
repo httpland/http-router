@@ -1,3 +1,10 @@
+# [1.2.0-beta.5](https://github.com/httpland/http-router/compare/1.2.0-beta.4...1.2.0-beta.5) (2022-09-13)
+
+
+### Bug Fixes
+
+* **router:** fix error message typo ([cd59870](https://github.com/httpland/http-router/commit/cd598706e6b53549201820510755d8096540322d))
+
 # [1.2.0-beta.4](https://github.com/httpland/http-router/compare/1.2.0-beta.3...1.2.0-beta.4) (2022-09-13)
 
 
