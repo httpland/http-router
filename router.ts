@@ -1,5 +1,4 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 import {
   distinctBy,
@@ -52,7 +51,7 @@ export interface RouteHandlerContext {
 export interface Routes {
   readonly [k: string]:
     | RouteHandler
-    | MethodRouteHandlers
+    | MethodHandlers
     | Routes;
 }
 
@@ -90,19 +89,25 @@ export interface Options {
   debug?: boolean;
 }
 
-/** Map for HTTP method and {@link RouteHandler} */
+/** Map for HTTP method and {@link RouteHandler}.
+ *
+ * @deprecated rename to {@link MethodHandlers}
+ */
 export type MethodRouteHandlers = { [k in HttpMethod]?: RouteHandler };
 
+/** Map for HTTP method and {@link RouteHandler}. */
+export type MethodHandlers = MethodRouteHandlers;
+
 function methods(
-  methodRouteHandlers: Readonly<MethodRouteHandlers>,
+  methodHandlers: Readonly<MethodHandlers>,
 ): RouteHandler {
   return (req, params) => {
-    const routeHandler = methodRouteHandlers[req.method as HttpMethod];
+    const routeHandler = methodHandlers[req.method as HttpMethod];
     if (routeHandler) {
       return routeHandler(req, params);
     }
 
-    const allows = Object.keys(methodRouteHandlers);
+    const allows = Object.keys(methodHandlers);
 
     return new Response(null, {
       status: Status.MethodNotAllowed,
@@ -310,7 +315,7 @@ function strMethod(method: string | undefined): string {
 
 export function groupRouteInfo(
   routeInfo: Iterable<RouteInfo>,
-): Record<string, RouteHandler | MethodRouteHandlers> {
+): Record<string, RouteHandler | MethodHandlers> {
   const [withMethodHandlers, rawHandlers] = partition(
     Array.from(routeInfo),
     ({ method }) => !!method,
@@ -330,7 +335,7 @@ export function groupRouteInfo(
     (value) => value.reduce((_, cur) => cur).handler,
   );
 
-  const methodRouteHandlers: Record<string, MethodRouteHandlers> = mapValues(
+  const methodHandlers: Record<string, MethodHandlers> = mapValues(
     routeGroup,
     (routeInfos) =>
       routeInfos.reduce((acc, cur) => {
@@ -338,10 +343,10 @@ export function groupRouteInfo(
           acc[cur.method] = cur.handler;
         }
         return acc;
-      }, {} as MethodRouteHandlers) ?? {},
+      }, {} as MethodHandlers) ?? {},
   );
 
-  return { ...routeHandlers, ...methodRouteHandlers };
+  return { ...routeHandlers, ...methodHandlers };
 }
 
 function isHttpMethod(value: string): value is HttpMethod {
@@ -350,11 +355,11 @@ function isHttpMethod(value: string): value is HttpMethod {
 
 type RouteEntry = readonly [
   route: string,
-  handler: RouteHandler | MethodRouteHandlers,
+  handler: RouteHandler | MethodHandlers,
 ];
 
 function resolveHandlerLike(
-  handlerLike: RouteHandler | MethodRouteHandlers,
+  handlerLike: RouteHandler | MethodHandlers,
   withHead: Options["withHead"],
 ): RouteHandler {
   if (isFunction(handlerLike)) {
@@ -463,8 +468,8 @@ async function resolveRequest(
 }
 
 function withHeadHandler(
-  methodRouteHandler: Readonly<MethodRouteHandlers>,
-): MethodRouteHandlers {
+  methodRouteHandler: Readonly<MethodHandlers>,
+): MethodHandlers {
   if (methodRouteHandler.HEAD || !methodRouteHandler.GET) {
     return methodRouteHandler;
   }
