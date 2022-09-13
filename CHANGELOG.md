@@ -1,3 +1,11 @@
+# [1.2.0-beta.4](https://github.com/httpland/http-router/compare/1.2.0-beta.3...1.2.0-beta.4) (2022-09-13)
+
+
+### Features
+
+* **router:** add debug flag to see internal error detail ([e0d75bd](https://github.com/httpland/http-router/commit/e0d75bd66cf363a66dc75ee6ecffac18fe6a7b99)), closes [#8](https://github.com/httpland/http-router/issues/8)
+* **router:** rename `MethodRouteHandlers` to `MethodHandlers` types ([d147749](https://github.com/httpland/http-router/commit/d147749d4d874646aafe3faa4830921e9ca7cbc4))
+
 # [1.2.0-beta.3](https://github.com/httpland/http-router/compare/1.2.0-beta.2...1.2.0-beta.3) (2022-09-13)
 
 
