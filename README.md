@@ -238,6 +238,9 @@ Benchmark script with comparison to several popular routers is available.
 deno task bench
 ```
 
+Benchmark results can be found
+[here](https://github.com/httpland/http-router/actions/runs/3043238906/jobs/4902286626#step:4:60).
+
 ## License
 
 Copyright © 2022-present [httpland](https://github.com/httpland).
