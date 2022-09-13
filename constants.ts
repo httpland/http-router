@@ -1,7 +1,7 @@
-import { Method } from "./types.ts";
+import { HttpMethod } from "./types.ts";
 
 /** Set of HTTP all methods. */
-export const HttpMethods: Method[] = [
+export const HttpMethods: HttpMethod[] = [
   "GET",
   "HEAD",
   "POST",
