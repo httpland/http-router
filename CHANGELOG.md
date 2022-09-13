@@ -1,3 +1,16 @@
+# [1.2.0-beta.3](https://github.com/httpland/http-router/compare/1.2.0-beta.2...1.2.0-beta.3) (2022-09-13)
+
+
+### Features
+
+* **router:** add catching URLPattern error and convert to AggregateError within RouterError ([be135e7](https://github.com/httpland/http-router/commit/be135e7c2b7e948f6c30a05fcf697d926924e443))
+* **router:** add validating to catch all handler and method handler are same route or not ([a589c4e](https://github.com/httpland/http-router/commit/a589c4e02e88aa40c881fad2bdda3e5c1b2f1338))
+
+
+### Performance Improvements
+
+* **router:** improve response time by caching matching result ([ffdc8b0](https://github.com/httpland/http-router/commit/ffdc8b0acdac97cdb1a70d9a3d9d3ad47198eb9b)), closes [#7](https://github.com/httpland/http-router/issues/7)
+
 # [1.2.0-beta.2](https://github.com/httpland/http-router/compare/1.2.0-beta.1...1.2.0-beta.2) (2022-09-13)
 
 
