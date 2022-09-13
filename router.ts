@@ -153,8 +153,12 @@ export function createRouter(
   }
 
   const routeMap = new Map<URLPattern, RouteHandler>(result[1]);
+  const cache: Record<
+    string,
+    { handler: RouteHandler; context: RouteHandlerContext }
+  > = {};
 
-  return (req) => resolveRequest(routeMap, req);
+  return (req) => resolveRequest(req, { routeMap, cache });
 }
 
 interface RouteInfo {
@@ -406,25 +410,41 @@ function toUrlPatternEntries(
   return [true, result];
 }
 
+interface ResolveRequestContext {
+  readonly routeMap: Iterable<
+    [pattern: URLPattern, routeHandler: RouteHandler]
+  >;
+  cache: Record<
+    string,
+    { handler: RouteHandler; context: RouteHandlerContext }
+  >;
+}
+
 async function resolveRequest(
-  routeMap: Iterable<[pattern: URLPattern, routeHandler: RouteHandler]>,
   req: Request,
+  { routeMap, cache }: ResolveRequestContext,
 ): Promise<Response> {
+  const cached = cache[req.url];
+  if (cached) {
+    return await safeResponse(() => cached.handler(req, cached.context));
+  }
+
   for (const [pattern, handler] of routeMap) {
     const result = pattern.exec(req.url);
     if (!result) continue;
 
-    const ctx: RouteHandlerContext = {
+    const context: RouteHandlerContext = {
       params: result.pathname.groups,
       route: result.pathname.input,
       pattern,
     };
 
-    try {
-      return await handler(req, ctx);
-    } catch {
-      return new Response(null, ResponseInit500);
-    }
+    cache[req.url] = {
+      handler,
+      context,
+    };
+
+    return await safeResponse(() => handler(req, context));
   }
 
   return new Response(null, {
@@ -456,3 +476,13 @@ const ResponseInit500: ResponseInit = {
   status: Status.InternalServerError,
   statusText: STATUS_TEXT[Status.InternalServerError],
 };
+
+async function safeResponse(
+  fn: () => ReturnType<RouteHandler>,
+): Promise<Response> {
+  try {
+    return await fn();
+  } catch {
+    return new Response(null, ResponseInit500);
+  }
+}

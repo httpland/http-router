@@ -350,6 +350,45 @@ it(
 
 it(
   describeTests,
+  "should return 200 when async response",
+  async () => {
+    const router = createRouter({
+      "/": () => Promise.resolve(new Response()),
+    });
+    const res = await router(
+      new Request("http://localhost/"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.OK,
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
+  "should return 500 when promise is rejected",
+  async () => {
+    const router = createRouter({
+      "/": () => Promise.reject(new Response()),
+    });
+    const res = await router(
+      new Request("http://localhost/"),
+    );
+
+    expect(res).toEqualResponse(
+      new Response(null, {
+        status: Status.InternalServerError,
+        statusText: STATUS_TEXT[Status.InternalServerError],
+      }),
+    );
+  },
+);
+
+it(
+  describeTests,
   "should pass params when url patten include",
   async () => {
     const mock = fn();
@@ -786,3 +825,21 @@ it(
     ).toThrow(`One or more errors has occurred.`);
   },
 );
+
+it(describeTests, `should call cached handler`, async () => {
+  const mock = fn();
+  const router = createRouter({
+    "/api": handler,
+    "/api2": handler,
+    "/api3": handler,
+    "/": () => {
+      mock();
+      return new Response();
+    },
+  });
+
+  await router(new Request("http://localhost"));
+  const result = await router(new Request("http://localhost"));
+  expect(result.ok).toBeTruthy();
+  expect(mock).toHaveBeenCalledTimes(2);
+});
