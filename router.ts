@@ -80,6 +80,14 @@ export interface Options {
    * ```
    */
   basePath?: string;
+
+  /** Whether enable debug or not.
+   *
+   * - `true` - Details of the internal error will be included in the response.
+   * - `false` - The response contains nothing.
+   * @default false
+   */
+  debug?: boolean;
 }
 
 /** Map for HTTP method and {@link RouteHandler} */
@@ -127,7 +135,7 @@ function methods(
  */
 export function createRouter(
   routes: Routes,
-  { withHead = true, basePath }: Options = {},
+  { withHead = true, basePath, debug = false }: Options = {},
 ): Router {
   const routeInfos = normalizeRoutes(routes);
   const [valid, errors] = validateRouteInfos(routeInfos);
@@ -158,7 +166,7 @@ export function createRouter(
     { handler: RouteHandler; context: RouteHandlerContext }
   > = {};
 
-  return (req) => resolveRequest(req, { routeMap, cache });
+  return (req) => resolveRequest(req, { routeMap, cache, debug });
 }
 
 interface RouteInfo {
@@ -418,15 +426,16 @@ interface ResolveRequestContext {
     string,
     { handler: RouteHandler; context: RouteHandlerContext }
   >;
+  debug: boolean;
 }
 
 async function resolveRequest(
   req: Request,
-  { routeMap, cache }: ResolveRequestContext,
+  { routeMap, cache, debug }: ResolveRequestContext,
 ): Promise<Response> {
   const cached = cache[req.url];
   if (cached) {
-    return await safeResponse(() => cached.handler(req, cached.context));
+    return await safeResponse(() => cached.handler(req, cached.context), debug);
   }
 
   for (const [pattern, handler] of routeMap) {
@@ -444,7 +453,7 @@ async function resolveRequest(
       context,
     };
 
-    return await safeResponse(() => handler(req, context));
+    return await safeResponse(() => handler(req, context), debug);
   }
 
   return new Response(null, {
@@ -479,10 +488,12 @@ const ResponseInit500: ResponseInit = {
 
 async function safeResponse(
   fn: () => ReturnType<RouteHandler>,
+  debug: boolean,
 ): Promise<Response> {
   try {
     return await fn();
-  } catch {
-    return new Response(null, ResponseInit500);
+  } catch (e) {
+    const body: string | null = debug ? Deno.inspect(e) : null;
+    return new Response(body, ResponseInit500);
   }
 }

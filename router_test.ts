@@ -843,3 +843,28 @@ it(describeTests, `should call cached handler`, async () => {
   expect(result.ok).toBeTruthy();
   expect(mock).toHaveBeenCalledTimes(2);
 });
+
+it(
+  describeTests,
+  `should return response with debug info when debug flag is true`,
+  async () => {
+    const router = createRouter({
+      "/": () => {
+        throw "test";
+      },
+    }, {
+      debug: true,
+    });
+
+    const result = await router(new Request("http://localhost"));
+    expect(result).toEqualResponse(
+      new Response("test", {
+        status: Status.InternalServerError,
+        statusText: STATUS_TEXT[Status.InternalServerError],
+        headers: {
+          "content-type": "text/plain;charset=UTF-8",
+        },
+      }),
+    );
+  },
+);

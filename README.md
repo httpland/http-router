@@ -14,7 +14,9 @@ HTTP request router for standard `Request` and `Response`.
 - Based on
   [URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API)
 - Tiny, lean
+- Nested route
 - Automatically `HEAD` request handler
+- Debug mode
 
 ## Packages
 
@@ -207,16 +209,39 @@ assertEquals(res.ok, true);
 
 The `basePath` and route path are merged without overlapping slashes.
 
+## Debug
+
+If an error occurs internally, router always catch the error.
+
+In this case, the response status code will automatically be 500, but no further
+information is provided.
+
+Normally, details of unexpected errors should not be disclosed in production.
+
+If you are in development and want to know what happened when an error occurs,
+you can use the `debug` flag.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "*": () => Promise.reject(Error("Something wrong")),
+}, { debug: true });
+```
+
+The response body contains a string serializing the errors caught.
+
+Again, this should not be used in production.
+
 ## Spec
 
 In addition to user-defined responses, routers may return the following
 responses:
 
-| Status | Headers | Condition                             |
-| ------ | :-----: | ------------------------------------- |
-| 404    |    -    | If not all route paths match.         |
-| 405    | `allow` | If no HTTP method handler is defined. |
-| 500    |    -    | If an internal error occurs.          |
+| Status | Headers                               | Condition                             |
+| ------ | ------------------------------------- | ------------------------------------- |
+| 404    |                                       | If not all route paths match.         |
+| 405    | `allow`                               | If no HTTP method handler is defined. |
+| 500    | `content-type` (if `debug` is `true`) | If an internal error occurs.          |
 
 ## API
 
