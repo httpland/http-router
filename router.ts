@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import {
+  duplicateBy,
   groupBy,
   isFunction,
   isString,
@@ -119,8 +120,8 @@ function methods(
  * });
  * await serve(router);
  * ```
- * @throws TypeError
- * - The given route path is invalid url path.
+ * @throws AggregateError
+ * - If the routing table is invalid.
  */
 export function createRouter(
   routes: Routes,
@@ -130,7 +131,10 @@ export function createRouter(
   const result = groupRouteInfo(routeInfos);
 
   if (!result.valid) {
-    throw new AggregateError(result.errors);
+    throw new AggregateError(
+      result.errors,
+      `One or more errors were detected in the routing table.`,
+    );
   }
 
   const entries = Object.entries(result.data).map(
@@ -198,18 +202,47 @@ export function groupRouteInfo(
     ({ method }) => !!method,
   );
 
-  const routeGroup = groupBy(withMethodHandlers, ({ route }) => route);
-  const groupedRouteInfo = groupBy(rawHandlers, ({ route }) => route);
-
-  const routeHandlers = mapValues(
-    groupedRouteInfo,
-    (value) => value!.reduce((_, cur) => cur).handler,
+  const duplicatedWithRoute = duplicateBy(
+    rawHandlers,
+    ({ route }, prev) => route === prev.route,
+  );
+  const duplicatedWithMethodAndRoute = duplicateBy(
+    withMethodHandlers,
+    ({ method, route }, prev) => route === prev.route && method === prev.method,
   );
 
-  const methodRouteHandlers = mapValues(
+  const duplicated = duplicatedWithRoute.concat(duplicatedWithMethodAndRoute);
+
+  if (duplicated.length) {
+    const errors = duplicated.map(({ method, route }) => {
+      const methodStr = method ? `[${method}] ` : "";
+      return new RouterError(`Duplicated routes. ${methodStr}${route}`);
+    }) as [RouterError, ...RouterError[]];
+
+    return {
+      valid: false,
+      errors,
+    };
+  }
+
+  const routeGroup = groupBy(
+    withMethodHandlers,
+    ({ route }) => route,
+  ) as Record<string, RouteInfo[]>;
+  const groupedRouteInfo = groupBy(rawHandlers, ({ route }) => route) as Record<
+    string,
+    RouteInfo[]
+  >;
+
+  const routeHandlers: Record<string, RouteHandler> = mapValues(
+    groupedRouteInfo,
+    (value) => value.reduce((_, cur) => cur).handler,
+  );
+
+  const methodRouteHandlers: Record<string, MethodRouteHandlers> = mapValues(
     routeGroup,
     (routeInfos) =>
-      routeInfos!.reduce((acc, cur) => {
+      routeInfos.reduce((acc, cur) => {
         if (cur.method) {
           acc[cur.method] = cur.handler;
         }

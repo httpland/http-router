@@ -52,6 +52,89 @@ The route handler receives the following context.
 | route   | `string`<br> Route pathname.                                     |
 | pattern | `URLPattern`<br>URL pattern.                                     |
 
+## Nested route
+
+Nested route is supported.
+
+The nested root is a flat route syntax sugar. Nesting can be as deep as desired.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "/api": {
+    "status": () => new Response("OK"),
+    "hello": {
+      GET: () => new Response("world!"),
+    },
+  },
+});
+```
+
+This matches the following pattern:
+
+- /api/status
+- [GET] /api/hello
+- [HEAD] /api/hello (if [withHead](#head-request-handler) is not `false`)
+
+### Joining path segment
+
+Path segments are joined without overlapping slashes.
+
+The result is the same with or without slashes between path segments.
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "/api": {
+    "status": () => new Response("OK"),
+    "/status": () => new Response("OK"),
+  },
+  "/api/status": () => new Response("OK"),
+});
+```
+
+They all represent the same URL pattern.
+
+## Throwing error
+
+Routers may throw an error during initialization.
+
+If an error is detected in the user-defined routing table, an error is thrown.
+
+Error in the routing table:
+
+- Duplicate route
+- Duplicate route and HTTP method pairs
+
+These prevent you from writing multiple routing tables with the same meaning and
+protect you from unexpected bugs.
+
+Throwing error patterns:
+
+```ts
+import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+createRouter({
+  "/api": {
+    "status": () => new Response("OK"),
+    "/status": () => new Response("OK"),
+  },
+  "/api/status": () => new Response("OK"),
+}); // duplicate /api/status
+createRouter({
+  "/api": {
+    "status": {
+      GET: () => new Response("OK"),
+    },
+  },
+  "/api/status": {
+    GET: () => new Response("OK"),
+  },
+}); // duplicate [GET] /api/status
+```
+
+router detects as many errors as possible and throws errors. In this case, it
+throws `AggregateError`, which has `RouterError` as a child.
+
 ## URL match pattern
 
 URL patterns can be defined using the

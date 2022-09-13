@@ -648,3 +648,58 @@ it(
     );
   },
 );
+
+it(
+  describeTests,
+  `should throw when the route is deprecated`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": {
+          "/api": () => new Response(),
+        },
+        "/api": () => new Response(),
+      })
+    ).toThrow(`One or more errors were detected in the routing table.`);
+  },
+);
+
+it(
+  describeTests,
+  `should throw when the route and method is deprecated`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": {
+          "/api": {
+            GET: () => new Response(),
+          },
+        },
+        "/api": {
+          GET: () => new Response(),
+        },
+      })
+    ).toThrow();
+  },
+);
+
+it(
+  describeTests,
+  `should throw multiple error when the route and method is deprecated`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": {
+          "/api": {
+            GET: () => new Response(),
+            POST: () => new Response(),
+          },
+        },
+        "/api": {
+          GET: () => new Response(),
+          POST: () => new Response(),
+        },
+      })
+    ).toThrow();
+  },
+);
