@@ -12,7 +12,7 @@ import {
   STATUS_TEXT,
 } from "./deps.ts";
 import { joinUrlPath } from "./utils.ts";
-import { Method } from "./types.ts";
+import { HttpMethod } from "./types.ts";
 import { HttpMethods } from "./constants.ts";
 import { RouterError } from "./errors.ts";
 
@@ -81,13 +81,13 @@ export interface Options {
 }
 
 /** Map for HTTP method and {@link RouteHandler} */
-export type MethodRouteHandlers = { [k in Method]?: RouteHandler };
+export type MethodRouteHandlers = { [k in HttpMethod]?: RouteHandler };
 
 function methods(
   methodRouteHandlers: Readonly<MethodRouteHandlers>,
 ): RouteHandler {
   return (req, params) => {
-    const routeHandler = methodRouteHandlers[req.method as Method];
+    const routeHandler = methodRouteHandlers[req.method as HttpMethod];
     if (routeHandler) {
       return routeHandler(req, params);
     }
@@ -151,7 +151,7 @@ export function createRouter(
 interface RouteInfo {
   readonly route: string;
   readonly handler: RouteHandler;
-  readonly method?: Method;
+  readonly method?: HttpMethod;
 }
 
 export function getRouteInfo(routes: Routes): RouteInfo[] {
@@ -256,7 +256,7 @@ export function groupRouteInfo(
   };
 }
 
-function isHttpMethod(value: string): value is Method {
+function isHttpMethod(value: string): value is HttpMethod {
   return (HttpMethods as string[]).includes(value);
 }
 
