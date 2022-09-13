@@ -5,7 +5,16 @@ import {
   jestModifierMap,
   MatchResult,
 } from "https://deno.land/x/unitest@v1.0.0-beta.82/mod.ts";
-export { fn } from "https://deno.land/x/unitest@v1.0.0-beta.82/mod.ts";
+export {
+  anyFunction,
+  fn,
+} from "https://deno.land/x/unitest@v1.0.0-beta.82/mod.ts";
+
+// deno-lint-ignore no-explicit-any
+export type Fn<F extends (...args: any) => any> = [
+  ...Parameters<F>,
+  ReturnType<F>,
+];
 
 export const expect = defineExpect({
   matcherMap: {
