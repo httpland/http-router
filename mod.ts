@@ -3,10 +3,12 @@
 
 export {
   createRouter,
-  type Method,
   type MethodRouteHandlers,
   type RouteHandler,
   type RouteHandlerContext,
   type Router,
   type Routes,
 } from "./router.ts";
+export { type Method } from "./types.ts";
+export { RouterError } from "./errors.ts";
+export { HttpMethods } from "./constants.ts";
