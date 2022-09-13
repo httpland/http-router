@@ -2,10 +2,12 @@
 // This module is browser compatible.
 
 import {
+  distinctBy,
   duplicateBy,
   groupBy,
   isFunction,
   isString,
+  isTruthy,
   mapValues,
   partition,
   Status,
@@ -128,21 +130,21 @@ export function createRouter(
   { withHead = true, basePath }: Options = {},
 ): Router {
   const routeInfos = normalizeRoutes(routes);
-  const result = groupRouteInfo(routeInfos);
+  const [valid, errors] = validateRouteInfos(routeInfos);
 
-  if (!result.valid) {
+  if (!valid) {
     throw new AggregateError(
-      result.errors,
+      errors,
       `One or more errors were detected in the routing table.`,
     );
   }
 
-  const entries = Object.entries(result.data).map(
+  const result = groupRouteInfo(routeInfos);
+  const entries = Object.entries(result).map(
     createResolvedHandlerEntry(withHead),
   ).map(
     createUrlPatternHandlerEntry(basePath),
   );
-
   const routeMap = new Map<URLPattern, RouteHandler>(entries);
 
   return (req) => resolveRequest(routeMap, req);
@@ -188,17 +190,20 @@ export function normalizeRoutes(routes: Routes): RouteInfo[] {
   return run(routes);
 }
 
-type GroupedResult = {
-  errors: [RouterError, ...RouterError[]];
+type ValidationResult = [valid: true] | [
+  valid: false,
+  errors: [RouterError, ...RouterError[]],
+];
 
-  valid: false;
-} | { valid: true; data: Record<string, RouteHandler | MethodRouteHandlers> };
-
-export function groupRouteInfo(
-  routeInfo: Iterable<RouteInfo>,
-): GroupedResult {
+export function validateRouteInfos(
+  routeInfos: Iterable<RouteInfo>,
+): ValidationResult {
+  const [validInfos, invalidInfos] = partition(
+    Array.from(routeInfos),
+    ({ route }) => !!route,
+  );
   const [withMethodHandlers, rawHandlers] = partition(
-    Array.from(routeInfo),
+    validInfos,
     ({ method }) => !!method,
   );
 
@@ -211,19 +216,86 @@ export function groupRouteInfo(
     ({ method, route }, prev) => route === prev.route && method === prev.method,
   );
 
+  const uniqueRoutes = distinctBy(rawHandlers, ({ route }) => route);
+
+  const groupByRouteMethodHandlers = groupBy(
+    withMethodHandlers,
+    ({ route }) => route,
+  ) as Record<string, RouteInfo[]>;
+
+  const allAndMethodsSet = uniqueRoutes.map((routeInfo) => {
+    if (Object.hasOwn(groupByRouteMethodHandlers, routeInfo.route)) {
+      return [
+        routeInfo,
+        distinctBy(
+          groupByRouteMethodHandlers[routeInfo.route] ?? [],
+          ({ method }) => method,
+        ),
+      ] as const;
+    }
+
+    return;
+  }).filter(isTruthy) as [RouteInfo, RouteInfo[]][];
+
+  const duplicatedMethods = allAndMethodsSet.map(([left, rights]) =>
+    new RouterError(
+      joinStr(
+        [
+          `A catch-all handler and a method handler exist in the same route.`,
+          left.route,
+          ">:",
+          joinStr(
+            [
+              strMethod(joinStr(rights.map(({ method }) => method!), ",")),
+              left.route,
+            ],
+          ),
+        ],
+        " ",
+      ),
+    )
+  );
+
+  const emptyRouteErrors: RouterError[] = invalidInfos.map(({ method }) =>
+    new RouterError(joinStr([`Empty route exists.`, strMethod(method)], " "))
+  );
+
   const duplicated = duplicatedWithRoute.concat(duplicatedWithMethodAndRoute);
 
-  if (duplicated.length) {
-    const errors = duplicated.map(({ method, route }) => {
-      const methodStr = method ? `[${method}] ` : "";
-      return new RouterError(`Duplicated routes. ${methodStr}${route}`);
-    }) as [RouterError, ...RouterError[]];
+  const duplicatedRouteErrors = duplicated.map(({ method, route }) => {
+    return new RouterError(
+      joinStr(
+        ["`Duplicated routes exist.", joinStr([strMethod(method), route])],
+        " ",
+      ),
+    );
+  });
 
-    return {
-      valid: false,
-      errors,
-    };
+  const errors = emptyRouteErrors.concat(duplicatedRouteErrors).concat(
+    duplicatedMethods,
+  );
+
+  if (errors.length) {
+    return [false, errors as [RouterError, ...RouterError[]]];
   }
+  return [true];
+}
+
+function joinStr(characters: Iterable<string>, separator = ""): string {
+  return Array.from(characters).filter(isTruthy).join(separator);
+}
+
+function strMethod(method: string | undefined): string {
+  return method ? `[${method}]` : "";
+}
+
+export function groupRouteInfo(
+  routeInfo: Iterable<RouteInfo>,
+): Record<string, RouteHandler | MethodRouteHandlers> {
+  const [withMethodHandlers, rawHandlers] = partition(
+    Array.from(routeInfo),
+    ({ method }) => !!method,
+  );
 
   const routeGroup = groupBy(
     withMethodHandlers,
@@ -250,10 +322,7 @@ export function groupRouteInfo(
       }, {} as MethodRouteHandlers) ?? {},
   );
 
-  return {
-    valid: true,
-    data: { ...routeHandlers, ...methodRouteHandlers },
-  };
+  return { ...routeHandlers, ...methodRouteHandlers };
 }
 
 function isHttpMethod(value: string): value is HttpMethod {
