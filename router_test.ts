@@ -774,3 +774,15 @@ it(
     ).toThrow();
   },
 );
+
+it(
+  describeTests,
+  `should throw error when the path is invalid`,
+  () => {
+    expect(() =>
+      createRouter({
+        "+": handler,
+      })
+    ).toThrow(`One or more errors has occurred.`);
+  },
+);
