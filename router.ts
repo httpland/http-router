@@ -289,7 +289,7 @@ export function validateRouteInfos(
   const duplicatedRouteErrors = duplicated.map(({ method, route }) => {
     return new RouterError(
       joinStr(
-        ["`Duplicated routes exist.", joinStr([strMethod(method), route])],
+        ["Duplicated routes exist.", joinStr([strMethod(method), route])],
         " ",
       ),
     );
