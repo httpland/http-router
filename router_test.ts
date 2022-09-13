@@ -1,8 +1,62 @@
-import { createRouter, normalizeRoutes, RouteHandler } from "./router.ts";
-import { anyFunction, describe, expect, fn, it } from "./dev_deps.ts";
+import {
+  createRouter,
+  normalizeRoutes,
+  RouteHandler,
+  validateRouteInfos,
+} from "./router.ts";
+import { anyFunction, describe, expect, Fn, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
+import { RouterError } from "./errors.ts";
 
 const handler: RouteHandler = () => new Response();
+
+describe("validateRouteInfos", () => {
+  it("should pass", () => {
+    const table: Fn<typeof validateRouteInfos>[] = [
+      [[], [true]],
+      [[{ handler, route: "" }], [false, [new RouterError()]]],
+      [[{ handler, route: "" }, { handler, route: "" }], [false, [
+        new RouterError(),
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/" }, { handler, route: "/" }], [false, [
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+        method: "GET",
+      }], [false, [
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+      }], [false, [
+        new RouterError(),
+      ]]],
+      [[{ handler, route: "/" }, { handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+        method: "GET",
+      }], [
+        false,
+        [new RouterError(), new RouterError()],
+      ]],
+
+      [[{ handler, route: "/", method: "GET" }, {
+        handler,
+        route: "/",
+        method: "POST",
+      }], [true]],
+      [[{ handler, route: "/api" }, { handler, route: "/" }], [true]],
+    ];
+
+    table.forEach(([value, result]) => {
+      expect(validateRouteInfos(value)).toEqual(result);
+    });
+  });
+});
 
 const describeTests = describe("createRouter");
 describe("normalizeRoutes", () => {
@@ -698,6 +752,23 @@ it(
         "/api": {
           GET: () => new Response(),
           POST: () => new Response(),
+        },
+      })
+    ).toThrow();
+  },
+);
+
+it(
+  describeTests,
+  `should throw error when the catch all handler and method handler exists`,
+  () => {
+    expect(() =>
+      createRouter({
+        "/": handler,
+        "": {
+          "/": {
+            GET: handler,
+          },
         },
       })
     ).toThrow();
