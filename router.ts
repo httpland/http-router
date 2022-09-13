@@ -127,7 +127,7 @@ export function createRouter(
   routes: Routes,
   { withHead = true, basePath }: Options = {},
 ): Router {
-  const routeInfos = getRouteInfo(routes);
+  const routeInfos = normalizeRoutes(routes);
   const result = groupRouteInfo(routeInfos);
 
   if (!result.valid) {
@@ -154,7 +154,7 @@ interface RouteInfo {
   readonly method?: HttpMethod;
 }
 
-export function getRouteInfo(routes: Routes): RouteInfo[] {
+export function normalizeRoutes(routes: Routes): RouteInfo[] {
   function run(routes: Routes, parentKey = ""): RouteInfo[] {
     const [flatRoutes, nestedRoutes] = partition(
       Object.entries(routes),
