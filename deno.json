@@ -18,5 +18,10 @@
       "exclude": ["CHANGELOG.md", "CODE_OF_CONDUCT.md"]
     }
   },
-  "importMap": "_test_import_map.json"
+  "importMap": "_test_import_map.json",
+  "compilerOptions": {
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true
+  }
 }
