@@ -16,6 +16,10 @@ export {
 export { mapValues } from "https://deno.land/std@0.155.0/collections/map_values.ts";
 export { groupBy } from "https://deno.land/std@0.155.0/collections/group_by.ts";
 export { distinctBy } from "https://deno.land/std@0.155.0/collections/distinct_by.ts";
+export {
+  type HttpMethod,
+  safeResponse,
+} from "https://deno.land/x/http_utils@1.0.0-beta.2/mod.ts";
 
 export function isEmptyObject(value: unknown): value is Record<never, never> {
   return !Object.getOwnPropertyNames(value).length &&
