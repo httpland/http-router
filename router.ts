@@ -4,17 +4,17 @@ import {
   distinctBy,
   duplicateBy,
   groupBy,
+  HttpMethod,
   isFunction,
   isString,
   isTruthy,
   mapValues,
   partition,
+  safeResponse,
   Status,
   STATUS_TEXT,
 } from "./deps.ts";
-import { joinUrlPath } from "./utils.ts";
-import { HttpMethod } from "./types.ts";
-import { HttpMethods } from "./constants.ts";
+import { isHttpMethod, joinUrlPath } from "./utils.ts";
 import { RouterError } from "./errors.ts";
 
 /** HTTP request router API. */
@@ -158,6 +158,7 @@ export function createRouter(
   ).map(createJoinedBasePathEntry(basePath));
 
   const result = toUrlPatternEntries(entries);
+
   if (!result[0]) {
     throw new AggregateError(
       result[1],
@@ -171,7 +172,38 @@ export function createRouter(
     { handler: RouteHandler; context: RouteHandlerContext }
   > = {};
 
-  return (req) => resolveRequest(req, { routeMap, cache, debug });
+  return async (req) => {
+    const cached = cache[req.url];
+
+    if (cached) {
+      return await safeResponse(
+        () => cached.handler(req, cached.context),
+        debug,
+      );
+    }
+
+    for (const [pattern, handler] of routeMap) {
+      const result = pattern.exec(req.url);
+      if (!result) continue;
+
+      const context: RouteHandlerContext = {
+        params: result.pathname.groups,
+        route: result.pathname.input,
+        pattern,
+      };
+      cache[req.url] = {
+        handler,
+        context,
+      };
+
+      return await safeResponse(() => handler(req, context), debug);
+    }
+
+    return new Response(null, {
+      status: Status.NotFound,
+      statusText: STATUS_TEXT[Status.NotFound],
+    });
+  };
 }
 
 interface RouteInfo {
@@ -203,7 +235,6 @@ export function normalizeRoutes(routes: Routes): RouteInfo[] {
         route: joinUrlPath(parentKey, key),
       };
     });
-
     const nestedResults = nestedRoutes.map(([key, routes]) =>
       run(routes, joinUrlPath(parentKey, key))
     );
@@ -349,10 +380,6 @@ export function groupRouteInfo(
   return { ...routeHandlers, ...methodHandlers };
 }
 
-function isHttpMethod(value: string): value is HttpMethod {
-  return (HttpMethods as string[]).includes(value);
-}
-
 type RouteEntry = readonly [
   route: string,
   handler: RouteHandler | MethodHandlers,
@@ -423,50 +450,6 @@ function toUrlPatternEntries(
   return [true, result];
 }
 
-interface ResolveRequestContext {
-  readonly routeMap: Iterable<
-    [pattern: URLPattern, routeHandler: RouteHandler]
-  >;
-  cache: Record<
-    string,
-    { handler: RouteHandler; context: RouteHandlerContext }
-  >;
-  debug: boolean;
-}
-
-async function resolveRequest(
-  req: Request,
-  { routeMap, cache, debug }: ResolveRequestContext,
-): Promise<Response> {
-  const cached = cache[req.url];
-  if (cached) {
-    return await safeResponse(() => cached.handler(req, cached.context), debug);
-  }
-
-  for (const [pattern, handler] of routeMap) {
-    const result = pattern.exec(req.url);
-    if (!result) continue;
-
-    const context: RouteHandlerContext = {
-      params: result.pathname.groups,
-      route: result.pathname.input,
-      pattern,
-    };
-
-    cache[req.url] = {
-      handler,
-      context,
-    };
-
-    return await safeResponse(() => handler(req, context), debug);
-  }
-
-  return new Response(null, {
-    status: Status.NotFound,
-    statusText: STATUS_TEXT[Status.NotFound],
-  });
-}
-
 function withHeadHandler(
   methodRouteHandler: Readonly<MethodHandlers>,
 ): MethodHandlers {
@@ -479,26 +462,12 @@ function withHeadHandler(
       const res = await methodRouteHandler.GET!(req, params);
       return new Response(null, res.clone());
     } catch {
-      return new Response(null, ResponseInit500);
+      return new Response(null, {
+        status: Status.InternalServerError,
+        statusText: STATUS_TEXT[Status.InternalServerError],
+      });
     }
   };
 
   return { ...methodRouteHandler, HEAD: headHandler };
-}
-
-const ResponseInit500: ResponseInit = {
-  status: Status.InternalServerError,
-  statusText: STATUS_TEXT[Status.InternalServerError],
-};
-
-async function safeResponse(
-  fn: () => ReturnType<RouteHandler>,
-  debug: boolean,
-): Promise<Response> {
-  try {
-    return await fn();
-  } catch (e) {
-    const body: string | null = debug ? Deno.inspect(e) : null;
-    return new Response(body, ResponseInit500);
-  }
 }
