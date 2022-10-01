@@ -88,14 +88,8 @@ export interface Options {
   debug?: boolean;
 }
 
-/** Map for HTTP method and {@link RouteHandler}.
- *
- * @deprecated rename to {@link MethodHandlers}
- */
-export type MethodRouteHandlers = { [k in HttpMethod]?: RouteHandler };
-
 /** Map for HTTP method and {@link RouteHandler}. */
-export type MethodHandlers = MethodRouteHandlers;
+export type MethodHandlers = { [k in HttpMethod]?: RouteHandler };
 
 function methods(
   methodHandlers: Readonly<MethodHandlers>,
