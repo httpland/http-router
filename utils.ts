@@ -1,14 +1,9 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-import { HttpMethods } from "./constants.ts";
-import { AssertionError, duplicateBy, HttpMethod, isTruthy } from "./deps.ts";
+import { AssertionError, duplicateBy, isTruthy } from "./deps.ts";
 
 export function joinUrlPath(...paths: readonly string[]): string {
   return paths.filter(isTruthy).join("/").replaceAll(/\/+/g, "/");
-}
-
-export function isHttpMethod(value: string): value is HttpMethod {
-  return (HttpMethods as string[]).includes(value);
 }
 
 export function assertDuplicateBy<T>(
