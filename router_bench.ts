@@ -1,20 +1,21 @@
-import { createRouter } from "./router.ts";
+import { MethodRouter as $, URLRouter } from "./routers.ts";
 import {
   createRouteMap as createRenoMap,
   createRouter as createReno,
   forMethod,
 } from "https://deno.land/x/reno@v2.0.53/reno/mod.ts";
 
-const router = createRouter({
+const router = URLRouter({
   "/endpoint": () => new Response("Hello"),
-  "/endpoint2/:id": {
-    POST: (_req, params) =>
-      Promise.resolve(
-        new Response(JSON.stringify(params), {
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
-  },
+  "/endpoint2/:id": (req, { params }) =>
+    $({
+      POST: (_) =>
+        Promise.resolve(
+          new Response(JSON.stringify(params), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        ),
+    })(req),
 });
 
 const reno = createReno(createRenoMap([
@@ -52,7 +53,7 @@ Deno.bench("POST reno", { group: "post" }, async () => {
   );
 });
 
-const cachedRouter = createRouter({
+const cachedRouter = URLRouter({
   "/": () => new Response(),
 });
 const req = new Request("http://localhost");
