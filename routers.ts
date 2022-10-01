@@ -65,7 +65,11 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
   assertDuplicateBy(url, equalsURLPattern);
 
-  const response = new Response(null, { status: 404 });
+  const status = Status.NotFound;
+  const response = new Response(null, {
+    status,
+    statusText: STATUS_TEXT[status],
+  });
   const cache: PatternMatchingCache = {};
   const handler: Handler = (request) => {
     const url = request.url;
