@@ -15,7 +15,6 @@ import {
   STATUS_TEXT,
 } from "./deps.ts";
 import { isHttpMethod, joinUrlPath } from "./utils.ts";
-import { RouterError } from "./errors.ts";
 
 /** HTTP request router API. */
 export interface Router {
@@ -247,7 +246,7 @@ export function normalizeRoutes(routes: Routes): RouteInfo[] {
 
 type ValidationResult = [valid: true] | [
   valid: false,
-  errors: [RouterError, ...RouterError[]],
+  errors: [Error, ...Error[]],
 ];
 
 export function validateRouteInfos(
@@ -293,7 +292,7 @@ export function validateRouteInfos(
   }).filter(isTruthy) as [RouteInfo, RouteInfo[]][];
 
   const duplicatedMethods = allAndMethodsSet.map(([left, rights]) =>
-    new RouterError(
+    Error(
       joinStr(
         [
           `A catch-all handler and a method handler exist in the same route.`,
@@ -311,14 +310,14 @@ export function validateRouteInfos(
     )
   );
 
-  const emptyRouteErrors: RouterError[] = invalidInfos.map(({ method }) =>
-    new RouterError(joinStr([`Empty route exists.`, strMethod(method)], " "))
+  const emptyRouteErrors: Error[] = invalidInfos.map(({ method }) =>
+    new Error(joinStr([`Empty route exists.`, strMethod(method)], " "))
   );
 
   const duplicated = duplicatedWithRoute.concat(duplicatedWithMethodAndRoute);
 
   const duplicatedRouteErrors = duplicated.map(({ method, route }) => {
-    return new RouterError(
+    return Error(
       joinStr(
         ["Duplicated routes exist.", joinStr([strMethod(method), route])],
         " ",
@@ -331,7 +330,7 @@ export function validateRouteInfos(
   );
 
   if (errors.length) {
-    return [false, errors as [RouterError, ...RouterError[]]];
+    return [false, errors as [Error, ...Error[]]];
   }
   return [true];
 }
@@ -427,16 +426,16 @@ function toUrlPatternEntries(
   entries: [route: string, handler: RouteHandler][],
 ): [valid: true, data: [pattern: URLPattern, handler: RouteHandler][]] | [
   valid: false,
-  errors: RouterError[],
+  errors: Error[],
 ] {
   const result: [pattern: URLPattern, handler: RouteHandler][] = [];
-  const errors: RouterError[] = [];
+  const errors: Error[] = [];
   entries.forEach(([pathname, handler]) => {
     try {
       const pattern = new URLPattern({ pathname });
       result.push([pattern, handler]);
     } catch (e) {
-      const error = new RouterError(`Fail to create URLPattern instance.`, {
+      const error = Error(`Fail to create URLPattern instance.`, {
         cause: e,
       });
       errors.push(error);
