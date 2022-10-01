@@ -12,7 +12,25 @@ describe("URLRouter", () => {
     },
   );
   it(
-    "should return 500 when router handler has exception",
+    "should return 404 when the matching is fail",
+    async () => {
+      const router = URLRouter({
+        "/": handler,
+      });
+      const res = await router(
+        new Request("http://localhost/a"),
+      );
+
+      expect(res).toEqualResponse(
+        new Response(null, {
+          status: Status.NotFound,
+          statusText: STATUS_TEXT[Status.NotFound],
+        }),
+      );
+    },
+  );
+  it(
+    "should return 500 when route handler has exception",
     async () => {
       const router = URLRouter({
         "/": () => {
