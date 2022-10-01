@@ -6,7 +6,6 @@ import {
 } from "./router.ts";
 import { anyFunction, describe, expect, Fn, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
-import { RouterError } from "./errors.ts";
 
 const handler: RouteHandler = () => new Response();
 
@@ -14,26 +13,26 @@ describe("validateRouteInfos", () => {
   it("should pass", () => {
     const table: Fn<typeof validateRouteInfos>[] = [
       [[], [true]],
-      [[{ handler, route: "" }], [false, [new RouterError()]]],
+      [[{ handler, route: "" }], [false, [Error()]]],
       [[{ handler, route: "" }, { handler, route: "" }], [false, [
-        new RouterError(),
-        new RouterError(),
+        Error(),
+        Error(),
       ]]],
       [[{ handler, route: "/" }, { handler, route: "/" }], [false, [
-        new RouterError(),
+        Error(),
       ]]],
       [[{ handler, route: "/", method: "GET" }, {
         handler,
         route: "/",
         method: "GET",
       }], [false, [
-        new RouterError(),
+        Error(),
       ]]],
       [[{ handler, route: "/", method: "GET" }, {
         handler,
         route: "/",
       }], [false, [
-        new RouterError(),
+        Error(),
       ]]],
       [[{ handler, route: "/" }, { handler, route: "/", method: "GET" }, {
         handler,
@@ -41,7 +40,7 @@ describe("validateRouteInfos", () => {
         method: "GET",
       }], [
         false,
-        [new RouterError(), new RouterError()],
+        [Error(), Error()],
       ]],
 
       [[{ handler, route: "/", method: "GET" }, {
