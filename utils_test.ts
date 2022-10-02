@@ -136,28 +136,44 @@ Deno.test("intersectBy should pass", () => {
   });
 });
 
-Deno.test("nest should pass", () => {
-  const handler = () => new Response();
+describe("nest", () => {
+  it("should pass", () => {
+    const handler = () => new Response();
 
-  const table: Fn<typeof nest>[] = [
-    ["", {}, {}],
-    ["/", {}, {}],
-    ["/", { "/": handler }, { "/": handler }],
-    ["/api", { "hello": handler }, { "/api/hello": handler }],
-    ["/api", { "hello": handler, "": handler }, {
-      "/api/hello": handler,
-      "/api": handler,
-    }],
-    ["/api/", { "/hello/": handler, "//": handler }, {
-      "/api/hello/": handler,
-      "/api/": handler,
-    }],
-    ["/api", { "//": handler, "/": handler }, {
-      "/api/": handler,
-    }],
-  ];
-  table.forEach(([root, routes, expected]) => {
-    expect(nest(root, routes)).toEqual(expected);
+    const table: Fn<typeof nest>[] = [
+      ["", {}, {}],
+      ["/", {}, {}],
+      ["/", { "/": handler }, { "/": handler }],
+      ["/api", { "hello": handler }, { "/api/hello": handler }],
+      ["/api", { "hello": handler, "": handler }, {
+        "/api/hello": handler,
+        "/api": handler,
+      }],
+      ["/api/", { "/hello/": handler, "//": handler }, {
+        "/api/hello/": handler,
+        "/api/": handler,
+      }],
+      ["", { "/a": handler, "/a//": handler }, {
+        "/a": handler,
+        "/a/": handler,
+      }],
+    ];
+    table.forEach(([root, routes, expected]) => {
+      expect(nest(root, routes)).toEqual(expected);
+    });
+  });
+
+  it("should throw error when the routes is invalid", () => {
+    const handler = () => new Response();
+
+    expect(() =>
+      nest("", {
+        "": handler,
+        "/": handler,
+        "//": handler,
+        "///": handler,
+      })
+    ).toThrow();
   });
 });
 
