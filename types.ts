@@ -28,8 +28,9 @@ export interface MatchedURLContext {
   /** Pattern matching result. */
   readonly result: URLPatternResult;
 
-  /** URL matched parameters.  */
-  readonly params: { readonly [k in string]?: string };
+  /** URL matched parameters.
+   * Alias for `result.pathname.groups`. */
+  readonly params: URLPatternResult["pathname"]["groups"];
 }
 
 /** Contextual HTTP handler. */
