@@ -31,11 +31,33 @@ The package supports multiple platforms.
 
 `URLRouter` provides routing between HTTP request URLs and handlers.
 
-Request URL are matched with the `URLPatten API`.
+URL routes accepts the `URLPattern API` as is. This means that various url
+patterns can be matched.
 
 ```ts
 import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
+
+const handler = URLRouter([
+  [{ pathname: "/" }, () => new Response("Home")],
+  [
+    { password: "admin", pathname: "/admin" },
+    (request, context) => new Response("Hello admin!"),
+  ],
+]);
+
+await serve(handler);
+```
+
+### Pathname routes
+
+URLPattern routes are the most expressive, but somewhat verbose. URL pattern
+matching is usually done using `pathname`.
+
+URLRouter supports URL pattern matching with `pathname` as a first class.
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 
 const handler = URLRouter({
   "/api/students/:name": (request, context) => {
@@ -44,8 +66,25 @@ const handler = URLRouter({
   },
   "/api/status": () => new Response("OK"),
 });
+```
 
-await serve(handler);
+same as:
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const handler = URLRouter(
+  [
+    [
+      { pathname: "/api/students/:name" },
+      (request, context) => {
+        const greeting = `Hello! ${context.params.name!}`;
+        return new Response(greeting);
+      },
+    ],
+    [{ pathname: "/api/status" }, () => new Response("OK")],
+  ],
+);
 ```
 
 ### URL Route handler context

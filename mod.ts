@@ -8,6 +8,8 @@ export {
   type MethodRouterOptions,
   type PathnameRoutes,
   type RouterOptions,
+  type URLPatternRoute,
+  type URLPatternRoutes,
   type URLRouteHandler,
   type URLRouteHandlerContext,
   type URLRouterConstructor,
