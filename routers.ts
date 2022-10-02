@@ -1,12 +1,12 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
 import {
-  ContextualHandler,
   HttpMethodRoutes,
-  MatchedURLContext,
   MethodRouterConstructor,
   PathnameRoutes,
   URLPatternRoute,
+  URLRouteHandler,
+  URLRouteHandlerContext,
   URLRouterConstructor,
   URLRoutes,
 } from "./types.ts";
@@ -27,8 +27,8 @@ import {
 
 interface PatternMatchingCache {
   [k: string]: Readonly<{
-    handler: ContextualHandler<MatchedURLContext>;
-    context: MatchedURLContext;
+    handler: URLRouteHandler;
+    context: URLRouteHandlerContext;
   }>;
 }
 
@@ -84,7 +84,7 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
       if (!result) continue;
 
-      const context: MatchedURLContext = {
+      const context: URLRouteHandlerContext = {
         pattern,
         result,
         params: result.pathname.groups,
