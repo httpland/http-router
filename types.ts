@@ -28,9 +28,6 @@ export interface MatchedURLContext {
   /** Pattern matching result. */
   readonly result: URLPatternResult;
 
-  /** Route pathname. */
-  readonly route: string;
-
   /** URL pattern. */
   readonly pattern: URLPattern;
 }

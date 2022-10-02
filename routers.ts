@@ -87,7 +87,6 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
       const context: MatchedURLContext = {
         params: result.pathname.groups,
         result,
-        route: result.pathname.input,
         pattern,
       };
       const response = handler(request, context);
