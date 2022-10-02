@@ -25,6 +25,9 @@ export interface MatchedURLContext {
   /** URL matched parameters.  */
   readonly params: { readonly [k in string]?: string };
 
+  /** Pattern matching result. */
+  readonly result: URLPatternResult;
+
   /** Route pathname. */
   readonly route: string;
 
