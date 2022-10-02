@@ -4,7 +4,7 @@
 export {
   isIterable,
   isTruthy,
-} from "https://deno.land/x/isx@1.0.0-beta.21/mod.ts";
+} from "https://deno.land/x/isx@1.0.0-beta.22/mod.ts";
 export {
   Status,
   STATUS_TEXT,
