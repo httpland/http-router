@@ -22,14 +22,14 @@ export type URLRoutes =
 
 /** Context about matched URL. */
 export interface MatchedURLContext {
-  /** URL matched parameters.  */
-  readonly params: { readonly [k in string]?: string };
+  /** URL pattern. */
+  readonly pattern: URLPattern;
 
   /** Pattern matching result. */
   readonly result: URLPatternResult;
 
-  /** URL pattern. */
-  readonly pattern: URLPattern;
+  /** URL matched parameters.  */
+  readonly params: { readonly [k in string]?: string };
 }
 
 /** Contextual HTTP handler. */
