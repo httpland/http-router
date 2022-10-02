@@ -5,23 +5,32 @@ import { Handler, HttpMethod } from "./deps.ts";
 
 /** Router with URL pathname. */
 export interface PathnameRoutes {
-  readonly [k: string]: ContextualHandler<MatchedURLContext>;
+  readonly [k: string]: URLRouteHandler;
+}
+
+/** Handler for URL routes. */
+export interface URLRouteHandler {
+  /** Handler with context. */
+  (
+    request: Request,
+    context: URLRouteHandlerContext,
+  ): Promise<Response> | Response;
 }
 
 /** Route with {@link URLPattern}. */
 export type URLPatternRoute = readonly [
   pattern: URLPatternInit | URLPattern,
-  handler: ContextualHandler<MatchedURLContext>,
+  handler: URLRouteHandler,
 ];
 
-/** URL matched pattern definition. */
+/** URL pattern matching definition. */
 export type URLRoutes =
   | PathnameRoutes
   | readonly URLPatternRoute[]
   | Iterable<URLPatternRoute>;
 
-/** Context about matched URL. */
-export interface MatchedURLContext {
+/** URL route handler context. */
+export interface URLRouteHandlerContext {
   /** URL pattern. */
   readonly pattern: URLPattern;
 
@@ -31,12 +40,6 @@ export interface MatchedURLContext {
   /** URL matched parameters.
    * Alias for `result.pathname.groups`. */
   readonly params: URLPatternResult["pathname"]["groups"];
-}
-
-/** Contextual HTTP handler. */
-export interface ContextualHandler<C> {
-  /** Handler with context. */
-  (request: Request, context: C): Promise<Response> | Response;
 }
 
 /** HTTP method matched pattern definition. */
