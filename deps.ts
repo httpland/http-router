@@ -11,14 +11,11 @@ export {
 } from "https://deno.land/std@0.157.0/http/http_status.ts";
 export { mapKeys } from "https://deno.land/std@0.157.0/collections/map_keys.ts";
 export {
-  type Handler,
+  type HttpHandler as Handler,
   type HttpMethod,
-} from "https://deno.land/x/http_utils@1.0.0-beta.2/mod.ts";
+  safeResponse,
+} from "https://deno.land/x/http_utils@1.0.0-beta.3/mod.ts";
 export { AssertionError } from "https://deno.land/x/assertion@1.0.0-beta.1/mod.ts";
-import {
-  Status,
-  STATUS_TEXT,
-} from "https://deno.land/std@0.157.0/http/http_status.ts";
 
 export function duplicateBy<T>(
   value: Iterable<T>,
@@ -38,25 +35,4 @@ export function duplicateBy<T>(
   }
 
   return ret;
-}
-
-export async function safeResponse(
-  fn: () => Response | Promise<Response>,
-  onError?: (error: unknown) => Response | Promise<Response>,
-): Promise<Response> {
-  try {
-    return await fn();
-  } catch (e) {
-    const status = Status.InternalServerError;
-    const response = new Response(null, {
-      status,
-      statusText: STATUS_TEXT[status],
-    });
-
-    try {
-      return onError?.(e) ?? response;
-    } catch {
-      return response;
-    }
-  }
 }
