@@ -181,6 +181,28 @@ assertEquals(
 );
 ```
 
+#### Error pattern
+
+The routing table defined in nest may have duplicate url patterns in some cases.
+
+As seen in [Joining path segment](#joining-path-segment), segment slashes are
+safely handled. This results in the following definitions being identical
+
+- branch
+- `/`branch
+- `//`branch ...
+
+These are converted to the following pathname:
+
+`[root]/branch`
+
+In this case, the routing table is ambiguous. `nest` will throw an error if it
+finds an ambiguous routing table.
+
+This eliminates ambiguous patterns and protects you from unexpected behavior.
+
+`AggregateError` will inform you of the details of the error.
+
 ## HTTP request method router
 
 `MethodRouter` provides routing between HTTP request methods and handlers.

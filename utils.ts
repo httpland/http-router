@@ -7,6 +7,8 @@ import { PathnameRoutes } from "./types.ts";
  * It provides a hierarchy of routing tables.
  * You can define a tree structure with a depth of 1. To nest more, combine this.
  *
+ * @throws `AggregateError`
+ *
  * ```ts
  * import {
  *   nest,
@@ -23,7 +25,12 @@ import { PathnameRoutes } from "./types.ts";
  * const handler = URLRouter({ ...api, "/": routeHandler });
  * ```
  */
-export function nest(root: string, routes: PathnameRoutes): PathnameRoutes {
+export function nest(
+  root: string,
+  routes: PathnameRoutes,
+): PathnameRoutes {
+  assertValidPathnameRoutes(routes);
+
   return mapKeys(routes, (key) => joinUrlPath(root, key));
 }
 
@@ -76,6 +83,37 @@ export function assertNotDuplicateBy<T>(
 `,
     );
   }
+}
+
+function assertValidPathnameRoutes(routes: PathnameRoutes): asserts routes {
+  const pathnames = Object.keys(routes);
+
+  const set = pathnames.map((
+    pathname,
+  ) => [pathname, joinUrlPath(pathname)] as const);
+  const duplications = intersectBy(
+    set.map(([_, cleaned]) => cleaned),
+    Object.is,
+  );
+
+  const duplicatedGroup = duplications.reduce((acc, cur) => {
+    const pathnames = set.filter(([_, cleaned]) => Object.is(cur, cleaned)).map(
+      ([raw]) => raw,
+    );
+
+    return [...acc, pathnames];
+  }, [] as string[][]);
+
+  if (!duplicatedGroup.length) return;
+
+  const errors = duplicatedGroup.map((group) =>
+    new AssertionError({
+      actual: group,
+      expect: "No same meaning pathname",
+    }, `Same meaning pathname. [${group.join(", ")}]`)
+  );
+
+  throw AggregateError(errors, "Invalid pathname in routes.");
 }
 
 /** Check `URLPattern` object equality. */
