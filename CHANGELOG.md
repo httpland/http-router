@@ -1,3 +1,29 @@
+# [2.0.0-beta.2](https://github.com/httpland/http-router/compare/2.0.0-beta.1...2.0.0-beta.2) (2022-10-02)
+
+
+### Bug Fixes
+
+* **utils:** fix throwing error pattern ([2a07e6e](https://github.com/httpland/http-router/commit/2a07e6ed67a57dd63da4f4b2e4e27f223a656fe8))
+
+
+### Features
+
+* **mod:** export API types ([eba25ff](https://github.com/httpland/http-router/commit/eba25ffdd66cb0c5657025a1a351962d7f2cc630)), closes [#13](https://github.com/httpland/http-router/issues/13)
+* **mod:** remove unnessesary module from API ([8201730](https://github.com/httpland/http-router/commit/82017300db7308c8319de9dd82a5f716dc33b01c)), closes [#18](https://github.com/httpland/http-router/issues/18)
+* **types:** add `result` field to URL router route handler context ([a6c2956](https://github.com/httpland/http-router/commit/a6c295649a906fd953d77588715e1c0907d051af)), closes [#19](https://github.com/httpland/http-router/issues/19)
+* **types:** add `URLRoutes` related types ([c883b66](https://github.com/httpland/http-router/commit/c883b66415311aa93d2faf5c7e5463f285f148cd)), closes [#14](https://github.com/httpland/http-router/issues/14)
+* **types:** change `params` of url route handler context types ([d2c779e](https://github.com/httpland/http-router/commit/d2c779e750a78def590567365cd57b4aa4041e48)), closes [#20](https://github.com/httpland/http-router/issues/20)
+* **types:** change types and add test case ([e4419c6](https://github.com/httpland/http-router/commit/e4419c675b8e85070ddabace6d926dc0ee0e3ed9)), closes [#14](https://github.com/httpland/http-router/issues/14)
+* **types:** remove `route` field from url router route handler context ([2bf003e](https://github.com/httpland/http-router/commit/2bf003ed181ab7556b1937b0a947ec368d7c7a07)), closes [#19](https://github.com/httpland/http-router/issues/19)
+* **utils:** add assert to `nest` ([752a0b8](https://github.com/httpland/http-router/commit/752a0b8bd52f62ffca2aec2c452c492fb2edddd2))
+
+
+### BREAKING CHANGES
+
+* **types:** remove optional flag from `params` in url route handler context types
+* **types:** remove `route` field from url router route handler context
+* **mod:** made unimportant modules private
+
 # [2.0.0-beta.1](https://github.com/httpland/http-router/compare/1.2.0...2.0.0-beta.1) (2022-10-01)
 
 
