@@ -19,8 +19,8 @@ import {
   STATUS_TEXT,
 } from "./deps.ts";
 import {
-  assertDuplicateBy,
   assertHasMember,
+  assertNotDuplicateBy,
   equalsURLPattern,
   joinUrlPath,
 } from "./utils.ts";
@@ -63,7 +63,7 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
   );
   const url = entries.map(([urlPattern]) => urlPattern);
 
-  assertDuplicateBy(url, equalsURLPattern);
+  assertNotDuplicateBy(url, equalsURLPattern);
 
   const status = Status.NotFound;
   const response = new Response(null, {

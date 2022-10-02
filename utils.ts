@@ -1,27 +1,51 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-import { AssertionError, duplicateBy, isTruthy } from "./deps.ts";
+import { AssertionError, isTruthy } from "./deps.ts";
 
 export function joinUrlPath(...paths: readonly string[]): string {
   return paths.filter(isTruthy).join("/").replaceAll(/\/+/g, "/");
 }
 
-export function assertDuplicateBy<T>(
+/** Returns all elements in the given value that produce a intersect value using the given selector. */
+export function intersectBy<T>(
   value: Iterable<T>,
-  selector: (el: T, prev: T) => boolean,
-): asserts value {
-  const duplications = duplicateBy(value, selector);
+  selector: (current: T, prev: T) => boolean,
+): T[] {
+  const selectedValues: T[] = [];
+  const ret: T[] = [];
 
-  if (duplications.length) {
+  for (const element of value) {
+    const has = selectedValues.some((v) => selector(element, v));
+
+    if (has) {
+      if (!ret.find((v) => selector(element, v))) {
+        ret.push(element);
+      }
+    } else {
+      selectedValues.push(element);
+    }
+  }
+
+  return ret;
+}
+
+/** Assert the value is no duplicates. */
+export function assertNotDuplicateBy<T>(
+  value: Iterable<T>,
+  selector: (current: T, prev: T) => boolean,
+): asserts value {
+  const intersections = intersectBy(value, selector);
+
+  if (intersections.length) {
     throw new AssertionError(
       {
-        actual: duplications,
+        actual: intersections,
         expect: "No duplication",
       },
       `Assertion is fail.
 
   Actual duplications:
-    ${Deno.inspect(duplications)}
+    ${Deno.inspect(intersections)}
   Expected:
     No duplication
 `,
@@ -29,6 +53,7 @@ export function assertDuplicateBy<T>(
   }
 }
 
+/** Check `URLPattern` object equality. */
 export function equalsURLPattern(left: URLPattern, right: URLPattern): boolean {
   const props: readonly (keyof URLPattern)[] = [
     "exec",
