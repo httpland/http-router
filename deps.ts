@@ -16,23 +16,3 @@ export {
   safeResponse,
 } from "https://deno.land/x/http_utils@1.0.0-beta.3/mod.ts";
 export { AssertionError } from "https://deno.land/x/assertion@1.0.0-beta.1/mod.ts";
-
-export function duplicateBy<T>(
-  value: Iterable<T>,
-  selector: (el: T, prev: T) => boolean,
-): T[] {
-  const selectedValues: T[] = [];
-  const ret: T[] = [];
-
-  for (const element of value) {
-    const has = selectedValues.some((v) => selector(element, v));
-
-    if (has) {
-      ret.push(element);
-    } else {
-      selectedValues.push(element);
-    }
-  }
-
-  return ret;
-}
