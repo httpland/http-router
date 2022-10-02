@@ -1,3 +1,21 @@
+# [2.0.0-beta.1](https://github.com/httpland/http-router/compare/1.2.0...2.0.0-beta.1) (2022-10-01)
+
+
+### Features
+
+* **errors:** remove `RouterError` and use `Error` instead ([bdde112](https://github.com/httpland/http-router/commit/bdde112407eac5884dedd792feb97c088ce02eee)), closes [#16](https://github.com/httpland/http-router/issues/16)
+* **routers:** add `URLRouter` and `MethodRouter` instead of `createRouter` ([f0306c9](https://github.com/httpland/http-router/commit/f0306c9e7e9849ec502c22afb66f6ec20e63db00)), closes [#13](https://github.com/httpland/http-router/issues/13)
+* **types:** remove duplicated ([a8ae0ce](https://github.com/httpland/http-router/commit/a8ae0cedd5be78c1ce1038aec37c9ab567756af7)), closes [#17](https://github.com/httpland/http-router/issues/17)
+
+
+### BREAKING CHANGES
+
+* **routers:** The `createRouter` has been removed and `URLRouter` and `MethodRouter` have been
+added.
+Nested notation has been removed and restricted to flat notation only.
+* **types:** remove dupicated types
+* **errors:** `RouterError` is removed. `Error` is used instead of `RouterError.
+
 # [1.2.0](https://github.com/httpland/http-router/compare/1.1.0...1.2.0) (2022-09-13)
 
 
