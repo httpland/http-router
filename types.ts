@@ -3,7 +3,7 @@
 
 import { Handler, HttpMethod } from "./deps.ts";
 
-/** Router with URL pathname. */
+/** URL pathname pattern matching definition. */
 export interface PathnameRoutes {
   readonly [k: string]: URLRouteHandler;
 }
@@ -17,7 +17,7 @@ export interface URLRouteHandler {
   ): Promise<Response> | Response;
 }
 
-/** Route with {@link URLPattern}. */
+/** Pattern matching pair with {@link URLPattern} . */
 export type URLPatternRoute = readonly [
   pattern: URLPatternInit | URLPattern,
   handler: URLRouteHandler,
