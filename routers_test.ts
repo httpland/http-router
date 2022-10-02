@@ -251,6 +251,22 @@ describe("URLRouter", () => {
   );
 
   it(
+    `should match when the URLPattern routes`,
+    async () => {
+      const router = URLRouter([
+        [{ password: "admin", username: "admin" }, handler],
+      ]);
+
+      const result = await router(new Request("https://admin:admin@localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: 200,
+        }),
+      );
+    },
+  );
+
+  it(
     `should return default error response when throw error in onError`,
     async () => {
       const router = URLRouter({
