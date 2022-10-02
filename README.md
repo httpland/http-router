@@ -27,9 +27,9 @@ The package supports multiple platforms.
 - deno.land/x - `https://deno.land/x/http_router/mod.ts`
 - npm - `@httpland/http-router`
 
-## HTTP request url router
+## URL router
 
-`URLRouter` provides routing between HTTP request URLs and handlers.
+`URLRouter` provides routing between URLs and handlers.
 
 URL routes accepts the `URLPattern API` as is. This means that various url
 patterns can be matched.
