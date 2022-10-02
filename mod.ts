@@ -1,6 +1,6 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-export { MethodRouter, nest, URLRouter } from "./routers.ts";
+export { MethodRouter, URLRouter } from "./routers.ts";
 export { type Handler } from "./deps.ts";
 export {
   type HttpMethodRoutes,
@@ -13,3 +13,4 @@ export {
   type URLRouterConstructor,
   type URLRoutes,
 } from "./types.ts";
+export { nest } from "./utils.ts";

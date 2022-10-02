@@ -1,5 +1,5 @@
-import { MethodRouter, nest, URLRouter } from "./routers.ts";
-import { describe, expect, Fn, fn, it } from "./dev_deps.ts";
+import { MethodRouter, URLRouter } from "./routers.ts";
+import { describe, expect, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
 
 const handler = () => new Response();
@@ -441,27 +441,4 @@ describe("MethodRouter", () => {
       );
     },
   );
-});
-
-Deno.test("nest should pass", () => {
-  const table: Fn<typeof nest>[] = [
-    ["", {}, {}],
-    ["/", {}, {}],
-    ["/", { "/": handler }, { "/": handler }],
-    ["/api", { "hello": handler }, { "/api/hello": handler }],
-    ["/api", { "hello": handler, "": handler }, {
-      "/api/hello": handler,
-      "/api": handler,
-    }],
-    ["/api/", { "/hello/": handler, "//": handler }, {
-      "/api/hello/": handler,
-      "/api/": handler,
-    }],
-    ["/api", { "//": handler, "/": handler }, {
-      "/api/": handler,
-    }],
-  ];
-  table.forEach(([root, routes, expected]) => {
-    expect(nest(root, routes)).toEqual(expected);
-  });
 });

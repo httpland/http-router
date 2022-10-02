@@ -3,6 +3,7 @@ import {
   equalsURLPattern,
   intersectBy,
   joinUrlPath,
+  nest,
 } from "./utils.ts";
 import { describe, expect, Fn, it } from "./dev_deps.ts";
 
@@ -134,15 +135,27 @@ Deno.test("intersectBy should pass", () => {
   });
 });
 
-// it("should pass current and prev", () => {
-//   const mock = fn();
-//   expect(assertNotDuplicateBy([1, 2, 3], (current, prev) => {
-//     mock(current, prev);
-//     return false;
-//   })).toBeUndefined();
+Deno.test("nest should pass", () => {
+  const handler = () => new Response();
 
-//   expect(mock).toHaveBeenCalledTimes(3);
-//   expect(mock).toHaveBeenCalledWith(2, 1);
-//   expect(mock).toHaveBeenCalledWith(3, 1);
-//   expect(mock).toHaveBeenCalledWith(3, 2);
-// });
+  const table: Fn<typeof nest>[] = [
+    ["", {}, {}],
+    ["/", {}, {}],
+    ["/", { "/": handler }, { "/": handler }],
+    ["/api", { "hello": handler }, { "/api/hello": handler }],
+    ["/api", { "hello": handler, "": handler }, {
+      "/api/hello": handler,
+      "/api": handler,
+    }],
+    ["/api/", { "/hello/": handler, "//": handler }, {
+      "/api/hello/": handler,
+      "/api/": handler,
+    }],
+    ["/api", { "//": handler, "/": handler }, {
+      "/api/": handler,
+    }],
+  ];
+  table.forEach(([root, routes, expected]) => {
+    expect(nest(root, routes)).toEqual(expected);
+  });
+});

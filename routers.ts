@@ -3,7 +3,6 @@
 import {
   HttpMethodRoutes,
   MethodRouterConstructor,
-  PathnameRoutes,
   URLPatternRoute,
   URLRouteHandler,
   URLRouteHandlerContext,
@@ -13,7 +12,6 @@ import {
 import {
   Handler,
   isIterable,
-  mapKeys,
   safeResponse,
   Status,
   STATUS_TEXT,
@@ -22,7 +20,6 @@ import {
   assertHasMember,
   assertNotDuplicateBy,
   equalsURLPattern,
-  joinUrlPath,
 } from "./utils.ts";
 
 interface PatternMatchingCache {
@@ -151,30 +148,6 @@ export const MethodRouter: MethodRouterConstructor = (
 
   return (request) => safeResponse(() => handler(request), onError);
 };
-
-/** Nested URL pathname convertor.
- * It provides a hierarchy of routing tables.
- * You can define a tree structure with a depth of 1. To nest more, combine this.
- *
- * ```ts
- * import {
- *   nest,
- *   URLRouter,
- * } from "https://deno.land/x/http_router@$VERSION/mod.ts";
- *
- * const routeHandler = () => new Response();
- * const api = nest("/api", {
- *   ...nest("v1", {
- *     users: routeHandler,
- *     products: routeHandler,
- *   }),
- * });
- * const handler = URLRouter({ ...api, "/": routeHandler });
- * ```
- */
-export function nest(root: string, routes: PathnameRoutes): PathnameRoutes {
-  return mapKeys(routes, (key) => joinUrlPath(root, key));
-}
 
 function mapHttpHead(routes: HttpMethodRoutes): HttpMethodRoutes {
   if (!("GET" in routes) || "HEAD" in routes) return routes;
