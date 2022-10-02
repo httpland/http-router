@@ -1,6 +1,31 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-import { AssertionError, isTruthy } from "./deps.ts";
+import { AssertionError, isTruthy, mapKeys } from "./deps.ts";
+import { PathnameRoutes } from "./types.ts";
+
+/** Nested URL pathname convertor.
+ * It provides a hierarchy of routing tables.
+ * You can define a tree structure with a depth of 1. To nest more, combine this.
+ *
+ * ```ts
+ * import {
+ *   nest,
+ *   URLRouter,
+ * } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+ *
+ * const routeHandler = () => new Response();
+ * const api = nest("/api", {
+ *   ...nest("v1", {
+ *     users: routeHandler,
+ *     products: routeHandler,
+ *   }),
+ * });
+ * const handler = URLRouter({ ...api, "/": routeHandler });
+ * ```
+ */
+export function nest(root: string, routes: PathnameRoutes): PathnameRoutes {
+  return mapKeys(routes, (key) => joinUrlPath(root, key));
+}
 
 export function joinUrlPath(...paths: readonly string[]): string {
   return paths.filter(isTruthy).join("/").replaceAll(/\/+/g, "/");
