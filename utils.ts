@@ -115,7 +115,7 @@ export function assertHasMember(value: {}): asserts value {
 }
 
 // deno-lint-ignore ban-types
-function isEmpty(value: {}): boolean {
+export function isEmpty(value: {}): boolean {
   const members = isIterable(value) ? Array.from(value) : Object.keys(value);
 
   return !members.length;
