@@ -1,6 +1,6 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-import { AssertionError, isIterable, isTruthy, mapKeys } from "./deps.ts";
+import { AssertionError, isIterable, isTruthy } from "./deps.ts";
 import { PathnameRoutes } from "./types.ts";
 
 /** Nested URL pathname convertor.
@@ -29,13 +29,46 @@ export function nest(
   root: string,
   routes: PathnameRoutes,
 ): PathnameRoutes {
-  assertValidPathnameRoutes(routes);
+  const context = Object.entries(routes).map(([pathname, handler]) => {
+    const normalizedPath = joinPath(root, pathname);
+    return { handler, pathname, normalizedPath };
+  });
+  const normalizedPaths = context.map(lens("normalizedPath"));
+  const duplications = intersectBy(normalizedPaths, Object.is);
+  const errors = duplications.reduce((acc, cur) => {
+    const pathnames = context.filter(({ normalizedPath }) =>
+      Object.is(cur, normalizedPath)
+    ).map(lens("pathname"));
 
-  return mapKeys(routes, (key) => joinUrlPath(root, key));
+    return [...acc, pathnames];
+  }, [] as string[][]).map(assertionErrorFrom);
+
+  if (errors.length) {
+    throw AggregateError(errors, "Invalid pathname in routes.");
+  }
+
+  const entries = context.map(({ handler, normalizedPath }) =>
+    [normalizedPath, handler] as const
+  );
+
+  return Object.fromEntries(entries);
 }
 
-export function joinUrlPath(...paths: readonly string[]): string {
-  return paths.filter(isTruthy).join("/").replaceAll(/\/+/g, "/");
+/** Securely concatenate URL paths.
+ * The concatenation is free of duplicate slashes.
+ * Empty segments are ignored.
+ *
+ * Behaves strictly according to the meaning of "concatenation".
+ * Do nothing about anything other than the concatenation, e.g., head and tail slashes.
+ */
+export function joinPath(...paths: readonly string[]): string {
+  const [head, ...tail] = paths.filter(isTruthy);
+
+  if (!head) return "";
+
+  return tail.reduce((acc, cur) => {
+    return acc.replaceAll(/\/+$/g, "") + "/" + cur.replaceAll(/^\/+/g, "");
+  }, head);
 }
 
 /** Returns all elements in the given value that produce a intersect value using the given selector. */
@@ -85,35 +118,11 @@ export function assertNotDuplicateBy<T>(
   }
 }
 
-function assertValidPathnameRoutes(routes: PathnameRoutes): asserts routes {
-  const pathnames = Object.keys(routes);
-
-  const set = pathnames.map((
-    pathname,
-  ) => [pathname, joinUrlPath(pathname)] as const);
-  const duplications = intersectBy(
-    set.map(([_, cleaned]) => cleaned),
-    Object.is,
-  );
-
-  const duplicatedGroup = duplications.reduce((acc, cur) => {
-    const pathnames = set.filter(([_, cleaned]) => Object.is(cur, cleaned)).map(
-      ([raw]) => raw,
-    );
-
-    return [...acc, pathnames];
-  }, [] as string[][]);
-
-  if (!duplicatedGroup.length) return;
-
-  const errors = duplicatedGroup.map((group) =>
-    new AssertionError({
-      actual: group,
-      expect: "No same meaning pathname",
-    }, `Same meaning pathname. [${group.join(", ")}]`)
-  );
-
-  throw AggregateError(errors, "Invalid pathname in routes.");
+function assertionErrorFrom(pathnames: string[]): AssertionError {
+  return new AssertionError({
+    actual: pathnames,
+    expect: "No same meaning pathname",
+  }, `Same meaning pathname. [${pathnames.join(", ")}]`);
 }
 
 /** Check `URLPattern` object equality. */
@@ -157,4 +166,8 @@ export function isEmpty(value: {}): boolean {
   const members = isIterable(value) ? Array.from(value) : Object.keys(value);
 
   return !members.length;
+}
+
+function lens<U extends keyof T, T>(prop: U): (value: T) => T[U] {
+  return (value) => value[prop];
 }

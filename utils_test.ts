@@ -3,33 +3,31 @@ import {
   equalsURLPattern,
   intersectBy,
   isEmpty,
-  joinUrlPath,
+  joinPath,
   nest,
 } from "./utils.ts";
 import { describe, expect, Fn, it } from "./dev_deps.ts";
 
-describe("joinUrlPath", () => {
-  it("should return non duplicated slash path", () => {
-    const table: [string[], string][] = [
-      [[""], ""],
-      [["////"], "/"],
-      [["//aaa//"], "/aaa/"],
-      [[" "], " "],
-      [["", "", ""], ""],
-      [["/", ""], "/"],
-      [["/", "/"], "/"],
-      [["////", ""], "/"],
-      [["/abc", "/abc/"], "/abc/abc/"],
-      [["//abc//", "abc"], "/abc/abc"],
-      [["abc", "abc"], "abc/abc"],
-      [["abc", "abc", "abc"], "abc/abc/abc"],
-      [["/abc/", "/abc/", "/abc/"], "/abc/abc/abc/"],
-    ];
+Deno.test("joinPath should pass", () => {
+  const table: [string[], string][] = [
+    [[""], ""],
+    [["", "", "", ""], ""],
+    [["////"], "////"],
+    [["//aaa//"], "//aaa//"],
+    [[" "], " "],
+    [["/", ""], "/"],
+    [["/", "/"], "/"],
+    [["////", ""], "////"],
+    [["/abc", "/abc/"], "/abc/abc/"],
+    [["//abc//", "abc"], "//abc/abc"],
+    [["abc", "abc"], "abc/abc"],
+    [["abc", "abc", "abc"], "abc/abc/abc"],
+    [["/abc/", "/abc/", "/abc/"], "/abc/abc/abc/"],
+    [["///abc/", "/abc/", "/abc///"], "///abc/abc/abc///"],
+    [["///abc///", "///abc///", "///abc///"], "///abc/abc/abc///"],
+  ];
 
-    table.forEach(([paths, result]) =>
-      expect(joinUrlPath(...paths)).toBe(result)
-    );
-  });
+  table.forEach(([paths, result]) => expect(joinPath(...paths)).toBe(result));
 });
 
 Deno.test("equalsURLPattern should pass", () => {
@@ -155,7 +153,7 @@ describe("nest", () => {
       }],
       ["", { "/a": handler, "/a//": handler }, {
         "/a": handler,
-        "/a/": handler,
+        "/a//": handler,
       }],
     ];
     table.forEach(([root, routes, expected]) => {
@@ -166,14 +164,14 @@ describe("nest", () => {
   it("should throw error when the routes is invalid", () => {
     const handler = () => new Response();
 
-    expect(() =>
-      nest("", {
-        "": handler,
-        "/": handler,
-        "//": handler,
-        "///": handler,
-      })
-    ).toThrow();
+    const table: Parameters<typeof nest>[] = [
+      ["/", { "": handler, "/": handler }],
+      ["/", { "/": handler, "//": handler }],
+      ["/", { "/a": handler, "///a": handler }],
+    ];
+    table.forEach(([root, routes]) => {
+      expect(() => nest(root, routes)).toThrow();
+    });
   });
 });
 
