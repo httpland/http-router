@@ -52,11 +52,11 @@ await serve(handler);
 
 The URL route handler receives the following context.
 
-| Name    | Description                                                      |
-| ------- | ---------------------------------------------------------------- |
-| pattern | `URLPattern`<br>URL pattern.                                     |
-| result  | `URLPatternResult`<br> Pattern matching result.                  |
-| params  | `{ readonly [k in string]?: string }`<br>URL matched parameters. |
+| Name    | Description                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------- |
+| pattern | `URLPattern`<br>URL pattern.                                                                            |
+| result  | `URLPatternResult`<br> Pattern matching result.                                                         |
+| params  | `URLPatternResult["pathname"]["groups"]`<br>URL matched parameters. Alias for `result.pathname.groups`. |
 
 ### URL match pattern
 
