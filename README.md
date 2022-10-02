@@ -31,8 +31,8 @@ The package supports multiple platforms.
 
 `URLRouter` provides routing between URLs and handlers.
 
-URL routes accepts the `URLPattern API` as is. This means that various url
-patterns can be matched.
+It accepts the `URLPattern API` as is. This means that various url patterns can
+be matched.
 
 ```ts
 import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
@@ -47,6 +47,20 @@ const handler = URLRouter([
 ]);
 
 await serve(handler);
+```
+
+It accepts a set of `URLPatternInit` and handlers wrapped by `Iterable` object.
+
+In other words, it is not limited to arrays.
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const handler = URLRouter(
+  new Map([
+    [{ pathname: "/" }, () => new Response("Home")],
+  ]),
+);
 ```
 
 ### Pathname routes
