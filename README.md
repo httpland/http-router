@@ -54,6 +54,7 @@ The URL route handler receives the following context.
 
 | Name    | Description                                                      |
 | ------- | ---------------------------------------------------------------- |
+| result  | `URLPatternResult`<br> Pattern matching result.                  |
 | params  | `{ readonly [k in string]?: string }`<br>URL matched parameters. |
 | route   | `string`<br> Route pathname.                                     |
 | pattern | `URLPattern`<br>URL pattern.                                     |

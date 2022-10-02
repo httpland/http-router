@@ -66,6 +66,7 @@ describe("URLRouter", () => {
       );
 
       expect(mock).toHaveBeenCalledWith({
+        result: new URLPattern({ "pathname": "/" }).exec("http://localhost/"),
         route: "/",
         params: {},
         pattern: new URLPattern({ pathname: "/" }),
@@ -132,6 +133,9 @@ describe("URLRouter", () => {
 
       expect(mock).toHaveBeenCalledWith({
         params: { id: "test" },
+        result: new URLPattern({ pathname: "/api/:id" }).exec(
+          "http://localhost/api/test",
+        ),
         route: "/api/test",
         pattern: new URLPattern({ pathname: "/api/:id" }),
       });
