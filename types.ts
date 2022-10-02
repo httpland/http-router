@@ -10,7 +10,9 @@ export type URLPatternRoute = readonly [
 ];
 
 /** `URLPattern` pattern matching definition. */
-export type URLPatternRoutes = readonly URLPatternRoute[];
+export type URLPatternRoutes =
+  | readonly URLPatternRoute[]
+  | Iterable<URLPatternRoute>;
 
 /** URL pathname pattern matching definition. */
 export interface PathnameRoutes {

@@ -1,6 +1,6 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-import { AssertionError, isTruthy, mapKeys } from "./deps.ts";
+import { AssertionError, isIterable, isTruthy, mapKeys } from "./deps.ts";
 import { PathnameRoutes } from "./types.ts";
 
 /** Nested URL pathname convertor.
@@ -106,12 +106,17 @@ function equalsProp<T extends PropertyKey, U extends { [k in T]: unknown }>(
 
 // deno-lint-ignore ban-types
 export function assertHasMember(value: {}): asserts value {
-  const descriptors = Object.getOwnPropertyDescriptors(value);
-
-  if (!Object.keys(descriptors).length) {
+  if (isEmpty(value)) {
     throw new AssertionError({
       actual: Deno.inspect(value),
       expect: "One or more members.",
     });
   }
+}
+
+// deno-lint-ignore ban-types
+function isEmpty(value: {}): boolean {
+  const members = isIterable(value) ? Array.from(value) : Object.keys(value);
+
+  return !members.length;
 }

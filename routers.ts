@@ -9,7 +9,13 @@ import {
   URLRouterConstructor,
   URLRoutes,
 } from "./types.ts";
-import { Handler, safeResponse, Status, STATUS_TEXT } from "./deps.ts";
+import {
+  Handler,
+  isIterable,
+  safeResponse,
+  Status,
+  STATUS_TEXT,
+} from "./deps.ts";
 import {
   assertHasMember,
   assertNotDuplicateBy,
@@ -153,7 +159,7 @@ function mapHttpHead(routes: HttpMethodRoutes): HttpMethodRoutes {
 }
 
 function urlPatternRouteFrom(routes: URLRoutes): Iterable<URLPatternRoute> {
-  return Array.isArray(routes)
+  return isIterable(routes)
     ? routes
     : Object.entries(routes).map(([pathname, handler]) =>
       [{ pathname }, handler] as const
