@@ -1,10 +1,7 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export {
-  isIterable,
-  isTruthy,
-} from "https://deno.land/x/isx@1.0.0-beta.21/mod.ts";
+export { isTruthy } from "https://deno.land/x/isx@1.0.0-beta.21/mod.ts";
 export {
   Status,
   STATUS_TEXT,

@@ -3,8 +3,18 @@
 
 import { Handler, HttpMethod } from "./deps.ts";
 
+/** Pair of {@link URLPattern} and {@link URLRouteHandler} . */
+export type URLPatternRoute = readonly [
+  pattern: URLPatternInit | URLPattern,
+  handler: URLRouteHandler,
+];
+
+/** `URLPattern` pattern matching definition. */
+export type URLPatternRoutes = readonly URLPatternRoute[];
+
 /** URL pathname pattern matching definition. */
 export interface PathnameRoutes {
+  /** Pair of pathname and {@link URLRouteHandler}. */
   readonly [k: string]: URLRouteHandler;
 }
 
@@ -17,17 +27,10 @@ export interface URLRouteHandler {
   ): Promise<Response> | Response;
 }
 
-/** Pattern matching pair with {@link URLPattern} . */
-export type URLPatternRoute = readonly [
-  pattern: URLPatternInit | URLPattern,
-  handler: URLRouteHandler,
-];
-
 /** URL pattern matching definition. */
 export type URLRoutes =
-  | PathnameRoutes
-  | readonly URLPatternRoute[]
-  | Iterable<URLPatternRoute>;
+  | URLPatternRoutes
+  | PathnameRoutes;
 
 /** URL route handler context. */
 export interface URLRouteHandlerContext {
