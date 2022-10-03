@@ -9,9 +9,15 @@ export {
   Status,
   STATUS_TEXT,
 } from "https://deno.land/std@0.157.0/http/http_status.ts";
+export { partition } from "https://deno.land/std@0.157.0/collections/partition.ts";
 export {
   type HttpHandler as Handler,
   type HttpMethod,
   safeResponse,
 } from "https://deno.land/x/http_utils@1.0.0-beta.3/mod.ts";
 export { AssertionError } from "https://deno.land/x/assertion@1.0.0-beta.1/mod.ts";
+export {
+  isOk,
+  Result,
+  unsafe,
+} from "https://deno.land/x/result_js@1.0.0/mod.ts";

@@ -224,7 +224,7 @@ const handler = MethodRouter({
 await serve(handler);
 ```
 
-## HEAD request handler
+### HEAD request handler
 
 By default, if a `GET` request handler is defined, a `HEAD` request handler is
 automatically added.
@@ -263,23 +263,7 @@ import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 const handler = MethodRouter({}, { withHead: false });
 ```
 
-## Error handling policy
-
-The router is a closure. It is designed to create handlers via initialization.
-
-During the initialization step, routes are examined, actively looking for errors
-and throwing errors.
-
-This ensures that the routes you define are semantically correct.
-
-Here are the conditions under which errors are thrown:
-
-- Duplicate pattern
-- Empty routes
-
-These are all semantic errors that cannot be eliminated by type checking alone.
-
-On the other hand, the handler created is guaranteed **not to throw errors**.
+## Detect error in router
 
 If your defined handler throws an error internally, it will be supplemented and
 safely return a `Response`.
@@ -289,8 +273,6 @@ Here is the default response on error.
 ```http
 HTTP/1.1 500 Internal Server Error
 ```
-
-### Detect error
 
 `onError` is called when an error is thrown internally by the handler. You may
 customize the error response.
