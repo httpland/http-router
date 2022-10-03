@@ -1,12 +1,39 @@
 import {
-  assertNotDuplicateBy,
   equalsURLPattern,
   intersectBy,
   isEmpty,
   joinPath,
   nest,
+  validateURLRoutes,
 } from "./utils.ts";
 import { describe, expect, Fn, it } from "./dev_deps.ts";
+
+const handler = () => new Response();
+
+Deno.test("validateURLRoutes should pass", () => {
+  const table: Fn<typeof validateURLRoutes>[] = [
+    [{}, true],
+    [{ "/": handler }, true],
+    [[[
+      {},
+      handler,
+    ]], true],
+    [[[
+      { pathname: "", hash: "" },
+      handler,
+    ], [{ pathname: "" }, handler]], true],
+
+    [{ "?": handler }, new AggregateError([])],
+    [[[
+      { pathname: "" },
+      handler,
+    ], [{ pathname: "" }, handler]], new TypeError()],
+  ];
+
+  table.forEach(([routes, expected]) => {
+    expect(validateURLRoutes(routes)).toEqual(expected);
+  });
+});
 
 Deno.test("joinPath should pass", () => {
   const table: [string[], string][] = [
@@ -98,17 +125,6 @@ Deno.test("equalsURLPattern should pass", () => {
 
   table.forEach(([left, right, expected]) => {
     expect(equalsURLPattern(left, right)).toBe(expected);
-  });
-});
-
-describe("assertNotDuplicateBy", () => {
-  it("should return undefined when the selector return false or the value is empty", () => {
-    expect(assertNotDuplicateBy([], () => true)).toBeUndefined();
-    expect(assertNotDuplicateBy([1, 1], () => false)).toBeUndefined();
-  });
-
-  it("should throw error when the selector return true", () => {
-    expect(() => assertNotDuplicateBy([1, 2, 1, 2], Object.is)).toThrow();
   });
 });
 
