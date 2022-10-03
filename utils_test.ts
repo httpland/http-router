@@ -161,16 +161,17 @@ describe("nest", () => {
     });
   });
 
-  it("should throw error when the routes is invalid", () => {
+  it("should override duplicated routes", () => {
     const handler = () => new Response();
+    const handler2 = () => new Response();
 
-    const table: Parameters<typeof nest>[] = [
-      ["/", { "": handler, "/": handler }],
-      ["/", { "/": handler, "//": handler }],
-      ["/", { "/a": handler, "///a": handler }],
+    const table: Fn<typeof nest>[] = [
+      ["/", { "": handler, "/": handler2 }, { "/": handler2 }],
+      ["/", { "/": handler, "//": handler2 }, { "/": handler2 }],
+      ["/", { "/a": handler, "///a": handler2 }, { "/a": handler2 }],
     ];
-    table.forEach(([root, routes]) => {
-      expect(() => nest(root, routes)).toThrow();
+    table.forEach(([root, routes, expected]) => {
+      expect(nest(root, routes)).toEqual(expected);
     });
   });
 });

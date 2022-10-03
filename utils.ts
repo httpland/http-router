@@ -4,6 +4,7 @@ import {
   AssertionError,
   isIterable,
   isTruthy,
+  mapKeys,
   Result,
   unsafe,
 } from "./deps.ts";
@@ -17,8 +18,6 @@ import {
 /** Nested URL pathname convertor.
  * It provides a hierarchy of routing tables.
  * You can define a tree structure with a depth of 1. To nest more, combine this.
- *
- * @throws `AggregateError`
  *
  * ```ts
  * import {
@@ -40,29 +39,7 @@ export function nest(
   root: string,
   routes: PathnameRoutes,
 ): PathnameRoutes {
-  const context = Object.entries(routes).map(([pathname, handler]) => {
-    const normalizedPath = joinPath(root, pathname);
-    return { handler, pathname, normalizedPath };
-  });
-  const normalizedPaths = context.map(lens("normalizedPath"));
-  const duplications = intersectBy(normalizedPaths, Object.is);
-  const errors = duplications.reduce((acc, cur) => {
-    const pathnames = context.filter(({ normalizedPath }) =>
-      Object.is(cur, normalizedPath)
-    ).map(lens("pathname"));
-
-    return [...acc, pathnames];
-  }, [] as string[][]).map(assertionErrorFrom);
-
-  if (errors.length) {
-    throw AggregateError(errors, "Invalid pathname in routes.");
-  }
-
-  const entries = context.map(({ handler, normalizedPath }) =>
-    [normalizedPath, handler] as const
-  );
-
-  return Object.fromEntries(entries);
+  return mapKeys(routes, (path) => joinPath(root, path));
 }
 
 /** Securely concatenate URL paths.
@@ -129,13 +106,6 @@ export function assertNotDuplicateBy<T>(
   }
 }
 
-function assertionErrorFrom(pathnames: string[]): AssertionError {
-  return new AssertionError({
-    actual: pathnames,
-    expect: "No same meaning pathname",
-  }, `Same meaning pathname. [${pathnames.join(", ")}]`);
-}
-
 /** Check `URLPattern` object equality. */
 export function equalsURLPattern(left: URLPattern, right: URLPattern): boolean {
   const props: readonly (keyof URLPattern)[] = [
@@ -177,10 +147,6 @@ export function isEmpty(value: {}): boolean {
   const members = isIterable(value) ? Array.from(value) : Object.keys(value);
 
   return !members.length;
-}
-
-function lens<U extends keyof T, T>(prop: U): (value: T) => T[U] {
-  return (value) => value[prop];
 }
 
 export function urlPatternRouteFrom(
