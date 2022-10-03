@@ -1,5 +1,7 @@
 import {
   equalsURLPattern,
+  inspect,
+  inspectURLPattern,
   intersectBy,
   nest,
   validateURLRoutes,
@@ -7,6 +9,26 @@ import {
 import { describe, expect, Fn, it } from "./dev_deps.ts";
 
 const handler = () => new Response();
+
+Deno.test("inspect should pass", () => {
+  const value = [new URLPattern({})];
+  expect(inspect(value)).toBe(Deno.inspect(value));
+});
+
+Deno.test("inspectURLPattern should pass", () => {
+  expect(inspectURLPattern(new URLPattern({}))).toBe(
+    String.raw`URLPattern {
+  protocol: "*",
+  username: "*",
+  password: "*",
+  hostname: "*",
+  port: "*",
+  pathname: "*",
+  search: "*",
+  hash: "*"
+}`,
+  );
+});
 
 Deno.test("validateURLRoutes should pass", () => {
   const table: Fn<typeof validateURLRoutes>[] = [

@@ -1,4 +1,5 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import {
   concatPath,
@@ -134,7 +135,7 @@ export function validateURLRoutes(
 
   if (intersections.length) {
     return new TypeError(
-      `Duplicate same meaning routes. ${Deno.inspect(intersections)}`,
+      `Duplicate same meaning routes. ${inspect(intersections)}`,
     );
   }
 
@@ -157,4 +158,34 @@ export function route2URLPatternRoute(
   return unsafe(
     () => [new URLPattern(route[0]), route[1]],
   );
+}
+
+export function inspectURLPattern(value: URLPattern): string {
+  const {
+    hash,
+    hostname,
+    protocol,
+    username,
+    password,
+    port,
+    pathname,
+    search,
+  } = value;
+
+  return `URLPattern {
+  protocol: "${protocol}",
+  username: "${username}",
+  password: "${password}",
+  hostname: "${hostname}",
+  port: "${port}",
+  pathname: "${pathname}",
+  search: "${search}",
+  hash: "${hash}"
+}`;
+}
+
+export function inspect(value: URLPattern[]): string {
+  return `[
+  ${value.map(inspectURLPattern).join(", \n  ")}
+]`;
 }
