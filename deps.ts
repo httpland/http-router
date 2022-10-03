@@ -16,7 +16,6 @@ export {
   type HttpMethod,
   safeResponse,
 } from "https://deno.land/x/http_utils@1.0.0-beta.3/mod.ts";
-export { AssertionError } from "https://deno.land/x/assertion@1.0.0-beta.1/mod.ts";
 export {
   isOk,
   Result,

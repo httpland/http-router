@@ -1,7 +1,6 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
 import {
-  AssertionError,
   isIterable,
   isOk,
   isTruthy,
@@ -108,23 +107,6 @@ function equalsProp<T extends PropertyKey, U extends { [k in T]: unknown }>(
   right: U,
 ): boolean {
   return left[prop] === right[prop];
-}
-
-// deno-lint-ignore ban-types
-export function assertHasMember(value: {}): asserts value {
-  if (isEmpty(value)) {
-    throw new AssertionError({
-      actual: Deno.inspect(value),
-      expect: "One or more members.",
-    });
-  }
-}
-
-// deno-lint-ignore ban-types
-export function isEmpty(value: {}): boolean {
-  const members = isIterable(value) ? Array.from(value) : Object.keys(value);
-
-  return !members.length;
 }
 
 /** Validate {@link URLRoutes}.

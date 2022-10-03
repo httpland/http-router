@@ -1,7 +1,6 @@
 import {
   equalsURLPattern,
   intersectBy,
-  isEmpty,
   joinPath,
   nest,
   validateURLRoutes,
@@ -189,32 +188,5 @@ describe("nest", () => {
     table.forEach(([root, routes, expected]) => {
       expect(nest(root, routes)).toEqual(expected);
     });
-  });
-});
-
-Deno.test("isEmpty should pass", () => {
-  const table: Fn<typeof isEmpty>[] = [
-    ["", true],
-    [{}, true],
-    [new Object(), true],
-    [[], true],
-    [0, true],
-    [Symbol(), true],
-    [new Map(), true],
-    [new Set(), true],
-    [new WeakMap(), true],
-    [new WeakSet(), true],
-
-    [" ", false],
-    ["a", false],
-    [new Object({ a: "" }), false],
-    [[,], false],
-    [[1], false],
-    [new Map([[1, 2]]), false],
-    [new Set([1]), false],
-  ];
-
-  table.forEach(([value, expected]) => {
-    expect(isEmpty(value)).toBe(expected);
   });
 });
