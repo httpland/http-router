@@ -1,10 +1,10 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
 import {
+  concatPath,
   head,
   isIterable,
   isOk,
-  isTruthy,
   partition,
   prop,
   Result,
@@ -42,25 +42,8 @@ export function nest(
   routes: PathnameRoutes,
 ): PathnameRoutes {
   return Object.entries(routes).reduceRight((acc, [path, handler]) => {
-    return { ...acc, [joinPath(root, path)]: handler };
+    return { ...acc, [concatPath(root, path)]: handler };
   }, {} as PathnameRoutes);
-}
-
-/** Securely concatenate URL paths.
- * The concatenation is free of duplicate slashes.
- * Empty segments are ignored.
- *
- * Behaves strictly according to the meaning of "concatenation".
- * Do nothing about anything other than the concatenation, e.g., head and tail slashes.
- */
-export function joinPath(...paths: readonly string[]): string {
-  const [head, ...tail] = paths.filter(isTruthy);
-
-  if (!head) return "";
-
-  return tail.reduce((acc, cur) => {
-    return acc.replaceAll(/\/+$/g, "") + "/" + cur.replaceAll(/^\/+/g, "");
-  }, head);
 }
 
 /** Returns all elements in the given value that produce a intersect value using the given selector. */

@@ -1,10 +1,7 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export {
-  isIterable,
-  isTruthy,
-} from "https://deno.land/x/isx@1.0.0-beta.22/mod.ts";
+export { isIterable } from "https://deno.land/x/isx@1.0.0-beta.22/mod.ts";
 export {
   Status,
   STATUS_TEXT,
@@ -19,6 +16,7 @@ export {
   Result,
   unsafe,
 } from "https://deno.land/x/result_js@1.0.0/mod.ts";
+export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
 
 export function prop<T extends keyof U, U>(key: T): (value: U) => U[T] {
   return (value) => value[key];

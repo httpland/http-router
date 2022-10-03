@@ -1,7 +1,6 @@
 import {
   equalsURLPattern,
   intersectBy,
-  joinPath,
   nest,
   validateURLRoutes,
 } from "./utils.ts";
@@ -32,28 +31,6 @@ Deno.test("validateURLRoutes should pass", () => {
   table.forEach(([routes, expected]) => {
     expect(validateURLRoutes(routes)).toEqual(expected);
   });
-});
-
-Deno.test("joinPath should pass", () => {
-  const table: [string[], string][] = [
-    [[""], ""],
-    [["", "", "", ""], ""],
-    [["////"], "////"],
-    [["//aaa//"], "//aaa//"],
-    [[" "], " "],
-    [["/", ""], "/"],
-    [["/", "/"], "/"],
-    [["////", ""], "////"],
-    [["/abc", "/abc/"], "/abc/abc/"],
-    [["//abc//", "abc"], "//abc/abc"],
-    [["abc", "abc"], "abc/abc"],
-    [["abc", "abc", "abc"], "abc/abc/abc"],
-    [["/abc/", "/abc/", "/abc/"], "/abc/abc/abc/"],
-    [["///abc/", "/abc/", "/abc///"], "///abc/abc/abc///"],
-    [["///abc///", "///abc///", "///abc///"], "///abc/abc/abc///"],
-  ];
-
-  table.forEach(([paths, result]) => expect(joinPath(...paths)).toBe(result));
 });
 
 Deno.test("equalsURLPattern should pass", () => {
@@ -164,7 +141,7 @@ describe("nest", () => {
       }],
       ["/api/", { "/hello/": handler, "//": handler }, {
         "/api/hello/": handler,
-        "/api/": handler,
+        "/api//": handler,
       }],
       ["", { "/a": handler, "/a//": handler }, {
         "/a": handler,
@@ -181,15 +158,26 @@ describe("nest", () => {
     const handler2 = () => new Response();
 
     const table: Fn<typeof nest>[] = [
+      ["", { "": handler, "/": handler2 }, { "": handler, "/": handler2 }],
       ["/", { "": handler, "/": handler2 }, { "/": handler }],
-      ["/", { "/": handler, "//": handler2 }, { "/": handler }],
-      ["/", { "/a": handler, "///a": handler2 }, { "/a": handler }],
+      ["/", { "/": handler, "//": handler2 }, { "/": handler, "//": handler2 }],
+      ["/", { "/a": handler, "///a": handler2 }, {
+        "/a": handler,
+        "///a": handler2,
+      }],
       ["/", {
         "/a": handler,
         "///a": handler2,
         "//a": handler2,
         "////a": handler2,
-      }, { "/a": handler }],
+      }, {
+        "/a": handler,
+        "///a": handler2,
+        "//a": handler2,
+        "////a": handler2,
+      }],
+      ["//", { "": handler, "/": handler2 }, { "//": handler }],
+      ["/", { "/a": handler, "a": handler2 }, { "/a": handler }],
     ];
     table.forEach(([root, routes, expected]) => {
       expect(nest(root, routes)).toEqual(expected);
