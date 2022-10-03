@@ -21,6 +21,7 @@ HTTP request router for standard `Request` and `Response`.
 - Automatically `HEAD` request handler
 - Nested route pathname
 - Tiny
+- Universal
 
 ## Packages
 
