@@ -1,11 +1,13 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
 import {
+  head,
   isIterable,
   isOk,
   isTruthy,
   mapKeys,
   partition,
+  prop,
   Result,
   unsafe,
 } from "./deps.ts";
@@ -138,12 +140,12 @@ export function validateURLRoutes(
   const [okResults, errorResults] = partition(entries, isOk);
 
   if (errorResults.length) {
-    const errors = errorResults.map((v) => v.value as TypeError);
+    const errors = errorResults.map(prop("value"));
 
     return AggregateError(errors, "Invalid URL pattern.");
   }
 
-  const urlPatterns = okResults.map((v) => (v.value as [URLPattern, any])[0]);
+  const urlPatterns = okResults.map(prop("value")).map(head);
   const intersections = intersectBy(urlPatterns, equalsURLPattern);
 
   if (intersections.length) {

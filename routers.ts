@@ -8,7 +8,14 @@ import {
   URLRouterConstructor,
   URLRoutes,
 } from "./types.ts";
-import { Handler, isOk, safeResponse, Status, STATUS_TEXT } from "./deps.ts";
+import {
+  Handler,
+  isOk,
+  prop,
+  safeResponse,
+  Status,
+  STATUS_TEXT,
+} from "./deps.ts";
 import { route2URLPatternRoute, urlPatternRouteFrom } from "./utils.ts";
 
 interface PatternMatchingCache {
@@ -40,7 +47,7 @@ interface PatternMatchingCache {
 export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
   const iterable = urlPatternRouteFrom(routes);
   const entries = Array.from(iterable).map(route2URLPatternRoute).filter(isOk)
-    .map((v) => v.value);
+    .map(prop("value"));
   const status = Status.NotFound;
   const response = new Response(null, {
     status,
