@@ -176,14 +176,20 @@ describe("nest", () => {
     });
   });
 
-  it("should override duplicated routes", () => {
+  it("should preference first pattern", () => {
     const handler = () => new Response();
     const handler2 = () => new Response();
 
     const table: Fn<typeof nest>[] = [
-      ["/", { "": handler, "/": handler2 }, { "/": handler2 }],
-      ["/", { "/": handler, "//": handler2 }, { "/": handler2 }],
-      ["/", { "/a": handler, "///a": handler2 }, { "/a": handler2 }],
+      ["/", { "": handler, "/": handler2 }, { "/": handler }],
+      ["/", { "/": handler, "//": handler2 }, { "/": handler }],
+      ["/", { "/a": handler, "///a": handler2 }, { "/a": handler }],
+      ["/", {
+        "/a": handler,
+        "///a": handler2,
+        "//a": handler2,
+        "////a": handler2,
+      }, { "/a": handler }],
     ];
     table.forEach(([root, routes, expected]) => {
       expect(nest(root, routes)).toEqual(expected);

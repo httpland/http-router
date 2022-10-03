@@ -5,7 +5,6 @@ import {
   isIterable,
   isOk,
   isTruthy,
-  mapKeys,
   partition,
   prop,
   Result,
@@ -42,7 +41,9 @@ export function nest(
   root: string,
   routes: PathnameRoutes,
 ): PathnameRoutes {
-  return mapKeys(routes, (path) => joinPath(root, path));
+  return Object.entries(routes).reduceRight((acc, [path, handler]) => {
+    return { ...acc, [joinPath(root, path)]: handler };
+  }, {} as PathnameRoutes);
 }
 
 /** Securely concatenate URL paths.
