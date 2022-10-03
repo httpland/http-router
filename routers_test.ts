@@ -1,16 +1,10 @@
 import { MethodRouter, URLRouter } from "./routers.ts";
-import { describe, expect, fn, it } from "./dev_deps.ts";
+import { anyFunction, describe, expect, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
 
 const handler = () => new Response();
 
 describe("URLRouter", () => {
-  it(
-    "should throw assertion error when the routes is empty",
-    () => {
-      expect(() => URLRouter({})).toThrow();
-    },
-  );
   it(
     "should return 404 when the matching is fail",
     async () => {
@@ -146,13 +140,13 @@ describe("URLRouter", () => {
   );
 
   it(
-    "should throw error when the route path is invalid",
+    "should not throw error when the route path is invalid",
     () => {
-      expect(() =>
+      expect(
         URLRouter({
           "https://api/:id": () => new Response(),
-        })
-      ).toThrow();
+        }),
+      ).toEqual(anyFunction());
     },
   );
 
@@ -180,25 +174,13 @@ describe("URLRouter", () => {
   );
 
   it(
-    `should throw when the route is deprecated`,
+    `should not throw error when the path is invalid`,
     () => {
-      expect(() =>
-        URLRouter([
-          [{ pathname: "" }, handler],
-          [{ pathname: "" }, handler],
-        ])
-      ).toThrow();
-    },
-  );
-
-  it(
-    `should throw error when the path is invalid`,
-    () => {
-      expect(() =>
+      expect(
         URLRouter({
           "+": handler,
-        })
-      ).toThrow();
+        }),
+      ).toEqual(anyFunction());
     },
   );
 

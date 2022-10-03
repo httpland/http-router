@@ -1,7 +1,18 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 
-import { AssertionError, isIterable, isTruthy } from "./deps.ts";
-import { PathnameRoutes } from "./types.ts";
+import {
+  AssertionError,
+  isIterable,
+  isTruthy,
+  Result,
+  unsafe,
+} from "./deps.ts";
+import {
+  PathnameRoutes,
+  URLPatternRoute,
+  URLRouteHandler,
+  URLRoutes,
+} from "./types.ts";
 
 /** Nested URL pathname convertor.
  * It provides a hierarchy of routing tables.
@@ -170,4 +181,22 @@ export function isEmpty(value: {}): boolean {
 
 function lens<U extends keyof T, T>(prop: U): (value: T) => T[U] {
   return (value) => value[prop];
+}
+
+export function urlPatternRouteFrom(
+  routes: URLRoutes,
+): Iterable<URLPatternRoute> {
+  return isIterable(routes)
+    ? routes
+    : Object.entries(routes).map(([pathname, handler]) =>
+      [{ pathname }, handler] as const
+    );
+}
+
+export function route2URLPatternRoute(
+  route: URLPatternRoute,
+): Result<[URLPattern, URLRouteHandler], TypeError> {
+  return unsafe(
+    () => [new URLPattern(route[0]), route[1]],
+  );
 }
