@@ -198,9 +198,9 @@ const api = nest("/api", {
 const handler = URLRouter({ ...api, "/": routeHandler });
 ```
 
-#### Joining path segment
+#### Concatenate path segment
 
-Path segments are joined without overlapping slashes.
+Path segments are concatenated with slashes.
 
 ```ts
 import { nest } from "https://deno.land/x/http_router@$VERSION/mod.ts";
@@ -208,11 +208,13 @@ import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts"
 
 const routeHandler = () => new Response();
 assertEquals(
-  nest("api/", {
+  nest("/api", {
     "/hello": routeHandler,
+    "status/": routeHandler,
   }),
   {
-    "api/hello": routeHandler,
+    "/api/hello": routeHandler,
+    "/api/status/": routeHandler,
   },
 );
 ```
@@ -221,12 +223,12 @@ assertEquals(
 
 The routing table defined in nest may have duplicate url patterns in some cases.
 
-As seen in [Joining path segment](#joining-path-segment), segment slashes are
-safely handled. This results in the following definitions being identical
+As seen in [Concatenate path segment](#concatenate-path-segment), segment
+slashes are safely handled. This results in the following definitions being
+identical
 
 - branch
 - `/`branch
-- `//`branch ...
 
 These are converted to the following pathname:
 
