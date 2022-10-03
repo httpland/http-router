@@ -234,8 +234,9 @@ These are converted to the following pathname:
 
 In this case, the routing table is ambiguous.
 
-Route with the same pattern always take precedence over the **last** declared
-route.
+Route with the same pattern always take precedence **first** declared route.
+
+This is because pattern matching is done from top to bottom.
 
 ## HTTP request method router
 

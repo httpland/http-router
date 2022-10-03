@@ -9,7 +9,6 @@ export {
   Status,
   STATUS_TEXT,
 } from "https://deno.land/std@0.157.0/http/http_status.ts";
-export { mapKeys } from "https://deno.land/std@0.157.0/collections/map_keys.ts";
 export {
   type HttpHandler as Handler,
   type HttpMethod,
