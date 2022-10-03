@@ -1,3 +1,19 @@
+# [2.0.0-beta.3](https://github.com/httpland/http-router/compare/2.0.0-beta.2...2.0.0-beta.3) (2022-10-03)
+
+
+### Bug Fixes
+
+* **utils:** change priority of overlapping routes ([6c921a0](https://github.com/httpland/http-router/commit/6c921a066461d30f09fb0fb8eb225ba10790a3c7))
+
+
+### Features
+
+* **router:** delete validating routes and throwing error ([9841c78](https://github.com/httpland/http-router/commit/9841c783a2ccf84d603bad888602bb96c313c9dc)), closes [#21](https://github.com/httpland/http-router/issues/21)
+* **utils:** add validation for url routes ([cfe13eb](https://github.com/httpland/http-router/commit/cfe13eb9478dc945824c47fc40ccb03b5a997ca5))
+* **utils:** change concatenate url path logic ([d9b120f](https://github.com/httpland/http-router/commit/d9b120fe187b2b8686d38f023e880f8d13ea8bf3))
+* **utils:** remove validation and throwing logic from `nest` ([dbfb1d2](https://github.com/httpland/http-router/commit/dbfb1d2490cb64ca0b810fe84128dd33aab3af45)), closes [#21](https://github.com/httpland/http-router/issues/21)
+* **utils:** use custom inspect instead of `Deno.inspect` ([b7553c0](https://github.com/httpland/http-router/commit/b7553c0b43db9f4816d5973f411ba65480a977bf)), closes [#22](https://github.com/httpland/http-router/issues/22)
+
 # [2.0.0-beta.2](https://github.com/httpland/http-router/compare/2.0.0-beta.1...2.0.0-beta.2) (2022-10-02)
 
 
