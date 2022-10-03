@@ -241,6 +241,15 @@ Route with the same pattern always take precedence **first** declared route.
 
 This is because pattern matching is done from top to bottom.
 
+### Pattern matching performance
+
+Pattern matching is done from top to bottom. The computational complexity is
+usually `O(n)`.
+
+Pattern matching is done on URLs, so they are safely cached.
+
+Already matched URL patterns have `O(1)` complexity.
+
 ## HTTP request method router
 
 `MethodRouter` provides routing between HTTP request methods and handlers.
@@ -346,14 +355,7 @@ responses:
 All APIs can be found in the
 [deno doc](https://doc.deno.land/https/deno.land/x/http_router/mod.ts).
 
-## Performance
-
-version 1.2 or later
-
-Caches URL matching results internally. This speeds up the response time for
-requests that have already been matched by `^20X`.
-
-### Benchmark
+## Benchmark
 
 Benchmark script with comparison to several popular routers is available.
 
@@ -365,6 +367,8 @@ Benchmark results can be found
 [here](https://github.com/httpland/http-router/actions/runs/3043238906/jobs/4902286626#step:4:60).
 
 ## Related
+
+More detailed references:
 
 - [Term definition](https://github.com/httpland/http-router/wiki/Term-definition)
 
