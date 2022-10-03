@@ -371,6 +371,7 @@ Benchmark results can be found
 More detailed references:
 
 - [Term definition](https://github.com/httpland/http-router/wiki/Term-definition)
+- [Developer's Guide](https://github.com/httpland/http-router/wiki/Developer's-Guide)
 
 ### Recipes
 
