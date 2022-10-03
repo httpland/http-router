@@ -16,7 +16,7 @@ HTTP request router for standard `Request` and `Response`.
 - Based on
   [URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API)
 - Web standard API compliant
-- Declarative interface
+- Declarative
 - Functional programing pattern matching style
 - Automatically `HEAD` request handler
 - Nested route pathname
@@ -28,25 +28,6 @@ The package supports multiple platforms.
 
 - deno.land/x - `https://deno.land/x/http_router/mod.ts`
 - npm - `@httpland/http-router`
-
-## Term definition
-
-<dl>
-
-<dt>Handler</dt>
-<dd>HTTP request handler that converts request to response.</dd>
-
-<dt>Route</dt>
-<dd>The relationship between the pattern and the handler.</dd>
-
-<dt>Routes</dt>
-<dd>Routing table. A set of routes.</dd>
-
-<dt>Router</dt>
-<dd>A handler generator, which generates it from routes.
-It also verifies routes and reports errors appropriately.</dd>
-
-</dl>
 
 ## URL router
 
@@ -365,9 +346,11 @@ deno task bench
 Benchmark results can be found
 [here](https://github.com/httpland/http-router/actions/runs/3043238906/jobs/4902286626#step:4:60).
 
-## Recipes
+## Related
 
-http-router can be used with any module.
+- [Term definition](https://github.com/httpland/http-router/wiki/Term-definition)
+
+### Recipes
 
 - [router + compress](./_exmaples/../_examples/compress.ts)
 
