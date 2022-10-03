@@ -1,4 +1,10 @@
+<div align="center">
+
 # http-router
+
+<img src="_media/logo.svg" width="180px" height="180px" alt="logo">
+
+HTTP request router for standard `Request` and `Response`.
 
 [![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/http_router)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/http_router/mod.ts)
@@ -9,7 +15,9 @@
 [![test](https://github.com/httpland/http-router/actions/workflows/test.yaml/badge.svg)](https://github.com/httpland/http-router/actions/workflows/test.yaml)
 [![NPM](https://nodei.co/npm/@httpland/http-router.png?mini=true)](https://nodei.co/npm/@httpland/http-router/)
 
-HTTP request router for standard `Request` and `Response`.
+</div>
+
+---
 
 ## Features
 
