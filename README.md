@@ -380,6 +380,35 @@ More detailed references:
 
 ### Recipes
 
+#### URLRouter + MethodRouter
+
+URLRouter and MethodRouter are independent, but will often be used together.
+
+```ts
+import {
+  MethodRouter as $,
+  URLRouter,
+  URLRoutes,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const routeHandler = () => new Response();
+const routes: URLRoutes = {
+  "/": $({
+    GET: routeHandler,
+  }),
+  "/api/status/?": routeHandler,
+  "/api/users/:id/?": (request, { params }) => {
+    // params.id!
+    return $({
+      POST: routeHandler,
+    })(request);
+  },
+};
+const handler = URLRouter(routes);
+```
+
+#### Others
+
 - [router + compress](./_exmaples/../_examples/compress.ts)
 
 ## License
