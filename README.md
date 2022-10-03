@@ -159,6 +159,11 @@ const handler = URLRouter(routes);
 The validate function returns `true` in case of success, or an object
 representing the contents of the `Error` in case of failure.
 
+Invalid route means the following:
+
+- Invalid `URLPattern`
+- Duplicate `URLPattern`
+
 You are completely free to do this or not.
 
 ### Nested route pathname
