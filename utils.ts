@@ -3,8 +3,10 @@
 import {
   AssertionError,
   isIterable,
+  isOk,
   isTruthy,
   mapKeys,
+  partition,
   Result,
   unsafe,
 } from "./deps.ts";
@@ -82,30 +84,6 @@ export function intersectBy<T>(
   return ret;
 }
 
-/** Assert the value is no duplicates. */
-export function assertNotDuplicateBy<T>(
-  value: Iterable<T>,
-  selector: (current: T, prev: T) => boolean,
-): asserts value {
-  const intersections = intersectBy(value, selector);
-
-  if (intersections.length) {
-    throw new AssertionError(
-      {
-        actual: intersections,
-        expect: "No duplication",
-      },
-      `Assertion is fail.
-
-  Actual duplications:
-    ${Deno.inspect(intersections)}
-  Expected:
-    No duplication
-`,
-    );
-  }
-}
-
 /** Check `URLPattern` object equality. */
 export function equalsURLPattern(left: URLPattern, right: URLPattern): boolean {
   const props: readonly (keyof URLPattern)[] = [
@@ -147,6 +125,52 @@ export function isEmpty(value: {}): boolean {
   const members = isIterable(value) ? Array.from(value) : Object.keys(value);
 
   return !members.length;
+}
+
+/** Validate {@link URLRoutes}.
+ *
+ * ```ts
+ * import {
+ *   URLRouter,
+ *   URLRoutes,
+ *   validateURLRoutes,
+ * } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+ *
+ * const routes: URLRoutes = {
+ *   "?": () => new Response(),
+ * };
+ * const result = validateURLRoutes(routes);
+ *
+ * if (result !== true) {
+ *   // do something
+ * }
+ *
+ * const handler = URLRouter(routes);
+ * ```
+ */
+export function validateURLRoutes(
+  routes: URLRoutes,
+): true | AggregateError | TypeError {
+  const iterable = urlPatternRouteFrom(routes);
+  const entries = Array.from(iterable).map(route2URLPatternRoute);
+  const [okResults, errorResults] = partition(entries, isOk);
+
+  if (errorResults.length) {
+    const errors = errorResults.map((v) => v.value as TypeError);
+
+    return AggregateError(errors, "Invalid URL pattern.");
+  }
+
+  const urlPatterns = okResults.map((v) => (v.value as [URLPattern, any])[0]);
+  const intersections = intersectBy(urlPatterns, equalsURLPattern);
+
+  if (intersections.length) {
+    return new TypeError(
+      `Duplicate same meaning routes. ${Deno.inspect(intersections)}`,
+    );
+  }
+
+  return true;
 }
 
 export function urlPatternRouteFrom(
