@@ -51,7 +51,7 @@ jobs:
         if: ${{ matrix.deno == 'v1.x' }}
         run: deno task coverage coverage --output=cov_profile.lcov --lcov
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         if: ${{ matrix.deno == 'v1.x' }}
         with:
           files: cov_profile.lcov
