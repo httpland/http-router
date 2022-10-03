@@ -3,7 +3,7 @@
 
 import { Handler, HttpMethod } from "./deps.ts";
 
-/** Pair of {@link URLPattern} and {@link URLRouteHandler} . */
+/** Pair of `URLPattern` and {@link URLRouteHandler} . */
 export type URLPatternRoute = readonly [
   pattern: URLPatternInit | URLPattern,
   handler: URLRouteHandler,
