@@ -183,7 +183,7 @@ assertEquals(
 );
 ```
 
-#### Error pattern
+#### Ambiguous pattern
 
 The routing table defined in nest may have duplicate url patterns in some cases.
 
@@ -198,12 +198,10 @@ These are converted to the following pathname:
 
 `[root]/branch`
 
-In this case, the routing table is ambiguous. `nest` will throw an error if it
-finds an ambiguous routing table.
+In this case, the routing table is ambiguous.
 
-This eliminates ambiguous patterns and protects you from unexpected behavior.
-
-`AggregateError` will inform you of the details of the error.
+Route with the same pattern always take precedence over the **last** declared
+route.
 
 ## HTTP request method router
 
