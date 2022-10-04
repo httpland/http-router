@@ -1,43 +1,45 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export {
-  isFunction,
-  isString,
-  isTruthy,
-} from "https://deno.land/x/isx@1.0.0-beta.21/mod.ts";
+export { isIterable } from "https://deno.land/x/isx@1.0.0-beta.22/mod.ts";
 export {
   Status,
   STATUS_TEXT,
-} from "https://deno.land/std@0.155.0/http/http_status.ts";
+} from "https://deno.land/std@0.157.0/http/http_status.ts";
 export {
-  partition,
-} from "https://deno.land/std@0.155.0/collections/partition.ts";
-export { mapValues } from "https://deno.land/std@0.155.0/collections/map_values.ts";
-export { groupBy } from "https://deno.land/std@0.155.0/collections/group_by.ts";
-export { distinctBy } from "https://deno.land/std@0.155.0/collections/distinct_by.ts";
+  type HttpHandler as Handler,
+  type HttpMethod,
+  safeResponse,
+} from "https://deno.land/x/http_utils@1.0.0-beta.3/mod.ts";
+export {
+  isOk,
+  Result,
+  unsafe,
+} from "https://deno.land/x/result_js@1.0.0/mod.ts";
+export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
 
-export function isEmptyObject(value: unknown): value is Record<never, never> {
-  return !Object.getOwnPropertyNames(value).length &&
-    !Object.getOwnPropertySymbols(value).length;
+export function prop<T extends keyof U, U>(key: T): (value: U) => U[T] {
+  return (value) => value[key];
 }
 
-export function duplicateBy<T>(
-  value: Iterable<T>,
-  selector: (el: T, prev: T) => boolean,
-): T[] {
-  const selectedValues: T[] = [];
-  const ret: T[] = [];
+export function partition<T, U extends T>(
+  array: readonly T[],
+  predicate: (el: T) => el is U,
+): [U[], Exclude<T, U>[]] {
+  const matches: Array<U> = [];
+  const rest: Array<Exclude<T, U>> = [];
 
-  for (const element of value) {
-    const has = selectedValues.some((v) => selector(element, v));
-
-    if (has) {
-      ret.push(element);
+  for (const element of array) {
+    if (predicate(element)) {
+      matches.push(element);
     } else {
-      selectedValues.push(element);
+      rest.push(element as Exclude<T, U>);
     }
   }
 
-  return ret;
+  return [matches, rest];
+}
+
+export function head<T extends readonly unknown[]>(array: T): T[0] {
+  return array[0];
 }

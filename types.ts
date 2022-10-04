@@ -1,29 +1,82 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** HTTP request method.
- *
- * @deprecated rename to {@link HttpMethod}
- */
-export type Method =
-  /** RFC 9110, 9.3.1 */
-  | "GET"
-  /** RFC 9110, 9.3.2 */
-  | "HEAD"
-  /** RFC 9110, 9.3.3 */
-  | "POST"
-  /** RFC 9110, 9.3.4 */
-  | "PUT"
-  /** RFC 9110, 9.3.5 */
-  | "DELETE"
-  /** RFC 9110, 9.3.6 */
-  | "CONNECT"
-  /** RFC 9110, 9.3.7 */
-  | "OPTIONS"
-  /** RFC 9110, 9.3.8 */
-  | "TRACE"
-  /** RFC 5789 */
-  | "PATCH";
+import { Handler, HttpMethod } from "./deps.ts";
 
-/** HTTP request method. */
-export type HttpMethod = Method;
+/** Pair of `URLPattern` and {@link URLRouteHandler} . */
+export type URLPatternRoute = readonly [
+  pattern: URLPatternInit | URLPattern,
+  handler: URLRouteHandler,
+];
+
+/** `URLPattern` pattern matching definition. */
+export type URLPatternRoutes =
+  | readonly URLPatternRoute[]
+  | Iterable<URLPatternRoute>;
+
+/** URL pathname pattern matching definition. */
+export interface PathnameRoutes {
+  /** Pair of pathname and {@link URLRouteHandler}. */
+  readonly [k: string]: URLRouteHandler;
+}
+
+/** Handler for URL routes. */
+export interface URLRouteHandler {
+  /** Handler with context. */
+  (
+    request: Request,
+    context: URLRouteHandlerContext,
+  ): Promise<Response> | Response;
+}
+
+/** URL pattern matching definition. */
+export type URLRoutes =
+  | URLPatternRoutes
+  | PathnameRoutes;
+
+/** URL route handler context. */
+export interface URLRouteHandlerContext {
+  /** URL pattern. */
+  readonly pattern: URLPattern;
+
+  /** Pattern matching result. */
+  readonly result: URLPatternResult;
+
+  /** URL matched parameters.
+   * Alias for `result.pathname.groups`. */
+  readonly params: URLPatternResult["pathname"]["groups"];
+}
+
+/** HTTP method matched pattern definition. */
+export type HttpMethodRoutes = {
+  readonly [k in HttpMethod]?: Handler;
+};
+
+/** Router options. */
+export interface RouterOptions {
+  /** The handler to invoke when route handlers throw an error. */
+  readonly onError?: (error: unknown) => Promise<Response> | Response;
+}
+
+/** HTTP method router options. */
+export interface MethodRouterOptions extends RouterOptions {
+  /** If a `GET` handler is defined, it will be used to generate a response to the `HEAD` request.
+   *
+   * This feature is based on RFC 9110, 9.1
+   * > All general-purpose servers MUST support the methods GET and HEAD.
+   * @default true
+   */
+  readonly withHead?: boolean;
+}
+
+/** `URLRouter` constructor. */
+export interface URLRouterConstructor {
+  /** HTTP request URL pattern matching definition. */
+  (routes: URLRoutes, options?: RouterOptions): Handler;
+}
+
+/** `MethodRouter` constructor. */
+export interface MethodRouterConstructor {
+  /** HTTP request method pattern matching definition. */
+  (routes: HttpMethodRoutes, options?: MethodRouterOptions): Handler;
+}

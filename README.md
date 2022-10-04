@@ -1,4 +1,10 @@
+<div align="center">
+
 # http-router
+
+<img src="https://github.com/httpland/http-router/blob/main/_media/logo.svg" width="180px" height="180px" alt="logo">
+
+HTTP request router for standard `Request` and `Response`.
 
 [![deno land](http://img.shields.io/badge/available%20on-deno.land/x-lightgrey.svg?logo=deno)](https://deno.land/x/http_router)
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/http_router/mod.ts)
@@ -9,14 +15,21 @@
 [![test](https://github.com/httpland/http-router/actions/workflows/test.yaml/badge.svg)](https://github.com/httpland/http-router/actions/workflows/test.yaml)
 [![NPM](https://nodei.co/npm/@httpland/http-router.png?mini=true)](https://nodei.co/npm/@httpland/http-router/)
 
-HTTP request router for standard `Request` and `Response`.
+</div>
+
+---
+
+## Features
 
 - Based on
   [URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API)
-- Tiny, lean
-- Nested route
+- Web standard API compliant
+- Declarative
+- Functional programing pattern matching style
 - Automatically `HEAD` request handler
-- Debug mode
+- Nested route pathname
+- Tiny
+- Universal
 
 ## Packages
 
@@ -25,119 +38,91 @@ The package supports multiple platforms.
 - deno.land/x - `https://deno.land/x/http_router/mod.ts`
 - npm - `@httpland/http-router`
 
-## HTTP router
+## URL router
 
-Create HTTP request router with URL pattern and method handler map.
+`URLRouter` provides routing between URLs and handlers.
+
+It accepts the `URLPattern API` as is. This means that various url patterns can
+be matched.
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
-const router = createRouter({
-  "/api/students/:name": {
-    GET: (req, ctx) => {
-      const greeting = `Hello! ${ctx.params.name!}`;
-      return new Response(greeting);
-    },
-  },
-  "/api/status": () => new Response("OK"), // Any HTTP request method
-});
-await serve(router);
+
+const handler = URLRouter([
+  [{ pathname: "/" }, () => new Response("Home")],
+  [
+    { password: "admin", pathname: "/admin" },
+    (request, context) => new Response("Hello admin!"),
+  ],
+]);
+
+await serve(handler);
 ```
 
-## Route handler context
+It accepts a set of `URLPatternInit` and handlers wrapped by `Iterable` object.
 
-The route handler receives the following context.
-
-| Name    | Description                                                      |
-| ------- | ---------------------------------------------------------------- |
-| params  | `{ readonly [k in string]?: string }`<br>URL matched parameters. |
-| route   | `string`<br> Route pathname.                                     |
-| pattern | `URLPattern`<br>URL pattern.                                     |
-
-## Nested route
-
-Nested route is supported.
-
-The nested root is a flat route syntax sugar. Nesting can be as deep as desired.
+In other words, it is not limited to arrays.
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-createRouter({
-  "/api": {
-    "status": () => new Response("OK"),
-    "hello": {
-      GET: () => new Response("world!"),
-    },
-  },
-});
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const handler = URLRouter(
+  new Map([
+    [{ pathname: "/" }, () => new Response("Home")],
+  ]),
+);
 ```
 
-This matches the following pattern:
+### Pathname routes
 
-- /api/status
-- [GET] /api/hello
-- [HEAD] /api/hello (if [withHead](#head-request-handler) is not `false`)
+URLPattern routes are the most expressive, but somewhat verbose. URL pattern
+matching is usually done using `pathname`.
 
-### Joining path segment
-
-Path segments are joined without overlapping slashes.
-
-The result is the same with or without slashes between path segments.
+URLRouter supports URL pattern matching with `pathname` as a first class.
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-createRouter({
-  "/api": {
-    "status": () => new Response("OK"),
-    "/status": () => new Response("OK"),
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const handler = URLRouter({
+  "/api/students/:name": (request, context) => {
+    const greeting = `Hello! ${context.params.name!}`;
+    return new Response(greeting);
   },
   "/api/status": () => new Response("OK"),
 });
 ```
 
-They all represent the same URL pattern.
-
-## Throwing error
-
-Routers may throw an error during initialization.
-
-If an error is detected in the user-defined routing table, an error is thrown.
-
-Error in the routing table:
-
-- Duplicate route
-- Duplicate route and HTTP method pairs
-
-These prevent you from writing multiple routing tables with the same meaning and
-protect you from unexpected bugs.
-
-Throwing error patterns:
+same as:
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-createRouter({
-  "/api": {
-    "status": () => new Response("OK"),
-    "/status": () => new Response("OK"),
-  },
-  "/api/status": () => new Response("OK"),
-}); // duplicate /api/status
-createRouter({
-  "/api": {
-    "status": {
-      GET: () => new Response("OK"),
-    },
-  },
-  "/api/status": {
-    GET: () => new Response("OK"),
-  },
-}); // duplicate [GET] /api/status
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const handler = URLRouter(
+  [
+    [
+      { pathname: "/api/students/:name" },
+      (request, context) => {
+        const greeting = `Hello! ${context.params.name!}`;
+        return new Response(greeting);
+      },
+    ],
+    [{ pathname: "/api/status" }, () => new Response("OK")],
+  ],
+);
 ```
 
-router detects as many errors as possible and throws errors. In this case, it
-throws `AggregateError`, which has `RouterError` as a child.
+### URL Route handler context
 
-## URL match pattern
+The URL route handler receives the following context.
+
+| Name    | Description                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------- |
+| pattern | `URLPattern`<br>URL pattern.                                                                            |
+| result  | `URLPatternResult`<br> Pattern matching result.                                                         |
+| params  | `URLPatternResult["pathname"]["groups"]`<br>URL matched parameters. Alias for `result.pathname.groups`. |
+
+### URL match pattern
 
 URL patterns can be defined using the
 [URL pattern API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API).
@@ -150,7 +135,154 @@ URL patterns can be defined using the
 - RegExp groups (`/books/(\\d+)`) which make arbitrarily complex regex matches
   with a few limitations.
 
-## HEAD request handler
+### Check routes validity
+
+The router **never throws** an error. If the route is invalid, it will be
+eliminated just.
+
+To make sure that URLRoutes are valid in advance, you can use the validate
+function.
+
+For example, `?` as pathname is an invalid pattern.
+
+```ts
+import {
+  URLRouter,
+  URLRoutes,
+  validateURLRoutes,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const routes: URLRoutes = {
+  "?": () => new Response(),
+};
+const result = validateURLRoutes(routes);
+
+if (result !== true) {
+  // do something
+}
+
+const handler = URLRouter(routes);
+```
+
+The validate function returns `true` in case of success, or an object
+representing the contents of the `Error` in case of failure.
+
+Invalid route means the following:
+
+- Invalid `URLPattern`
+- Duplicate `URLPattern`
+
+You are completely free to do this or not.
+
+### Nested route pathname
+
+`nest` is nested URL pathname convertor. It provides a hierarchy of routing
+tables.
+
+Hierarchical definitions are converted to flat definitions.
+
+You can define a tree structure with a depth of 1. To nest more, combine it.
+
+Example of a routing table matching the following URL:
+
+- /
+- /api/v1/users
+- /api/v1/products
+- /api/v2/users
+- /api/v2/products
+
+```ts
+import {
+  nest,
+  URLRouter,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const routeHandler = () => new Response();
+const v2 = nest("v2", {
+  users: routeHandler,
+  products: routeHandler,
+});
+const api = nest("/api", {
+  ...nest("v1", {
+    users: routeHandler,
+    products: routeHandler,
+  }),
+  ...v2,
+});
+const handler = URLRouter({ ...api, "/": routeHandler });
+```
+
+#### Concatenate path segment
+
+Path segments are concatenated with slashes.
+
+```ts
+import { nest } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+
+const routeHandler = () => new Response();
+assertEquals(
+  nest("/api", {
+    "/hello": routeHandler,
+    "status/": routeHandler,
+  }),
+  {
+    "/api/hello": routeHandler,
+    "/api/status/": routeHandler,
+  },
+);
+```
+
+#### Ambiguous pattern
+
+The routing table defined in nest may have duplicate url patterns in some cases.
+
+As seen in [Concatenate path segment](#concatenate-path-segment), segment
+slashes are safely handled. This results in the following definitions being
+identical
+
+- branch
+- `/`branch
+
+These are converted to the following pathname:
+
+`[root]/branch`
+
+In this case, the routing table is ambiguous.
+
+Route with the same pattern always take precedence **first** declared route.
+
+This is because pattern matching is done from top to bottom.
+
+### Pattern matching performance
+
+Pattern matching is done from top to bottom. The computational complexity is
+usually `O(n)`.
+
+Pattern matching is done on URLs, so they are safely cached.
+
+Already matched URL patterns have `O(1)` complexity.
+
+## HTTP request method router
+
+`MethodRouter` provides routing between HTTP request methods and handlers.
+
+```ts
+import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
+
+const handler = MethodRouter({
+  GET: () => new Response("From GET"),
+  POST: async (request) => {
+    const data = await request.json();
+    return new Response("Received data!");
+  },
+});
+
+await serve(handler);
+```
+
+### HEAD request handler
 
 By default, if a `GET` request handler is defined, a `HEAD` request handler is
 automatically added.
@@ -160,102 +292,83 @@ This feature is based on RFC 9110, 9.1
 > All general-purpose servers MUST support the methods GET and HEAD.
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
 import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
-const router = createRouter({
-  "/": {
-    GET: (req) => {
-      const body = `Hello! world`;
-      return new Response(body, {
-        headers: {
-          "content-length": new Blob([body]).size.toString(),
-        },
-      });
-    },
+
+const handler = MethodRouter({
+  GET: () => {
+    const body = `Hello! world`;
+    return new Response(body, {
+      headers: {
+        "content-length": new Blob([body]).size.toString(),
+      },
+    });
   },
 });
+const request = new Request("http://localhost", { method: "HEAD" });
+const response = await handler(request);
 
-const req = new Request("http://localhost", { method: "HEAD" });
-const res = await router(req);
-assertEquals(res.body, null);
-assertEquals(res.headers.get("content-length"), "12");
+assertEquals(response.body, null);
+assertEquals(response.headers.get("content-length"), "12");
 ```
 
 This can be disabled by setting `withHead` to `false`.
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-createRouter({}, { withHead: false });
+import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const handler = MethodRouter({}, { withHead: false });
 ```
 
-## Handle base path
+## Detect error in router
 
-Change the router base path.
+If your defined handler throws an error internally, it will be supplemented and
+safely return a `Response`.
 
-Just as you could use baseURL or base tags on the Web, you can change the
-`basePath` of your router.
+Here is the default response on error.
+
+```http
+HTTP/1.1 500 Internal Server Error
+```
+
+`onError` is called when an error is thrown internally by the handler. You may
+customize the error response.
 
 ```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
-const api = createRouter({
-  "/hello": () => new Response("world"),
-}, { basePath: "/api" });
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 
-const res = await api(new Request("http://localhost/api/hello"));
-assertEquals(res.ok, true);
+const handler = URLRouter({
+  "/": () => {
+    throw Error("oops");
+  },
+}, {
+  onError: (error) => {
+    console.error(error);
+    return new Response("Something wrong :(", {
+      status: 500,
+    });
+  },
+});
 ```
-
-The `basePath` and route path are merged without overlapping slashes.
-
-## Debug
-
-If an error occurs internally, router always catch the error.
-
-In this case, the response status code will automatically be 500, but no further
-information is provided.
-
-Normally, details of unexpected errors should not be disclosed in production.
-
-If you are in development and want to know what happened when an error occurs,
-you can use the `debug` flag.
-
-```ts
-import { createRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-createRouter({
-  "*": () => Promise.reject(Error("Something wrong")),
-}, { debug: true });
-```
-
-The response body contains a string serializing the errors caught.
-
-Again, this should not be used in production.
 
 ## Spec
 
 In addition to user-defined responses, routers may return the following
 responses:
 
-| Status | Headers                               | Condition                             |
-| ------ | ------------------------------------- | ------------------------------------- |
-| 404    |                                       | If not all route paths match.         |
-| 405    | `allow`                               | If no HTTP method handler is defined. |
-| 500    | `content-type` (if `debug` is `true`) | If an internal error occurs.          |
+| Status | Headers | Condition                                                   |
+| ------ | ------- | ----------------------------------------------------------- |
+| 404    |         | `URLRouter`<br>If not all url pattern match.                |
+| 405    | `allow` | `MethodRouter`<br>If HTTP method handler is not defined.    |
+| 500    |         | `URLRouter`, `MethodRouter`<br>If an internal error occurs. |
 
 ## API
 
 All APIs can be found in the
 [deno doc](https://doc.deno.land/https/deno.land/x/http_router/mod.ts).
 
-## Performance
-
-version 1.2 or later
-
-Caches URL matching results internally. This speeds up the response time for
-requests that have already been matched by `^20X`.
-
-### Benchmark
+## Benchmark
 
 Benchmark script with comparison to several popular routers is available.
 
@@ -265,6 +378,46 @@ deno task bench
 
 Benchmark results can be found
 [here](https://github.com/httpland/http-router/actions/runs/3043238906/jobs/4902286626#step:4:60).
+
+## Related
+
+More detailed references:
+
+- [Term definition](https://github.com/httpland/http-router/wiki/Term-definition)
+- [Developer's Guide](https://github.com/httpland/http-router/wiki/Developer's-Guide)
+
+### Recipes
+
+#### URLRouter + MethodRouter
+
+URLRouter and MethodRouter are independent, but will often be used together.
+
+```ts
+import {
+  MethodRouter as $,
+  URLRouter,
+  URLRoutes,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const routeHandler = () => new Response();
+const routes: URLRoutes = {
+  "/": $({
+    GET: routeHandler,
+  }),
+  "/api/status/?": routeHandler,
+  "/api/users/:id/?": (request, { params }) => {
+    // params.id!
+    return $({
+      POST: routeHandler,
+    })(request);
+  },
+};
+const handler = URLRouter(routes);
+```
+
+#### Others
+
+- [router + compress](./_exmaples/../_examples/compress.ts)
 
 ## License
 

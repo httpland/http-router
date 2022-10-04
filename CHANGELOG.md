@@ -1,3 +1,63 @@
+# [2.0.0-beta.3](https://github.com/httpland/http-router/compare/2.0.0-beta.2...2.0.0-beta.3) (2022-10-03)
+
+
+### Bug Fixes
+
+* **utils:** change priority of overlapping routes ([6c921a0](https://github.com/httpland/http-router/commit/6c921a066461d30f09fb0fb8eb225ba10790a3c7))
+
+
+### Features
+
+* **router:** delete validating routes and throwing error ([9841c78](https://github.com/httpland/http-router/commit/9841c783a2ccf84d603bad888602bb96c313c9dc)), closes [#21](https://github.com/httpland/http-router/issues/21)
+* **utils:** add validation for url routes ([cfe13eb](https://github.com/httpland/http-router/commit/cfe13eb9478dc945824c47fc40ccb03b5a997ca5))
+* **utils:** change concatenate url path logic ([d9b120f](https://github.com/httpland/http-router/commit/d9b120fe187b2b8686d38f023e880f8d13ea8bf3))
+* **utils:** remove validation and throwing logic from `nest` ([dbfb1d2](https://github.com/httpland/http-router/commit/dbfb1d2490cb64ca0b810fe84128dd33aab3af45)), closes [#21](https://github.com/httpland/http-router/issues/21)
+* **utils:** use custom inspect instead of `Deno.inspect` ([b7553c0](https://github.com/httpland/http-router/commit/b7553c0b43db9f4816d5973f411ba65480a977bf)), closes [#22](https://github.com/httpland/http-router/issues/22)
+
+# [2.0.0-beta.2](https://github.com/httpland/http-router/compare/2.0.0-beta.1...2.0.0-beta.2) (2022-10-02)
+
+
+### Bug Fixes
+
+* **utils:** fix throwing error pattern ([2a07e6e](https://github.com/httpland/http-router/commit/2a07e6ed67a57dd63da4f4b2e4e27f223a656fe8))
+
+
+### Features
+
+* **mod:** export API types ([eba25ff](https://github.com/httpland/http-router/commit/eba25ffdd66cb0c5657025a1a351962d7f2cc630)), closes [#13](https://github.com/httpland/http-router/issues/13)
+* **mod:** remove unnessesary module from API ([8201730](https://github.com/httpland/http-router/commit/82017300db7308c8319de9dd82a5f716dc33b01c)), closes [#18](https://github.com/httpland/http-router/issues/18)
+* **types:** add `result` field to URL router route handler context ([a6c2956](https://github.com/httpland/http-router/commit/a6c295649a906fd953d77588715e1c0907d051af)), closes [#19](https://github.com/httpland/http-router/issues/19)
+* **types:** add `URLRoutes` related types ([c883b66](https://github.com/httpland/http-router/commit/c883b66415311aa93d2faf5c7e5463f285f148cd)), closes [#14](https://github.com/httpland/http-router/issues/14)
+* **types:** change `params` of url route handler context types ([d2c779e](https://github.com/httpland/http-router/commit/d2c779e750a78def590567365cd57b4aa4041e48)), closes [#20](https://github.com/httpland/http-router/issues/20)
+* **types:** change types and add test case ([e4419c6](https://github.com/httpland/http-router/commit/e4419c675b8e85070ddabace6d926dc0ee0e3ed9)), closes [#14](https://github.com/httpland/http-router/issues/14)
+* **types:** remove `route` field from url router route handler context ([2bf003e](https://github.com/httpland/http-router/commit/2bf003ed181ab7556b1937b0a947ec368d7c7a07)), closes [#19](https://github.com/httpland/http-router/issues/19)
+* **utils:** add assert to `nest` ([752a0b8](https://github.com/httpland/http-router/commit/752a0b8bd52f62ffca2aec2c452c492fb2edddd2))
+
+
+### BREAKING CHANGES
+
+* **types:** remove optional flag from `params` in url route handler context types
+* **types:** remove `route` field from url router route handler context
+* **mod:** made unimportant modules private
+
+# [2.0.0-beta.1](https://github.com/httpland/http-router/compare/1.2.0...2.0.0-beta.1) (2022-10-01)
+
+
+### Features
+
+* **errors:** remove `RouterError` and use `Error` instead ([bdde112](https://github.com/httpland/http-router/commit/bdde112407eac5884dedd792feb97c088ce02eee)), closes [#16](https://github.com/httpland/http-router/issues/16)
+* **routers:** add `URLRouter` and `MethodRouter` instead of `createRouter` ([f0306c9](https://github.com/httpland/http-router/commit/f0306c9e7e9849ec502c22afb66f6ec20e63db00)), closes [#13](https://github.com/httpland/http-router/issues/13)
+* **types:** remove duplicated ([a8ae0ce](https://github.com/httpland/http-router/commit/a8ae0cedd5be78c1ce1038aec37c9ab567756af7)), closes [#17](https://github.com/httpland/http-router/issues/17)
+
+
+### BREAKING CHANGES
+
+* **routers:** The `createRouter` has been removed and `URLRouter` and `MethodRouter` have been
+added.
+Nested notation has been removed and restricted to flat notation only.
+* **types:** remove dupicated types
+* **errors:** `RouterError` is removed. `Error` is used instead of `RouterError.
+
 # [1.2.0](https://github.com/httpland/http-router/compare/1.1.0...1.2.0) (2022-09-13)
 
 

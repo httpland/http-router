@@ -1,14 +1,19 @@
 // Copyright 2022-latest the httpland authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+export { MethodRouter, URLRouter } from "./routers.ts";
+export { type Handler } from "./deps.ts";
 export {
-  createRouter,
-  type MethodHandlers,
-  type MethodRouteHandlers,
-  type RouteHandler,
-  type RouteHandlerContext,
-  type Router,
-  type Routes,
-} from "./router.ts";
-export { type HttpMethod, type Method } from "./types.ts";
-export { RouterError } from "./errors.ts";
-export { HttpMethods } from "./constants.ts";
+  type HttpMethodRoutes,
+  type MethodRouterConstructor,
+  type MethodRouterOptions,
+  type PathnameRoutes,
+  type RouterOptions,
+  type URLPatternRoute,
+  type URLPatternRoutes,
+  type URLRouteHandler,
+  type URLRouteHandlerContext,
+  type URLRouterConstructor,
+  type URLRoutes,
+} from "./types.ts";
+export { nest, validateURLRoutes } from "./utils.ts";
