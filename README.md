@@ -2,7 +2,7 @@
 
 # http-router
 
-<img src="https://github.com/httpland/http-router/blob/main/_media/logo.svg" width="180px" height="180px" alt="logo">
+<img src="https://raw.githubusercontent.com/httpland/http-router/main/_medias/logo.svg" width="180px" height="180px" alt="logo">
 
 HTTP request router for standard `Request` and `Response`.
 
