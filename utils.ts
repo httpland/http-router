@@ -130,7 +130,7 @@ export function validateURLRoutes(
     return AggregateError(errors, "Invalid URL pattern.");
   }
 
-  const urlPatterns = okResults.map(prop("value")).map(head);
+  const urlPatterns = okResults.map(prop("value")).map<URLPattern>(head);
   const intersections = intersectBy(urlPatterns, equalsURLPattern);
 
   if (intersections.length) {

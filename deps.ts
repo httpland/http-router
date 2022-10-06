@@ -17,10 +17,7 @@ export {
   unsafe,
 } from "https://deno.land/x/result_js@1.0.0/mod.ts";
 export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
-
-export function prop<T extends keyof U, U>(key: T): (value: U) => U[T] {
-  return (value) => value[key];
-}
+export { head, prop } from "https://deno.land/x/prelude_js@1.0.0-beta.3/mod.ts";
 
 export function partition<T, U extends T>(
   array: readonly T[],
@@ -38,8 +35,4 @@ export function partition<T, U extends T>(
   }
 
   return [matches, rest];
-}
-
-export function head<T extends readonly unknown[]>(array: T): T[0] {
-  return array[0];
 }
