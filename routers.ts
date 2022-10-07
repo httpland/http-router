@@ -11,6 +11,7 @@ import {
 } from "./types.ts";
 import {
   Handler,
+  isFunction,
   isOk,
   prop,
   safeResponse,
@@ -19,12 +20,12 @@ import {
 } from "./deps.ts";
 import { route2URLPatternRoute, urlPatternRouteFrom } from "./utils.ts";
 
-interface PatternMatchingCache {
-  [k: string]: Readonly<{
-    handler: URLRouteHandler;
-    context: URLRouteHandlerContext;
-  }>;
+interface MatchedCache {
+  readonly handler: URLRouteHandler;
+  readonly context: URLRouteHandlerContext;
 }
+
+type URLCache = Handler | MatchedCache;
 
 /** HTTP request url router.
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
@@ -49,19 +50,12 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
   const iterable = urlPatternRouteFrom(routes);
   const entries = Array.from(iterable).map(route2URLPatternRoute).filter(isOk)
     .map(prop("value"));
-  const status = Status.NotFound;
-  const response = new Response(null, {
-    status,
-    statusText: STATUS_TEXT[status],
-  });
-  const cache: PatternMatchingCache = {};
-  const handler: Handler = (request) => {
-    const url = request.url;
+  const cache: { [k: string]: URLCache } = {};
+
+  function query(url: string): URLCache {
     const cached = cache[url];
 
-    if (cached) {
-      return cached.handler(request, cached.context);
-    }
+    if (cached) return cached;
 
     for (const [pattern, handler] of entries) {
       const result = pattern.exec(url);
@@ -73,20 +67,25 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
         result,
         params: result.pathname.groups,
       };
-      const response = handler(request, context);
+      const data: URLCache = { handler, context };
+      cache[url] = data;
 
-      cache[url] = {
-        handler,
-        context,
-      };
-
-      return response;
+      return data;
     }
 
-    return response;
-  };
+    cache[url] = handleNotFound;
 
-  return (request) => safeResponse(() => handler(request), options?.onError);
+    return handleNotFound;
+  }
+
+  return (request) =>
+    safeResponse(() => {
+      const result = query(request.url);
+
+      if (isFunction(result)) return result(request);
+
+      return result.handler(request, result.context);
+    }, options?.onError);
 };
 
 /** HTTP request method router.
@@ -146,4 +145,12 @@ function toEmptyResponseHandler(handler: Handler): Handler {
 
     return new Response(null, res);
   };
+}
+
+function handleNotFound(): Response {
+  const status = Status.NotFound;
+  return new Response(null, {
+    status,
+    statusText: STATUS_TEXT[status],
+  });
 }
