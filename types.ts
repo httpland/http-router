@@ -62,6 +62,35 @@ export type HttpMethodRoutes = {
 export interface RouterOptions {
   /** The handler to invoke when route handlers throw an error. */
   readonly onError?: (error: unknown) => Promise<Response> | Response;
+
+  /** Call on after the execution of each handler.
+   * The response of the handler can be changed.
+   *
+   * ```ts
+   * import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   * import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+   *
+   * const handler = URLRouter({
+   *   "/": () => new Response(),
+   * }, {
+   *   afterEach: (response) => {
+   *     response.headers.set("x-router", "http-router");
+   *     return response;
+   *   },
+   * });
+   *
+   * assertEquals(
+   *   (await handler(new Request("http://localhost"))).headers.get("x-router"),
+   *   "http-router",
+   * );
+   * ```
+   */
+  readonly afterEach?: AfterEach;
+}
+
+/** Response transformer call on after handle. */
+export interface AfterEach {
+  (response: Response): Promise<Response | void> | Response | void;
 }
 
 /** HTTP method router options. */

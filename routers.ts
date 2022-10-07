@@ -82,12 +82,14 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
     return data;
   }
   const handler: Handler = (request) =>
-    safeResponse(() => {
+    safeResponse(async () => {
       const result = query(request.url);
 
       if (!result.matched) return result.handler(request);
 
-      return result.handler(request, result.context);
+      const response = await result.handler(request, result.context);
+
+      return await options?.afterEach?.(response.clone()) ?? response;
     }, options?.onError);
 
   return handler;
@@ -113,7 +115,7 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
  */
 export const MethodRouter: MethodRouterConstructor = (
   routes,
-  { withHead = true, onError } = {},
+  { withHead = true, onError, afterEach } = {},
 ) => {
   if (withHead) {
     routes = mapHttpHead(routes);
@@ -126,10 +128,14 @@ export const MethodRouter: MethodRouterConstructor = (
     statusText: STATUS_TEXT[status],
     headers: { allow },
   });
-  const handler: Handler = (request) => {
+  const handler: Handler = async (request) => {
     const handler = routes[request.method as HttpMethod];
 
-    return handler?.(request as never) ?? errResponse;
+    if (!handler) return errResponse;
+
+    const response = await handler(request as never);
+
+    return await afterEach?.(response.clone()) ?? response;
   };
 
   return (request) => safeResponse(() => handler(request), onError);

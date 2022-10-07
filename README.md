@@ -321,6 +321,44 @@ import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 const handler = MethodRouter({}, { withHead: false });
 ```
 
+## Hook on matched handler
+
+The router provides hooks for cross-cutting interests.
+
+### After each
+
+Provides a hook that is called after each matching handler is called.
+
+With this hook, you can monitor the handler's call and modify the resulting
+response.
+
+To modify the response, a response object must be returned to the hook.
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+
+const handler = URLRouter({
+  "/": () => new Response(),
+}, {
+  afterEach: (response) => {
+    response.headers.set("x-router", "http-router");
+    return response;
+  },
+});
+
+assertEquals(
+  (await handler(new Request("http://localhost"))).headers.get("x-router"),
+  "http-router",
+);
+assertEquals(
+  (await handler(
+    new Request("http://localhost/unknown"),
+  )).headers.get("x-router"),
+  null,
+);
+```
+
 ## Detect error in router
 
 If your defined handler throws an error internally, it will be supplemented and

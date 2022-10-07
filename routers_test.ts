@@ -288,6 +288,107 @@ describe("URLRouter", () => {
       );
     },
   );
+
+  it(
+    `should call after each on before response`,
+    async () => {
+      const mock = fn();
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should not call after each when not match pattern`,
+    async () => {
+      const mock = fn();
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost/unknown"));
+
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should override response with after each hook`,
+    async () => {
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+          return res;
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+          headers: {
+            "x-test": "test",
+          },
+        }),
+      );
+    },
+  );
+
+  it(
+    `should not override response whenever return response`,
+    async () => {
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+        }),
+      );
+    },
+  );
+
+  it("should pass example", async () => {
+    const handler = URLRouter({
+      "/": () => new Response(),
+    }, {
+      afterEach: (response) => {
+        response.headers.set("x-router", "http-router");
+
+        return response;
+      },
+    });
+
+    expect(
+      (await handler(new Request("http://localhost"))).headers.get("x-router"),
+    ).toBe("http-router");
+    expect(
+      (await handler(new Request("http://localhost/unknown"))).headers.get(
+        "x-router",
+      ),
+    ).toBeNull();
+  });
 });
 
 describe("MethodRouter", () => {
@@ -475,4 +576,84 @@ describe("MethodRouter", () => {
     expect(response.body).toBe(null);
     expect(response.headers.get("content-length")).toBe("12");
   });
+
+  it(
+    `should call after each on before response`,
+    async () => {
+      const mock = fn();
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should not call after each when not match pattern`,
+    async () => {
+      const mock = fn();
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost", { method: "POST" }));
+
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should override response with after each hook`,
+    async () => {
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+          return res;
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+          headers: {
+            "x-test": "test",
+          },
+        }),
+      );
+    },
+  );
+
+  it(
+    `should not override response whenever return response`,
+    async () => {
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+        }),
+      );
+    },
+  );
 });
