@@ -457,4 +457,22 @@ describe("MethodRouter", () => {
       );
     },
   );
+
+  it("should empty body when HEAD response", async () => {
+    const handler = MethodRouter({
+      GET: () => {
+        const body = `Hello! world`;
+        return new Response(body, {
+          headers: {
+            "content-length": new Blob([body]).size.toString(),
+          },
+        });
+      },
+    });
+    const request = new Request("http://localhost", { method: "HEAD" });
+    const response = await handler(request);
+
+    expect(response.body).toBe(null);
+    expect(response.headers.get("content-length")).toBe("12");
+  });
 });
