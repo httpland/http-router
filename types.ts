@@ -29,6 +29,12 @@ export interface URLRouteHandler {
   ): Promise<Response> | Response;
 }
 
+/** Handler for HTTP method routes. */
+export interface MethodRouteHandler<M extends HttpMethod = HttpMethod> {
+  /** Handler with bound HTTP methods. */
+  (request: Request & { readonly method: M }): Promise<Response> | Response;
+}
+
 /** URL pattern matching definition. */
 export type URLRoutes =
   | URLPatternRoutes
@@ -49,7 +55,7 @@ export interface URLRouteHandlerContext {
 
 /** HTTP method matched pattern definition. */
 export type HttpMethodRoutes = {
-  readonly [k in HttpMethod]?: Handler;
+  readonly [k in HttpMethod]?: MethodRouteHandler<k>;
 };
 
 /** Router options. */

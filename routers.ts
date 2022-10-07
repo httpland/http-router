@@ -11,6 +11,7 @@ import {
 } from "./types.ts";
 import {
   Handler,
+  HttpMethod,
   isOk,
   prop,
   safeResponse,
@@ -80,15 +81,16 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
     return data;
   }
-
-  return (request) =>
+  const handler: Handler = (request) =>
     safeResponse(() => {
       const result = query(request.url);
 
-      if (result.matched) return result.handler(request, result.context);
+      if (!result.matched) return result.handler(request);
 
-      return result.handler(request);
+      return result.handler(request, result.context);
     }, options?.onError);
+
+  return handler;
 };
 
 /** HTTP request method router.
@@ -125,9 +127,9 @@ export const MethodRouter: MethodRouterConstructor = (
     headers: { allow },
   });
   const handler: Handler = (request) => {
-    const handler = routes[request.method as keyof HttpMethodRoutes];
+    const handler = routes[request.method as HttpMethod];
 
-    return handler?.(request) ?? errResponse;
+    return handler?.(request as never) ?? errResponse;
   };
 
   return (request) => safeResponse(() => handler(request), onError);
@@ -138,7 +140,7 @@ function mapHttpHead(routes: HttpMethodRoutes): HttpMethodRoutes {
 
   return {
     ...routes,
-    HEAD: toEmptyResponseHandler(routes.GET!),
+    HEAD: toEmptyResponseHandler(routes.GET! as Handler),
   };
 }
 
