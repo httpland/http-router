@@ -11,7 +11,6 @@ import {
 } from "./types.ts";
 import {
   Handler,
-  isFunction,
   isOk,
   prop,
   safeResponse,
@@ -25,7 +24,10 @@ interface MatchedCache {
   readonly context: URLRouteHandlerContext;
 }
 
-type URLCache = Handler | MatchedCache;
+type URLCache = { readonly matched: true } & MatchedCache | {
+  readonly matched: false;
+  readonly handler: Handler;
+};
 
 /** HTTP request url router.
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
@@ -67,24 +69,25 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
         result,
         params: result.pathname.groups,
       };
-      const data: URLCache = { handler, context };
+      const data: URLCache = { handler, context, matched: true };
       cache[url] = data;
 
       return data;
     }
 
-    cache[url] = handleNotFound;
+    const data: URLCache = { handler: handleNotFound, matched: false };
+    cache[url] = data;
 
-    return handleNotFound;
+    return data;
   }
 
   return (request) =>
     safeResponse(() => {
       const result = query(request.url);
 
-      if (isFunction(result)) return result(request);
+      if (result.matched) return result.handler(request, result.context);
 
-      return result.handler(request, result.context);
+      return result.handler(request);
     }, options?.onError);
 };
 
