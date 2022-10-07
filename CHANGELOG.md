@@ -1,3 +1,16 @@
+# [2.1.0-beta.1](https://github.com/httpland/http-router/compare/2.0.0...2.1.0-beta.1) (2022-10-07)
+
+
+### Features
+
+* **router:** add `afterEach` hooks to router option ([95c13bf](https://github.com/httpland/http-router/commit/95c13bf82888b132a27f283c6610a8b2fa52c21e)), closes [#10](https://github.com/httpland/http-router/issues/10)
+* **types:** add `MethodRouteHandler` types ([822ece7](https://github.com/httpland/http-router/commit/822ece7a6e3a5c94dd726f2cf8167843c2152447)), closes [#27](https://github.com/httpland/http-router/issues/27)
+
+
+### Performance Improvements
+
+* **router:** add non matched pattern to cache ([0eaa017](https://github.com/httpland/http-router/commit/0eaa017a3c5d99ee2502f4a6843fdb6e9aaaa459))
+
 # [2.0.0](https://github.com/httpland/http-router/compare/1.2.0...2.0.0) (2022-10-04)
 
 ### Bug Fixes
