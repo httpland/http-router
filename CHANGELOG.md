@@ -1,3 +1,23 @@
+# [2.1.0](https://github.com/httpland/http-router/compare/2.0.0...2.1.0) (2022-10-08)
+
+
+### Bug Fixes
+
+* **router:** fix to always call before each and after each ([fb9f0f4](https://github.com/httpland/http-router/commit/fb9f0f4c2dfe70f883bfa1a5577fdfb7044d6918))
+* **router:** use lru cache instead of plain object ([fc79627](https://github.com/httpland/http-router/commit/fc79627928c108426b4109ed971ccb316b869aba)), closes [#26](https://github.com/httpland/http-router/issues/26)
+
+
+### Features
+
+* **router:** add `afterEach` hooks to router option ([95c13bf](https://github.com/httpland/http-router/commit/95c13bf82888b132a27f283c6610a8b2fa52c21e)), closes [#10](https://github.com/httpland/http-router/issues/10)
+* **routers:** add `beforeEach` hooks to router ([116c2d9](https://github.com/httpland/http-router/commit/116c2d919cad1b6fcf04af336b63ad46c501fc75))
+* **types:** add `MethodRouteHandler` types ([822ece7](https://github.com/httpland/http-router/commit/822ece7a6e3a5c94dd726f2cf8167843c2152447)), closes [#27](https://github.com/httpland/http-router/issues/27)
+
+
+### Performance Improvements
+
+* **router:** add non matched pattern to cache ([0eaa017](https://github.com/httpland/http-router/commit/0eaa017a3c5d99ee2502f4a6843fdb6e9aaaa459))
+
 # [2.1.0-beta.3](https://github.com/httpland/http-router/compare/2.1.0-beta.2...2.1.0-beta.3) (2022-10-08)
 
 
