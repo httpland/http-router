@@ -152,7 +152,7 @@ describe("URLRouter", () => {
 
   it(
     "should match order by priority of registration",
-    () => {
+    async () => {
       const mock1 = fn();
       const mock2 = fn();
       const router = URLRouter({
@@ -166,7 +166,7 @@ describe("URLRouter", () => {
         },
       });
 
-      router(new Request("http://localhost/api/test"));
+      await router(new Request("http://localhost/api/test"));
 
       expect(mock1).toHaveBeenCalled();
       expect(mock2).not.toHaveBeenCalled();
@@ -286,6 +286,78 @@ describe("URLRouter", () => {
           statusText: STATUS_TEXT[Status.InternalServerError],
         }),
       );
+    },
+  );
+
+  it(
+    `should call before each on before handler call`,
+    async () => {
+      const mock = fn();
+
+      const router = URLRouter({
+        "/": () => {
+          mock(2);
+          return new Response();
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+        },
+      });
+
+      const req = new Request("http://localhost");
+      await router(req);
+
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 2);
+    },
+  );
+
+  it(
+    `should customize request on before each`,
+    async () => {
+      const mock = fn();
+
+      const router = URLRouter({
+        "/": (req) => {
+          mock(req.headers.get("x-custom"));
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          req.headers.set("x-custom", "test");
+          return req;
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledWith("test");
+    },
+  );
+
+  it(
+    `should return from before each response`,
+    async () => {
+      const mock = fn();
+
+      const router = URLRouter({
+        "/": () => {
+          mock();
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          if (req.method === "OPTIONS") return new Response("beforeEach");
+          return;
+        },
+      });
+
+      const res = await router(
+        new Request("http://localhost", { method: "OPTIONS" }),
+      );
+      expect(res).toEqualResponse(new Response("beforeEach"));
+      expect(mock).not.toHaveBeenCalled();
     },
   );
 
@@ -576,6 +648,78 @@ describe("MethodRouter", () => {
     expect(response.body).toBe(null);
     expect(response.headers.get("content-length")).toBe("12");
   });
+
+  it(
+    `should call before each on before handler call`,
+    async () => {
+      const mock = fn();
+
+      const router = MethodRouter({
+        GET: () => {
+          mock(2);
+          return new Response();
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+        },
+      });
+
+      const req = new Request("http://localhost");
+      await router(req);
+
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 2);
+    },
+  );
+
+  it(
+    `should customize request on before each`,
+    async () => {
+      const mock = fn();
+
+      const router = MethodRouter({
+        GET: (req) => {
+          mock(req.headers.get("x-custom"));
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          req.headers.set("x-custom", "test");
+          return req;
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledWith("test");
+    },
+  );
+
+  it(
+    `should return from before each response`,
+    async () => {
+      const mock = fn();
+
+      const router = MethodRouter({
+        GET: () => {
+          mock();
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          if (req.method === "GET") return new Response("beforeEach");
+          return;
+        },
+      });
+
+      const res = await router(
+        new Request("http://localhost"),
+      );
+      expect(res).toEqualResponse(new Response("beforeEach"));
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
 
   it(
     `should call after each on before response`,

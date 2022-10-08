@@ -325,6 +325,32 @@ const handler = MethodRouter({}, { withHead: false });
 
 The router provides hooks for cross-cutting interests.
 
+## Before each
+
+Provides a hook to be called before the handler is invoked.
+
+You can skip the actual handler call on a particular request by passing a
+`Response` object.
+
+The handler call is skipped and the `afterEach` hook described below is called.
+
+Example of handling a preflight request that is of transversal interest:
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+import { preflightResponse } from "https://deno.land/x/cors_protocol@$VERSION/mod.ts";
+
+const handler = URLRouter({
+  "/": () => new Response(),
+}, {
+  beforeEach: (request) => {
+    const preflightRes = preflightResponse(request, {});
+    return preflightRes;
+  },
+});
+```
+
 ### After each
 
 Provides a hook that is called after each matching handler is called.

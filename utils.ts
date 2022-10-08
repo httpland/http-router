@@ -189,3 +189,8 @@ export function inspect(value: URLPattern[]): string {
   ${value.map(inspectURLPattern).join(", \n  ")}
 ]`;
 }
+
+/** Whether the value is `Response` or not. */
+export function isResponse(value: unknown): value is Response {
+  return value instanceof Response;
+}

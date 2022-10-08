@@ -19,7 +19,11 @@ import {
   Status,
   STATUS_TEXT,
 } from "./deps.ts";
-import { route2URLPatternRoute, urlPatternRouteFrom } from "./utils.ts";
+import {
+  isResponse,
+  route2URLPatternRoute,
+  urlPatternRouteFrom,
+} from "./utils.ts";
 
 interface MatchedCache {
   readonly handler: URLRouteHandler;
@@ -90,7 +94,12 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
       if (!result.matched) return result.handler(request);
 
-      const response = await result.handler(request, result.context);
+      const maybeRequest = await options?.beforeEach?.(request.clone()) ??
+        request;
+
+      if (isResponse(maybeRequest)) return maybeRequest;
+
+      const response = await result.handler(maybeRequest, result.context);
 
       return await options?.afterEach?.(response.clone()) ?? response;
     }, options?.onError);
@@ -118,7 +127,7 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
  */
 export const MethodRouter: MethodRouterConstructor = (
   routes,
-  { withHead = true, onError, afterEach } = {},
+  { withHead = true, onError, beforeEach, afterEach } = {},
 ) => {
   if (withHead) {
     routes = mapHttpHead(routes);
@@ -136,7 +145,12 @@ export const MethodRouter: MethodRouterConstructor = (
 
     if (!handler) return errResponse;
 
-    const response = await handler(request as never);
+    const maybeRequest = await beforeEach?.(request.clone()) ??
+      request;
+
+    if (isResponse(maybeRequest)) return maybeRequest;
+
+    const response = await handler(maybeRequest as never);
 
     return await afterEach?.(response.clone()) ?? response;
   };
