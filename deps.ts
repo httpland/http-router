@@ -5,7 +5,7 @@ export { isIterable } from "https://deno.land/x/isx@1.0.0-beta.22/mod.ts";
 export {
   Status,
   STATUS_TEXT,
-} from "https://deno.land/std@0.157.0/http/http_status.ts";
+} from "https://deno.land/std@0.159.0/http/http_status.ts";
 export {
   partition,
 } from "https://deno.land/std@0.159.0/collections/partition.ts";

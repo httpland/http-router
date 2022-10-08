@@ -1,6 +1,6 @@
 {
   "imports": {
     "https://deno.land/x/http_router@$VERSION/": "./",
-    "https://deno.land/std@$VERSION/": "https://deno.land/std@0.155.0/"
+    "https://deno.land/std@$VERSION/": "https://deno.land/std@0.159.0/"
   }
 }
