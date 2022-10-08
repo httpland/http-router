@@ -1,3 +1,10 @@
+# [2.1.0-beta.3](https://github.com/httpland/http-router/compare/2.1.0-beta.2...2.1.0-beta.3) (2022-10-08)
+
+
+### Bug Fixes
+
+* **router:** fix to always call before each and after each ([fb9f0f4](https://github.com/httpland/http-router/commit/fb9f0f4c2dfe70f883bfa1a5577fdfb7044d6918))
+
 # [2.1.0-beta.2](https://github.com/httpland/http-router/compare/2.1.0-beta.1...2.1.0-beta.2) (2022-10-08)
 
 
