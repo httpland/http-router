@@ -1,3 +1,19 @@
+# [3.0.0-beta.1](https://github.com/httpland/http-router/compare/2.1.0...3.0.0-beta.1) (2022-10-08)
+
+
+### Features
+
+* **routers:** add throwing error to URLRouter ([f8032e8](https://github.com/httpland/http-router/commit/f8032e8e6b960e9f05f1e7568c923567690e17da)), closes [#29](https://github.com/httpland/http-router/issues/29)
+* **routers:** remove `onError` field from types ([1870d07](https://github.com/httpland/http-router/commit/1870d0716d52c38ab318b190f938cb1e39a1aa35)), closes [#29](https://github.com/httpland/http-router/issues/29)
+* **utils:** remove `validateURLRoutes` ([4ebbb75](https://github.com/httpland/http-router/commit/4ebbb75bedeb7e4a6a180f73f7f859f5dfcfcc99)), closes [#29](https://github.com/httpland/http-router/issues/29)
+
+
+### BREAKING CHANGES
+
+* **utils:** no export `validateURLRoutes`
+* **routers:** remove `onError` field from router
+* **routers:** `URLRouter` will not grip the error and throw error as is
+
 # [2.1.0](https://github.com/httpland/http-router/compare/2.0.0...2.1.0) (2022-10-08)
 
 
