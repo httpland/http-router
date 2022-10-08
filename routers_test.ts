@@ -152,7 +152,7 @@ describe("URLRouter", () => {
 
   it(
     "should match order by priority of registration",
-    () => {
+    async () => {
       const mock1 = fn();
       const mock2 = fn();
       const router = URLRouter({
@@ -166,7 +166,7 @@ describe("URLRouter", () => {
         },
       });
 
-      router(new Request("http://localhost/api/test"));
+      await router(new Request("http://localhost/api/test"));
 
       expect(mock1).toHaveBeenCalled();
       expect(mock2).not.toHaveBeenCalled();
@@ -288,6 +288,207 @@ describe("URLRouter", () => {
       );
     },
   );
+
+  it(
+    `should call before each on before handler call`,
+    async () => {
+      const mock = fn();
+
+      const router = URLRouter({
+        "/": () => {
+          mock(2);
+          return new Response();
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+        },
+      });
+
+      const req = new Request("http://localhost");
+      await router(req);
+
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 2);
+    },
+  );
+
+  it(
+    `should customize request on before each`,
+    async () => {
+      const mock = fn();
+
+      const router = URLRouter({
+        "/": (req) => {
+          mock(req.headers.get("x-custom"));
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          req.headers.set("x-custom", "test");
+          return req;
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledWith("test");
+    },
+  );
+
+  it(
+    `should return from before each response`,
+    async () => {
+      const mock = fn();
+
+      const router = URLRouter({
+        "/": () => {
+          mock();
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          if (req.method === "OPTIONS") return new Response("beforeEach");
+          return;
+        },
+      });
+
+      const res = await router(
+        new Request("http://localhost", { method: "OPTIONS" }),
+      );
+      expect(res).toEqualResponse(new Response("beforeEach"));
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should call after each on before response`,
+    async () => {
+      const mock = fn();
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should not call after each when not match pattern`,
+    async () => {
+      const mock = fn();
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost/unknown"));
+
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should override response with after each hook`,
+    async () => {
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+          return res;
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+          headers: {
+            "x-test": "test",
+          },
+        }),
+      );
+    },
+  );
+
+  it(
+    `should not override response whenever return response`,
+    async () => {
+      const router = URLRouter({
+        "/": () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+        }),
+      );
+    },
+  );
+
+  it(
+    `should call before each then after each`,
+    async () => {
+      const mock = fn();
+      const router = URLRouter({
+        "/": () => {
+          mock(2);
+          return new Response(null);
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+          return new Response("");
+        },
+        afterEach: (res) => {
+          mock(3);
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledTimes(2);
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 3);
+    },
+  );
+
+  it("should pass example", async () => {
+    const handler = URLRouter({
+      "/": () => new Response(),
+    }, {
+      afterEach: (response) => {
+        response.headers.set("x-router", "http-router");
+
+        return response;
+      },
+    });
+
+    expect(
+      (await handler(new Request("http://localhost"))).headers.get("x-router"),
+    ).toBe("http-router");
+    expect(
+      (await handler(new Request("http://localhost/unknown"))).headers.get(
+        "x-router",
+      ),
+    ).toBeNull();
+  });
 });
 
 describe("MethodRouter", () => {
@@ -453,6 +654,204 @@ describe("MethodRouter", () => {
         new Response(null, {
           status: Status.InternalServerError,
           statusText: STATUS_TEXT[Status.InternalServerError],
+        }),
+      );
+    },
+  );
+
+  it("should empty body when HEAD response", async () => {
+    const handler = MethodRouter({
+      GET: () => {
+        const body = `Hello! world`;
+        return new Response(body, {
+          headers: {
+            "content-length": new Blob([body]).size.toString(),
+          },
+        });
+      },
+    });
+    const request = new Request("http://localhost", { method: "HEAD" });
+    const response = await handler(request);
+
+    expect(response.body).toBe(null);
+    expect(response.headers.get("content-length")).toBe("12");
+  });
+
+  it(
+    `should call before each on before handler call`,
+    async () => {
+      const mock = fn();
+
+      const router = MethodRouter({
+        GET: () => {
+          mock(2);
+          return new Response();
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+        },
+      });
+
+      const req = new Request("http://localhost");
+      await router(req);
+
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 2);
+    },
+  );
+
+  it(
+    `should customize request on before each`,
+    async () => {
+      const mock = fn();
+
+      const router = MethodRouter({
+        GET: (req) => {
+          mock(req.headers.get("x-custom"));
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          req.headers.set("x-custom", "test");
+          return req;
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledWith("test");
+    },
+  );
+
+  it(
+    `should return from before each response`,
+    async () => {
+      const mock = fn();
+
+      const router = MethodRouter({
+        GET: () => {
+          mock();
+          return new Response();
+        },
+      }, {
+        beforeEach: (req) => {
+          if (req.method === "GET") return new Response("beforeEach");
+          return;
+        },
+      });
+
+      const res = await router(
+        new Request("http://localhost"),
+      );
+      expect(res).toEqualResponse(new Response("beforeEach"));
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should call after each on before response`,
+    async () => {
+      const mock = fn();
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should not call after each when not match pattern`,
+    async () => {
+      const mock = fn();
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          mock(res);
+        },
+      });
+
+      await router(new Request("http://localhost", { method: "POST" }));
+
+      expect(mock).not.toHaveBeenCalled();
+    },
+  );
+
+  it(
+    `should override response with after each hook`,
+    async () => {
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+          return res;
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
+          headers: {
+            "x-test": "test",
+          },
+        }),
+      );
+    },
+  );
+
+  it(
+    `should call before each then after each`,
+    async () => {
+      const mock = fn();
+      const router = MethodRouter({
+        GET: () => {
+          mock(2);
+          return new Response(null);
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+          return new Response("");
+        },
+        afterEach: (res) => {
+          mock(3);
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledTimes(2);
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 3);
+    },
+  );
+
+  it(
+    `should not override response whenever return response`,
+    async () => {
+      const router = MethodRouter({
+        GET: () => new Response(null),
+      }, {
+        afterEach: (res) => {
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      const result = await router(new Request("http://localhost"));
+      expect(result).toEqualResponse(
+        new Response(null, {
+          status: Status.OK,
         }),
       );
     },

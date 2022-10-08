@@ -4,7 +4,10 @@
 export { MethodRouter, URLRouter } from "./routers.ts";
 export { type Handler } from "./deps.ts";
 export {
+  type AfterEach,
+  type BeforeEach,
   type HttpMethodRoutes,
+  type MethodRouteHandler,
   type MethodRouterConstructor,
   type MethodRouterOptions,
   type PathnameRoutes,

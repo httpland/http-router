@@ -321,6 +321,70 @@ import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 const handler = MethodRouter({}, { withHead: false });
 ```
 
+## Hook on matched handler
+
+The router provides hooks for cross-cutting interests.
+
+## Before each
+
+Provides a hook to be called before the handler is invoked.
+
+You can skip the actual handler call on a particular request by passing a
+`Response` object.
+
+The handler call is skipped and the `afterEach` hook described below is called.
+
+Example of handling a preflight request that is of transversal interest:
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+import { preflightResponse } from "https://deno.land/x/cors_protocol@$VERSION/mod.ts";
+
+const handler = URLRouter({
+  "/": () => new Response(),
+}, {
+  beforeEach: (request) => {
+    const preflightRes = preflightResponse(request, {});
+    return preflightRes;
+  },
+});
+```
+
+### After each
+
+Provides a hook that is called after each matching handler is called.
+
+With this hook, you can monitor the handler's call and modify the resulting
+response.
+
+To modify the response, a response object must be returned to the hook.
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertEquals } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+
+const handler = URLRouter({
+  "/": () => new Response(),
+}, {
+  afterEach: (response) => {
+    response.headers.set("x-router", "http-router");
+    return response;
+  },
+});
+
+assertEquals(
+  (await handler(new Request("http://localhost"))).headers.get("x-router"),
+  "http-router",
+);
+assertEquals(
+  (await handler(
+    new Request("http://localhost/unknown"),
+  )).headers.get("x-router"),
+  null,
+);
+```
+
 ## Detect error in router
 
 If your defined handler throws an error internally, it will be supplemented and

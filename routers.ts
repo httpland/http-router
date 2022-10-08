@@ -4,6 +4,7 @@
 import {
   HttpMethodRoutes,
   MethodRouterConstructor,
+  RouterOptions,
   URLRouteHandler,
   URLRouteHandlerContext,
   URLRouterConstructor,
@@ -11,7 +12,10 @@ import {
 } from "./types.ts";
 import {
   Handler,
+  HttpMethod,
   isOk,
+  isResponse,
+  LRUMap,
   prop,
   safeResponse,
   Status,
@@ -19,12 +23,17 @@ import {
 } from "./deps.ts";
 import { route2URLPatternRoute, urlPatternRouteFrom } from "./utils.ts";
 
-interface PatternMatchingCache {
-  [k: string]: Readonly<{
-    handler: URLRouteHandler;
-    context: URLRouteHandlerContext;
-  }>;
+interface MatchedCache {
+  readonly handler: URLRouteHandler;
+  readonly context: URLRouteHandlerContext;
 }
+
+type URLCache = { readonly matched: true } & MatchedCache | {
+  readonly matched: false;
+  readonly handler: Handler;
+};
+
+const MAX_SIZE = 100_0;
 
 /** HTTP request url router.
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
@@ -46,22 +55,15 @@ interface PatternMatchingCache {
  * ```
  */
 export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
+  const cache = new LRUMap<string, URLCache>(MAX_SIZE);
   const iterable = urlPatternRouteFrom(routes);
   const entries = Array.from(iterable).map(route2URLPatternRoute).filter(isOk)
     .map(prop("value"));
-  const status = Status.NotFound;
-  const response = new Response(null, {
-    status,
-    statusText: STATUS_TEXT[status],
-  });
-  const cache: PatternMatchingCache = {};
-  const handler: Handler = (request) => {
-    const url = request.url;
-    const cached = cache[url];
 
-    if (cached) {
-      return cached.handler(request, cached.context);
-    }
+  function query(url: string): URLCache {
+    const cached = cache.has(url);
+
+    if (cached) return cache.get(url)!;
 
     for (const [pattern, handler] of entries) {
       const result = pattern.exec(url);
@@ -73,21 +75,43 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
         result,
         params: result.pathname.groups,
       };
-      const response = handler(request, context);
+      const data: URLCache = { handler, context, matched: true };
+      cache.set(url, data);
 
-      cache[url] = {
-        handler,
-        context,
-      };
-
-      return response;
+      return data;
     }
 
-    return response;
-  };
+    const data: URLCache = { handler: handleNotFound, matched: false };
+    cache.set(url, data);
 
-  return (request) => safeResponse(() => handler(request), options?.onError);
+    return data;
+  }
+  const handler: Handler = (request) =>
+    safeResponse(async () => {
+      const result = query(request.url);
+
+      if (!result.matched) return result.handler(request);
+
+      return await process(request, (request) =>
+        result.handler(request, result.context), options);
+    }, options?.onError);
+
+  return handler;
 };
+
+async function process(
+  request: Request,
+  handle: (request: Request) => Promise<Response> | Response,
+  options?: RouterOptions,
+): Promise<Response> {
+  const maybeRequest = await options?.beforeEach?.(request.clone()) ??
+    request;
+  const response = isResponse(maybeRequest)
+    ? maybeRequest
+    : await handle(maybeRequest);
+
+  return await options?.afterEach?.(response.clone()) ?? response;
+}
 
 /** HTTP request method router.
  * {@link MethodRouter} provides routing between HTTP request methods and handlers.
@@ -109,7 +133,7 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
  */
 export const MethodRouter: MethodRouterConstructor = (
   routes,
-  { withHead = true, onError } = {},
+  { withHead = true, onError, beforeEach, afterEach } = {},
 ) => {
   if (withHead) {
     routes = mapHttpHead(routes);
@@ -122,10 +146,15 @@ export const MethodRouter: MethodRouterConstructor = (
     statusText: STATUS_TEXT[status],
     headers: { allow },
   });
-  const handler: Handler = (request) => {
-    const handler = routes[request.method as keyof HttpMethodRoutes];
+  const handler: Handler = async (request) => {
+    const handler = routes[request.method as HttpMethod];
 
-    return handler?.(request) ?? errResponse;
+    if (!handler) return errResponse;
+
+    return await process(request, (request) => handler(request as never), {
+      beforeEach,
+      afterEach,
+    });
   };
 
   return (request) => safeResponse(() => handler(request), onError);
@@ -136,7 +165,7 @@ function mapHttpHead(routes: HttpMethodRoutes): HttpMethodRoutes {
 
   return {
     ...routes,
-    HEAD: toEmptyResponseHandler(routes.GET!),
+    HEAD: toEmptyResponseHandler(routes.GET! as Handler),
   };
 }
 
@@ -146,4 +175,12 @@ function toEmptyResponseHandler(handler: Handler): Handler {
 
     return new Response(null, res);
   };
+}
+
+function handleNotFound(): Response {
+  const status = Status.NotFound;
+  return new Response(null, {
+    status,
+    statusText: STATUS_TEXT[status],
+  });
 }
