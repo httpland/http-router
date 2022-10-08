@@ -135,45 +135,6 @@ URL patterns can be defined using the
 - RegExp groups (`/books/(\\d+)`) which make arbitrarily complex regex matches
   with a few limitations.
 
-### Check routes validity
-
-The router **never throws** an error. If the route is invalid, it will be
-eliminated just.
-
-To make sure that URLRoutes are valid in advance, you can use the validate
-function.
-
-For example, `?` as pathname is an invalid pattern.
-
-```ts
-import {
-  URLRouter,
-  URLRoutes,
-  validateURLRoutes,
-} from "https://deno.land/x/http_router@$VERSION/mod.ts";
-
-const routes: URLRoutes = {
-  "?": () => new Response(),
-};
-const result = validateURLRoutes(routes);
-
-if (result !== true) {
-  // do something
-}
-
-const handler = URLRouter(routes);
-```
-
-The validate function returns `true` in case of success, or an object
-representing the contents of the `Error` in case of failure.
-
-Invalid route means the following:
-
-- Invalid `URLPattern`
-- Duplicate `URLPattern`
-
-You are completely free to do this or not.
-
 ### Nested route pathname
 
 `nest` is nested URL pathname convertor. It provides a hierarchy of routing

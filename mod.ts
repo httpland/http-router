@@ -19,4 +19,4 @@ export {
   type URLRouterConstructor,
   type URLRoutes,
 } from "./types.ts";
-export { nest, validateURLRoutes } from "./utils.ts";
+export { nest } from "./utils.ts";

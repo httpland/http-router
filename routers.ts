@@ -5,6 +5,7 @@ import {
   HttpMethodRoutes,
   MethodRouterConstructor,
   RouterOptions,
+  URLPatternRoute,
   URLRouteHandler,
   URLRouteHandlerContext,
   URLRouterConstructor,
@@ -13,15 +14,17 @@ import {
 import {
   Handler,
   HttpMethod,
+  isIterable,
   isOk,
   isResponse,
   LRUMap,
   partition,
   prop,
+  Result,
   Status,
   STATUS_TEXT,
+  unsafe,
 } from "./deps.ts";
-import { route2URLPatternRoute, urlPatternRouteFrom } from "./utils.ts";
 
 interface MatchedCache {
   readonly handler: URLRouteHandler;
@@ -198,4 +201,22 @@ function handleNotFound(): Response {
     status,
     statusText: STATUS_TEXT[status],
   });
+}
+
+function urlPatternRouteFrom(
+  routes: URLRoutes,
+): Iterable<URLPatternRoute> {
+  return isIterable(routes)
+    ? routes
+    : Object.entries(routes).map(([pathname, handler]) =>
+      [{ pathname }, handler] as const
+    );
+}
+
+function route2URLPatternRoute(
+  route: URLPatternRoute,
+): Result<[URLPattern, URLRouteHandler], TypeError> {
+  return unsafe(
+    () => [new URLPattern(route[0]), route[1]],
+  );
 }
