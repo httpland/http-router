@@ -441,6 +441,34 @@ describe("URLRouter", () => {
     },
   );
 
+  it(
+    `should call before each then after each`,
+    async () => {
+      const mock = fn();
+      const router = URLRouter({
+        "/": () => {
+          mock(2);
+          return new Response(null);
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+          return new Response("");
+        },
+        afterEach: (res) => {
+          mock(3);
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledTimes(2);
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 3);
+    },
+  );
+
   it("should pass example", async () => {
     const handler = URLRouter({
       "/": () => new Response(),
@@ -778,6 +806,34 @@ describe("MethodRouter", () => {
           },
         }),
       );
+    },
+  );
+
+  it(
+    `should call before each then after each`,
+    async () => {
+      const mock = fn();
+      const router = MethodRouter({
+        GET: () => {
+          mock(2);
+          return new Response(null);
+        },
+      }, {
+        beforeEach: () => {
+          mock(1);
+          return new Response("");
+        },
+        afterEach: (res) => {
+          mock(3);
+          res.headers.append("x-test", "test");
+        },
+      });
+
+      await router(new Request("http://localhost"));
+
+      expect(mock).toHaveBeenCalledTimes(2);
+      expect(mock).toHaveBeenNthCalledWith(1, 1);
+      expect(mock).toHaveBeenNthCalledWith(2, 3);
     },
   );
 

@@ -93,10 +93,9 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
       const maybeRequest = await options?.beforeEach?.(request.clone()) ??
         request;
-
-      if (isResponse(maybeRequest)) return maybeRequest;
-
-      const response = await result.handler(maybeRequest, result.context);
+      const response = isResponse(maybeRequest)
+        ? maybeRequest
+        : await result.handler(maybeRequest, result.context);
 
       return await options?.afterEach?.(response.clone()) ?? response;
     }, options?.onError);
@@ -144,10 +143,9 @@ export const MethodRouter: MethodRouterConstructor = (
 
     const maybeRequest = await beforeEach?.(request.clone()) ??
       request;
-
-    if (isResponse(maybeRequest)) return maybeRequest;
-
-    const response = await handler(maybeRequest as never);
+    const response = isResponse(maybeRequest)
+      ? maybeRequest
+      : await handler(maybeRequest as never);
 
     return await afterEach?.(response.clone()) ?? response;
   };
