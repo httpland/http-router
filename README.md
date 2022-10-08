@@ -385,47 +385,15 @@ assertEquals(
 );
 ```
 
-## Detect error in router
-
-If your defined handler throws an error internally, it will be supplemented and
-safely return a `Response`.
-
-Here is the default response on error.
-
-```http
-HTTP/1.1 500 Internal Server Error
-```
-
-`onError` is called when an error is thrown internally by the handler. You may
-customize the error response.
-
-```ts
-import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-
-const handler = URLRouter({
-  "/": () => {
-    throw Error("oops");
-  },
-}, {
-  onError: (error) => {
-    console.error(error);
-    return new Response("Something wrong :(", {
-      status: 500,
-    });
-  },
-});
-```
-
 ## Spec
 
 In addition to user-defined responses, routers may return the following
 responses:
 
-| Status | Headers | Condition                                                   |
-| ------ | ------- | ----------------------------------------------------------- |
-| 404    |         | `URLRouter`<br>If not all url pattern match.                |
-| 405    | `allow` | `MethodRouter`<br>If HTTP method handler is not defined.    |
-| 500    |         | `URLRouter`, `MethodRouter`<br>If an internal error occurs. |
+| Status | Headers | Condition                                                |
+| ------ | ------- | -------------------------------------------------------- |
+| 404    |         | `URLRouter`<br>If not all url pattern match.             |
+| 405    | `allow` | `MethodRouter`<br>If HTTP method handler is not defined. |
 
 ## API
 

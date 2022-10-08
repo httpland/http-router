@@ -18,7 +18,6 @@ import {
   LRUMap,
   partition,
   prop,
-  safeResponse,
   Status,
   STATUS_TEXT,
 } from "./deps.ts";
@@ -149,7 +148,7 @@ async function process(
  */
 export const MethodRouter: MethodRouterConstructor = (
   routes,
-  { withHead = true, onError, beforeEach, afterEach } = {},
+  { withHead = true, beforeEach, afterEach } = {},
 ) => {
   if (withHead) {
     routes = mapHttpHead(routes);
@@ -173,7 +172,7 @@ export const MethodRouter: MethodRouterConstructor = (
     });
   };
 
-  return (request) => safeResponse(() => handler(request), onError);
+  return handler;
 };
 
 function mapHttpHead(routes: HttpMethodRoutes): HttpMethodRoutes {

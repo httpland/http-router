@@ -13,7 +13,6 @@ export {
   type HttpHandler as Handler,
   type HttpMethod,
   isResponse,
-  safeResponse,
 } from "https://deno.land/x/http_utils@1.0.0-beta.4/mod.ts";
 export {
   isOk,

@@ -60,9 +60,6 @@ export type HttpMethodRoutes = {
 
 /** Router options. */
 export interface RouterOptions {
-  /** The handler to invoke when route handlers throw an error. */
-  readonly onError?: (error: unknown) => Promise<Response> | Response;
-
   /** Call on before the execution of each handler.
    * The request can be changed or return early response.
    *
