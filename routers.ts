@@ -4,6 +4,7 @@
 import {
   HttpMethodRoutes,
   MethodRouterConstructor,
+  RouterOptions,
   URLRouteHandler,
   URLRouteHandlerContext,
   URLRouterConstructor,
@@ -91,17 +92,26 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
       if (!result.matched) return result.handler(request);
 
-      const maybeRequest = await options?.beforeEach?.(request.clone()) ??
-        request;
-      const response = isResponse(maybeRequest)
-        ? maybeRequest
-        : await result.handler(maybeRequest, result.context);
-
-      return await options?.afterEach?.(response.clone()) ?? response;
+      return await process(request, (request) =>
+        result.handler(request, result.context), options);
     }, options?.onError);
 
   return handler;
 };
+
+async function process(
+  request: Request,
+  handle: (request: Request) => Promise<Response> | Response,
+  options?: RouterOptions,
+): Promise<Response> {
+  const maybeRequest = await options?.beforeEach?.(request.clone()) ??
+    request;
+  const response = isResponse(maybeRequest)
+    ? maybeRequest
+    : await handle(maybeRequest);
+
+  return await options?.afterEach?.(response.clone()) ?? response;
+}
 
 /** HTTP request method router.
  * {@link MethodRouter} provides routing between HTTP request methods and handlers.
@@ -141,13 +151,10 @@ export const MethodRouter: MethodRouterConstructor = (
 
     if (!handler) return errResponse;
 
-    const maybeRequest = await beforeEach?.(request.clone()) ??
-      request;
-    const response = isResponse(maybeRequest)
-      ? maybeRequest
-      : await handler(maybeRequest as never);
-
-    return await afterEach?.(response.clone()) ?? response;
+    return await process(request, (request) => handler(request as never), {
+      beforeEach,
+      afterEach,
+    });
   };
 
   return (request) => safeResponse(() => handler(request), onError);
