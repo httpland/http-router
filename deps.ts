@@ -21,3 +21,4 @@ export {
 } from "https://deno.land/x/result_js@1.0.0/mod.ts";
 export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
 export { head, prop } from "https://deno.land/x/prelude_js@1.0.0-beta.3/mod.ts";
+export { LRUMap } from "https://deno.land/x/lru_map@1.0.0-beta.1/mod.ts";

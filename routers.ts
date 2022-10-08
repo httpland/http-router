@@ -13,6 +13,7 @@ import {
   Handler,
   HttpMethod,
   isOk,
+  LRUMap,
   prop,
   safeResponse,
   Status,
@@ -29,6 +30,8 @@ type URLCache = { readonly matched: true } & MatchedCache | {
   readonly matched: false;
   readonly handler: Handler;
 };
+
+const MAX_SIZE = 100_0;
 
 /** HTTP request url router.
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
@@ -50,15 +53,15 @@ type URLCache = { readonly matched: true } & MatchedCache | {
  * ```
  */
 export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
+  const cache = new LRUMap<string, URLCache>(MAX_SIZE);
   const iterable = urlPatternRouteFrom(routes);
   const entries = Array.from(iterable).map(route2URLPatternRoute).filter(isOk)
     .map(prop("value"));
-  const cache: { [k: string]: URLCache } = {};
 
   function query(url: string): URLCache {
-    const cached = cache[url];
+    const cached = cache.has(url);
 
-    if (cached) return cached;
+    if (cached) return cache.get(url)!;
 
     for (const [pattern, handler] of entries) {
       const result = pattern.exec(url);
@@ -71,13 +74,13 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
         params: result.pathname.groups,
       };
       const data: URLCache = { handler, context, matched: true };
-      cache[url] = data;
+      cache.set(url, data);
 
       return data;
     }
 
     const data: URLCache = { handler: handleNotFound, matched: false };
-    cache[url] = data;
+    cache.set(url, data);
 
     return data;
   }
