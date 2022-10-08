@@ -1,5 +1,5 @@
 import { MethodRouter, URLRouter } from "./routers.ts";
-import { anyFunction, describe, expect, fn, it } from "./dev_deps.ts";
+import { describe, expect, fn, it } from "./dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
 
 const handler = () => new Response();
@@ -24,23 +24,18 @@ describe("URLRouter", () => {
     },
   );
   it(
-    "should return 500 when route handler has exception",
+    "should throw error when route handler has exception",
     async () => {
       const router = URLRouter({
         "/": () => {
           throw Error("Unknown error");
         },
       });
-      const res = await router(
-        new Request("http://localhost/"),
-      );
-
-      expect(res).toEqualResponse(
-        new Response(null, {
-          status: Status.InternalServerError,
-          statusText: STATUS_TEXT[Status.InternalServerError],
-        }),
-      );
+      try {
+        await router(new Request("http://localhost/"));
+      } catch (e) {
+        expect(e).toEqual(new Error("Unknown error"));
+      }
     },
   );
 
@@ -91,25 +86,6 @@ describe("URLRouter", () => {
   );
 
   it(
-    "should return 500 when promise is rejected",
-    async () => {
-      const router = URLRouter({
-        "/": () => Promise.reject(new Response()),
-      });
-      const res = await router(
-        new Request("http://localhost/"),
-      );
-
-      expect(res).toEqualResponse(
-        new Response(null, {
-          status: Status.InternalServerError,
-          statusText: STATUS_TEXT[Status.InternalServerError],
-        }),
-      );
-    },
-  );
-
-  it(
     "should pass params when url patten include",
     async () => {
       const mock = fn();
@@ -140,17 +116,6 @@ describe("URLRouter", () => {
   );
 
   it(
-    "should not throw error when the route path is invalid",
-    () => {
-      expect(
-        URLRouter({
-          "https://api/:id": () => new Response(),
-        }),
-      ).toEqual(anyFunction());
-    },
-  );
-
-  it(
     "should match order by priority of registration",
     async () => {
       const mock1 = fn();
@@ -174,13 +139,14 @@ describe("URLRouter", () => {
   );
 
   it(
-    `should not throw error when the path is invalid`,
+    `should throw error when the path is invalid`,
     () => {
       expect(
-        URLRouter({
-          "+": handler,
-        }),
-      ).toEqual(anyFunction());
+        () =>
+          URLRouter({
+            "+": handler,
+          }),
+      ).toThrow(`Invalid routes.`);
     },
   );
 
@@ -201,36 +167,6 @@ describe("URLRouter", () => {
     expect(result.ok).toBeTruthy();
     expect(mock).toHaveBeenCalledTimes(2);
   });
-
-  it(
-    `should catch error and return custom response`,
-    async () => {
-      const mock = fn();
-
-      const router = URLRouter({
-        "/": () => {
-          throw "test";
-        },
-      }, {
-        onError: (error) => {
-          mock(error);
-
-          return new Response("custom error");
-        },
-      });
-
-      const result = await router(new Request("http://localhost"));
-      expect(mock).toHaveBeenCalledWith("test");
-      expect(result).toEqualResponse(
-        new Response("custom error", {
-          status: Status.OK,
-          headers: {
-            "content-type": "text/plain;charset=UTF-8",
-          },
-        }),
-      );
-    },
-  );
 
   it(
     `should match when the URLPattern routes`,
@@ -261,29 +197,6 @@ describe("URLRouter", () => {
       expect(result).toEqualResponse(
         new Response(null, {
           status: 200,
-        }),
-      );
-    },
-  );
-
-  it(
-    `should return default error response when throw error in onError`,
-    async () => {
-      const router = URLRouter({
-        "/": () => {
-          throw "test";
-        },
-      }, {
-        onError: (error) => {
-          throw error;
-        },
-      });
-
-      const result = await router(new Request("http://localhost"));
-      expect(result).toEqualResponse(
-        new Response(null, {
-          status: Status.InternalServerError,
-          statusText: STATUS_TEXT[Status.InternalServerError],
         }),
       );
     },
@@ -601,59 +514,6 @@ describe("MethodRouter", () => {
           headers: {
             allow: "DELETE,GET,HEAD,POST,PUT",
           },
-        }),
-      );
-    },
-  );
-
-  it(
-    `should catch error and return custom response`,
-    async () => {
-      const mock = fn();
-
-      const router = MethodRouter({
-        GET: () => {
-          throw "test";
-        },
-      }, {
-        onError: (error) => {
-          mock(error);
-
-          return new Response("custom error");
-        },
-      });
-
-      const result = await router(new Request("http://localhost"));
-      expect(mock).toHaveBeenCalledWith("test");
-      expect(result).toEqualResponse(
-        new Response("custom error", {
-          status: Status.OK,
-          headers: {
-            "content-type": "text/plain;charset=UTF-8",
-          },
-        }),
-      );
-    },
-  );
-
-  it(
-    `should return default error response when throw error in onError`,
-    async () => {
-      const router = URLRouter({
-        "/": () => {
-          throw "test";
-        },
-      }, {
-        onError: (error) => {
-          throw error;
-        },
-      });
-
-      const result = await router(new Request("http://localhost"));
-      expect(result).toEqualResponse(
-        new Response(null, {
-          status: Status.InternalServerError,
-          statusText: STATUS_TEXT[Status.InternalServerError],
         }),
       );
     },

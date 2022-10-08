@@ -16,6 +16,7 @@ import {
   isOk,
   isResponse,
   LRUMap,
+  partition,
   prop,
   safeResponse,
   Status,
@@ -39,6 +40,9 @@ const MAX_SIZE = 100_0;
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
  * Request URL are matched with the `URLPatten API`.
  *
+ * @throws `AggregateError`
+ * If the routes contain invalid route.
+ *
  * ```ts
  * import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
  * import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
@@ -57,8 +61,18 @@ const MAX_SIZE = 100_0;
 export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
   const cache = new LRUMap<string, URLCache>(MAX_SIZE);
   const iterable = urlPatternRouteFrom(routes);
-  const entries = Array.from(iterable).map(route2URLPatternRoute).filter(isOk)
-    .map(prop("value"));
+  const [oks, errs] = partition(
+    Array.from(iterable).map(route2URLPatternRoute),
+    isOk,
+  );
+
+  if (errs.length) {
+    const errors = errs.map(prop("value"));
+
+    throw AggregateError(errors, "Invalid routes.");
+  }
+
+  const entries = oks.map(prop("value"));
 
   function query(url: string): URLCache {
     const cached = cache.has(url);
@@ -86,15 +100,17 @@ export const URLRouter: URLRouterConstructor = (routes: URLRoutes, options) => {
 
     return data;
   }
-  const handler: Handler = (request) =>
-    safeResponse(async () => {
-      const result = query(request.url);
+  const handler: Handler = async (request) => {
+    const result = query(request.url);
 
-      if (!result.matched) return result.handler(request);
+    if (!result.matched) return result.handler(request);
 
-      return await process(request, (request) =>
-        result.handler(request, result.context), options);
-    }, options?.onError);
+    return await process(
+      request,
+      (request) => result.handler(request, result.context),
+      options,
+    );
+  };
 
   return handler;
 };
