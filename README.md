@@ -224,6 +224,21 @@ Pattern matching is done on URLs, so they are safely cached.
 
 Already matched URL patterns have `O(1)` complexity.
 
+### Throwing error
+
+Throws `AggregateError` if the route has an invalid value.
+
+```ts
+import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { assertThrows } from "https://deno.land/std@$VERSION/testing/asserts.ts";
+
+assertThrows(() =>
+  URLRouter({
+    "+": () => new Response(),
+  })
+);
+```
+
 ## HTTP request method router
 
 `MethodRouter` provides routing between HTTP request methods and handlers.
