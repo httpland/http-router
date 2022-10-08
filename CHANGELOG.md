@@ -1,3 +1,15 @@
+# [2.1.0-beta.2](https://github.com/httpland/http-router/compare/2.1.0-beta.1...2.1.0-beta.2) (2022-10-08)
+
+
+### Bug Fixes
+
+* **router:** use lru cache instead of plain object ([fc79627](https://github.com/httpland/http-router/commit/fc79627928c108426b4109ed971ccb316b869aba)), closes [#26](https://github.com/httpland/http-router/issues/26)
+
+
+### Features
+
+* **routers:** add `beforeEach` hooks to router ([116c2d9](https://github.com/httpland/http-router/commit/116c2d919cad1b6fcf04af336b63ad46c501fc75))
+
 # [2.1.0-beta.1](https://github.com/httpland/http-router/compare/2.0.0...2.1.0-beta.1) (2022-10-07)
 
 
