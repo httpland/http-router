@@ -13,17 +13,14 @@ import {
   Handler,
   HttpMethod,
   isOk,
+  isResponse,
   LRUMap,
   prop,
   safeResponse,
   Status,
   STATUS_TEXT,
 } from "./deps.ts";
-import {
-  isResponse,
-  route2URLPatternRoute,
-  urlPatternRouteFrom,
-} from "./utils.ts";
+import { route2URLPatternRoute, urlPatternRouteFrom } from "./utils.ts";
 
 interface MatchedCache {
   readonly handler: URLRouteHandler;

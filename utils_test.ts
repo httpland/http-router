@@ -3,19 +3,12 @@ import {
   inspect,
   inspectURLPattern,
   intersectBy,
-  isResponse,
   nest,
   validateURLRoutes,
 } from "./utils.ts";
 import { describe, expect, Fn, it } from "./dev_deps.ts";
 
 const handler = () => new Response();
-
-Deno.test("isResponse should pass", () => {
-  expect(isResponse(new Response())).toBeTruthy();
-  expect(isResponse(new Request("http://localhost"))).toBeFalsy();
-  expect(isResponse({})).toBeFalsy();
-});
 
 Deno.test("inspect should pass", () => {
   const value = [new URLPattern({})];
