@@ -42,9 +42,9 @@ const MAX_SIZE = 100_0;
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
  * Request URL are matched with the `URLPatten API`.
  *
- * @throws `AggregateError`
- * If the routes contain invalid route.
+ * @throws {AggregateError} If the routes contain invalid route.
  *
+ * @example
  * ```ts
  * import { URLRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
  * import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
@@ -134,6 +134,7 @@ async function process(
 /** HTTP request method router.
  * {@link MethodRouter} provides routing between HTTP request methods and handlers.
  *
+ * @example
  * ```ts
  * import { MethodRouter } from "https://deno.land/x/http_router@$VERSION/mod.ts";
  * import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
