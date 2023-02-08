@@ -1,4 +1,4 @@
-export * from "https://deno.land/std@0.154.0/testing/bdd.ts";
+export * from "https://deno.land/std@0.176.0/testing/bdd.ts";
 import {
   defineExpect,
   jestMatcherMap,
