@@ -1,5 +1,5 @@
 import { nest } from "./utils.ts";
-import { describe, expect, Fn, it } from "./dev_deps.ts";
+import { describe, expect, Fn, it } from "./_dev_deps.ts";
 
 describe("nest", () => {
   it("should pass", () => {

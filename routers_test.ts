@@ -1,5 +1,5 @@
 import { MethodRouter, URLRouter } from "./routers.ts";
-import { describe, expect, fn, it } from "./dev_deps.ts";
+import { describe, expect, fn, it } from "./_dev_deps.ts";
 import { Status, STATUS_TEXT } from "./deps.ts";
 
 const handler = () => new Response();
