@@ -8,6 +8,8 @@ import { PathnameRoutes } from "./types.ts";
  * It provides a hierarchy of routing tables.
  * You can define a tree structure with a depth of 1. To nest more, combine this.
  *
+ * @deprecated This module will delete next major release.
+ *
  * ```ts
  * import {
  *   nest,

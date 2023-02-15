@@ -3,24 +3,32 @@
 
 import { Handler, HttpMethod } from "./deps.ts";
 
-/** Pair of `URLPattern` and {@link URLRouteHandler} . */
+/** Pair of `URLPattern` and {@link URLRouteHandler}.
+ * @deprecated This module will delete next major release.
+ */
 export type URLPatternRoute = readonly [
   pattern: URLPatternInit | URLPattern,
   handler: URLRouteHandler,
 ];
 
-/** `URLPattern` pattern matching definition. */
+/** `URLPattern` pattern matching definition.
+ * @deprecated This module will delete next major release.
+ */
 export type URLPatternRoutes =
   | readonly URLPatternRoute[]
   | Iterable<URLPatternRoute>;
 
-/** URL pathname pattern matching definition. */
+/** URL pathname pattern matching definition.
+ * @deprecated This module will delete next major release.
+ */
 export interface PathnameRoutes {
   /** Pair of pathname and {@link URLRouteHandler}. */
   readonly [k: string]: URLRouteHandler;
 }
 
-/** Handler for URL routes. */
+/** Handler for URL routes.
+ * @deprecated This module will delete next major release.
+ */
 export interface URLRouteHandler {
   /** Handler with context. */
   (
@@ -29,18 +37,24 @@ export interface URLRouteHandler {
   ): Promise<Response> | Response;
 }
 
-/** Handler for HTTP method routes. */
+/** Handler for HTTP method routes.
+ * @deprecated This module will delete next major release.
+ */
 export interface MethodRouteHandler<M extends HttpMethod = HttpMethod> {
   /** Handler with bound HTTP methods. */
   (request: Request & { readonly method: M }): Promise<Response> | Response;
 }
 
-/** URL pattern matching definition. */
+/** URL pattern matching definition.
+ * @deprecated This module will delete next major release.
+ */
 export type URLRoutes =
   | URLPatternRoutes
   | PathnameRoutes;
 
-/** URL route handler context. */
+/** URL route handler context.
+ * @deprecated This module will delete next major release.
+ */
 export interface URLRouteHandlerContext {
   /** URL pattern. */
   readonly pattern: URLPattern;
@@ -53,12 +67,16 @@ export interface URLRouteHandlerContext {
   readonly params: URLPatternResult["pathname"]["groups"];
 }
 
-/** HTTP method matched pattern definition. */
+/** HTTP method matched pattern definition.
+ * @deprecated This module will delete next major release.
+ */
 export type HttpMethodRoutes = {
   readonly [k in HttpMethod]?: MethodRouteHandler<k>;
 };
 
-/** Router options. */
+/** Router options.
+ * @deprecated This module will delete next major release.
+ */
 export interface RouterOptions {
   /** Call on before the execution of each handler.
    * The request can be changed or return early response.
@@ -105,19 +123,25 @@ export interface RouterOptions {
   readonly afterEach?: AfterEach;
 }
 
-/** Request transformer call on before handle. */
+/** Request transformer call on before handle.
+ * @deprecated This module will delete next major release.
+ */
 export interface BeforeEach {
   (
     request: Request,
   ): Promise<void | Request | Response> | void | Request | Response;
 }
 
-/** Response transformer call on after handle. */
+/** Response transformer call on after handle.
+ * @deprecated This module will delete next major release.
+ */
 export interface AfterEach {
   (response: Response): Promise<Response | void> | Response | void;
 }
 
-/** HTTP method router options. */
+/** HTTP method router options.
+ * @deprecated This module will delete next major release.
+ */
 export interface MethodRouterOptions extends RouterOptions {
   /** If a `GET` handler is defined, it will be used to generate a response to the `HEAD` request.
    *
@@ -128,13 +152,17 @@ export interface MethodRouterOptions extends RouterOptions {
   readonly withHead?: boolean;
 }
 
-/** `URLRouter` constructor. */
+/** `URLRouter` constructor.
+ * @deprecated This module will delete next major release.
+ */
 export interface URLRouterConstructor {
   /** HTTP request URL pattern matching definition. */
   (routes: URLRoutes, options?: RouterOptions): Handler;
 }
 
-/** `MethodRouter` constructor. */
+/** `MethodRouter` constructor.
+ * @deprecated This module will delete next major release.
+ */
 export interface MethodRouterConstructor {
   /** HTTP request method pattern matching definition. */
   (routes: HttpMethodRoutes, options?: MethodRouterOptions): Handler;

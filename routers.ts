@@ -42,6 +42,8 @@ const MAX_SIZE = 100_0;
  * {@link URLRouter} provides routing between HTTP request URLs and handlers.
  * Request URL are matched with the `URLPatten API`.
  *
+ * @deprecated This module will delete next major release.
+ *
  * @throws {AggregateError} If the routes contain invalid route.
  *
  * @example
@@ -133,6 +135,8 @@ async function process(
 
 /** HTTP request method router.
  * {@link MethodRouter} provides routing between HTTP request methods and handlers.
+ *
+ * @deprecated This module will delete next major release.
  *
  * @example
  * ```ts
