@@ -34,3 +34,25 @@ export function nest(
     return { ...acc, [concatPath(root, path)]: handler };
   }, {} as PathnameRoutes);
 }
+
+export function assert(
+  input: unknown,
+  message = "Assertion failed",
+): asserts input {
+  if (!input) {
+    throw new Error(message);
+  }
+}
+
+/** HTTP request method enum. */
+export const enum Method {
+  Get = "GET",
+  Head = "HEAD",
+  Post = "POST",
+  Put = "PUT",
+  Delete = "DELETE",
+  Connect = "CONNECT",
+  Options = "OPTIONS",
+  Trace = "TRACE",
+  Patch = "PATCH",
+}

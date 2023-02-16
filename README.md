@@ -38,6 +38,28 @@ The package supports multiple platforms.
 - deno.land/x - `https://deno.land/x/http_router/mod.ts`
 - npm - `@httpland/http-router`
 
+## Router
+
+```ts
+import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
+import logger from "https://deno.land/x/http_log@$VERSION/mod.ts";
+import cors from "https://deno.land/x/http_cors@$VERSION/mod.ts";
+
+const router = new Router();
+
+router
+  .use(logger())
+  .use("/api/*", cors())
+  .get(
+    "/api/users",
+    (request) =>
+      Response.json([{ id: "0", name: "Alice" }, { id: "1", name: "Bob" }]),
+  );
+
+serve(router.handler);
+```
+
 ## URL router
 
 `URLRouter` provides routing between URLs and handlers.

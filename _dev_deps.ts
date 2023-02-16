@@ -1,4 +1,9 @@
-export * from "https://deno.land/std@0.176.0/testing/bdd.ts";
+export * from "https://deno.land/std@0.177.0/testing/bdd.ts";
+export { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+export {
+  assertSpyCalls,
+  spy,
+} from "https://deno.land/std@0.177.0/testing/mock.ts";
 import {
   defineExpect,
   jestMatcherMap,
@@ -12,6 +17,7 @@ export {
 import {
   equalsResponse,
 } from "https://deno.land/x/http_utils@1.0.0-beta.2/mod.ts";
+export { type HttpMethod } from "https://deno.land/x/http_utils@1.0.0-beta.6/requests.ts";
 
 // deno-lint-ignore no-explicit-any
 export type Fn<F extends (...args: any) => any> = [
