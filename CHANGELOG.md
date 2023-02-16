@@ -1,3 +1,10 @@
+# [3.0.0-beta.2](https://github.com/httpland/http-router/compare/3.0.0-beta.1...3.0.0-beta.2) (2023-02-16)
+
+
+### Features
+
+* **routers:** add new Router What is mutable and middleware ready ([841fe3c](https://github.com/httpland/http-router/commit/841fe3ca2adb99a8f8735916261a4e12cdd7c80d))
+
 # [3.0.0-beta.1](https://github.com/httpland/http-router/compare/2.1.0...3.0.0-beta.1) (2022-10-08)
 
 
