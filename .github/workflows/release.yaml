@@ -73,7 +73,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Benchmark
-        run: deno task bench
+        run: deno bench
 
   release:
     needs: [lint, test, bench]
