@@ -40,6 +40,16 @@ The package supports multiple platforms.
 
 ## Router
 
+`Router` is a router that can match HTTP request methods and HTTP request URL
+paths.
+
+Since the Web convention is to use HTTP method and URL path to identify
+resources, this should satisfy most people's needs.
+
+It registers a handler from the method corresponding to the HTTP request method,
+and can also use the dynamic paths available in the
+[URLPattern API](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern).
+
 ```ts
 import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 import { serve } from "https://deno.land/std@$VERSION/http/mod.ts";
