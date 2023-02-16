@@ -7,7 +7,7 @@ export {
 } from "https://deno.land/x/isx@1.0.0-beta.24/mod.ts";
 export {
   type HttpHandler as Handler,
-} from "https://deno.land/x/http_utils@1.0.0-beta.4/mod.ts";
+} from "https://deno.land/x/http_utils@1.0.0-beta.6/handlers.ts";
 export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
 export {
   toLowerCase,

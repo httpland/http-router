@@ -1,5 +1,5 @@
-import { build, emptyDir } from "https://deno.land/x/dnt@0.30.0/mod.ts";
-import { join } from "https://deno.land/std@0.151.0/path/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.33.1/mod.ts";
+import { join } from "https://deno.land/std@0.177.0/path/mod.ts";
 import { makeOptions } from "./meta.ts";
 
 async function buildPkg(version: string): Promise<void> {

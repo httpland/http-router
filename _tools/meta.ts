@@ -1,4 +1,4 @@
-import { BuildOptions } from "https://deno.land/x/dnt@0.30.0/mod.ts";
+import { BuildOptions } from "https://deno.land/x/dnt@0.33.1/mod.ts";
 
 export const makeOptions = (version: string): BuildOptions => ({
   test: false,
@@ -10,7 +10,7 @@ export const makeOptions = (version: string): BuildOptions => ({
     }],
   },
   compilerOptions: {
-    lib: ["es2022"],
+    lib: ["esnext", "dom"],
   },
   typeCheck: false,
   entryPoints: ["./mod.ts"],
@@ -18,7 +18,7 @@ export const makeOptions = (version: string): BuildOptions => ({
   package: {
     name: "@httpland/http-router",
     version,
-    description: "HTTP request router for standard Request and Response",
+    description: "HTTP router for standard Request and Response",
     keywords: [
       "http",
       "router",

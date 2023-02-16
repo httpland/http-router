@@ -1,7 +1,8 @@
 {
   "tasks": {
     "test": "deno test --doc",
-    "coverage": "deno coverage "
+    "coverage": "deno coverage",
+    "build:npm": "deno run -A _tools/build_npm.ts"
   },
   "fmt": {
     "files": {
