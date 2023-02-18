@@ -105,6 +105,38 @@ describe("Router", () => {
     assert(equalsResponse(response, init));
   });
 
+  it("should call next handler when the first handler does not match method", async () => {
+    const fn = spy();
+
+    const router = new Router()
+      .post(() => {
+        fn();
+        return new Response();
+      })
+      .get(() => new Response("ok"));
+
+    const response = await router.handler(new Request("http://test"));
+
+    assertSpyCalls(fn, 0);
+    assertEquals(await response.text(), "ok");
+  });
+
+  it("should call next handler when the first handler does not match pattern", async () => {
+    const fn = spy();
+
+    const router = new Router()
+      .get("/:id", () => {
+        fn();
+        return new Response();
+      })
+      .get(() => new Response("ok"));
+
+    const response = await router.handler(new Request("http://test"));
+
+    assertSpyCalls(fn, 0);
+    assertEquals(await response.text(), "ok");
+  });
+
   it("should call next handler when the next is called", async () => {
     const init = new Response("ok");
     const fn = spy();
