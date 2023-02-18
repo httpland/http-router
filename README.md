@@ -26,6 +26,27 @@ The package supports multiple platforms.
 - deno.land/x - `https://deno.land/x/http_router/mod.ts`
 - npm - `@httpland/http-router`
 
+## What
+
+Provides a router for routing HTTP requests. The essence of an HTTP router is a
+function that receives a `Request` and returns a `Response`. Also, routing
+always consists of declarative conditions and branching.
+
+### Declarative conditions
+
+The first-class conditions that this project addresses are HTTP request method
+and URL path. The result is an API similar to those used by many libraries.
+
+```ts
+import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+const router = new Router();
+router.get("/greet", () => new Response("hello"));
+```
+
+Mapping conditions to handlers using methods corresponding to HTTP methods and
+URL paths conforming to the URLPattern API.
+
 ## Router
 
 `Router` is a router that can match HTTP request methods and HTTP request URL
@@ -47,8 +68,8 @@ import cors from "https://deno.land/x/http_cors@$VERSION/mod.ts";
 const router = new Router();
 
 router
-  .use(logger())
-  .use("/api/*", cors())
+  .all(logger())
+  .all("/api/*", cors())
   .get(
     "/api/users",
     (request) =>
