@@ -1,4 +1,4 @@
-import { Router } from "./routers.ts";
+import { Router } from "./router.ts";
 import {
   createRouteMap as createRenoMap,
   createRouter as createReno,
