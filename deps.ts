@@ -9,6 +9,7 @@ export {
   type HttpHandler as Handler,
 } from "https://deno.land/x/http_utils@1.0.0-beta.6/handlers.ts";
 export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
+export { mapValues } from "https://deno.land/std@0.177.0/collections/map_values.ts";
 export {
   toLowerCase,
 } from "https://deno.land/x/prelude_js@1.0.0-beta.3/mod.ts";
@@ -24,3 +25,4 @@ export {
 export {
   partition,
 } from "https://deno.land/std@0.177.0/collections/partition.ts";
+export { type ParseUrlParams } from "https://cdn.skypack.dev/typed-url-params@1.0.1?dts";

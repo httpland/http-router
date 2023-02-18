@@ -4,7 +4,7 @@
 import { Handler } from "./deps.ts";
 
 /** HTTP request method routing API. */
-export interface MethodRoutable {
+export interface MethodRouting {
   /** HTTP request `GET` matching API.
    * @param handler HTTP handler
    */
@@ -51,7 +51,7 @@ export interface MethodRoutable {
   readonly trace: (handler: Handler) => this;
 }
 
-export interface MethodPathRoutable {
+export interface MethodPathRouting {
   /** HTTP request `GET` and URL path matching API.
    * @param path URL path
    * @param handler HTTP handler
@@ -107,14 +107,15 @@ export interface MethodPathRoutable {
   readonly trace: (path: string, handler: Handler) => this;
 }
 
-export interface PathUseable {
-  readonly use: (path: string, ...handlers: readonly Handler[]) => this;
-}
-
 export interface Handling {
   readonly handler: Handler;
 }
 
-export interface Useable {
-  readonly use: (...handlers: readonly Handler[]) => this;
+export interface Routing {
+  readonly routes: Iterable<Route>;
+}
+
+export interface Route {
+  // deno-lint-ignore no-explicit-any
+  readonly handler: (...args: any) => Response | Promise<Response>;
 }
