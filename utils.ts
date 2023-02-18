@@ -37,3 +37,24 @@ const DefaultDescriptor: PropertyDescriptor = { writable: true };
 export function toPropertyDescriptor(value: unknown): PropertyDescriptor {
   return { ...DefaultDescriptor, value };
 }
+
+export function matchMethod(
+  candidates: readonly string[],
+  method: string,
+): boolean;
+export function matchMethod(candidate: string, method: string): boolean;
+export function matchMethod(
+  candidates: string | readonly string[],
+  method: string,
+): boolean {
+  const list = toList(candidates);
+
+  if (!list.length) return true;
+
+  return list.includes(method);
+}
+
+export function toList<T>(input: T): T extends readonly unknown[] ? T : [T] {
+  // deno-lint-ignore no-explicit-any
+  return Array.isArray(input) ? input as any : [input];
+}

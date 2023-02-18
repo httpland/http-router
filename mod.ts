@@ -2,4 +2,4 @@
 // This module is browser compatible.
 
 export { Router } from "./router.ts";
-export { type Handler } from "./deps.ts";
+export { type Handler, type Middleware } from "./deps.ts";

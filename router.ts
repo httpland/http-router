@@ -15,7 +15,13 @@ import type {
   MethodRouting,
   Routing,
 } from "./types.ts";
-import { assert, Method, toPropertyDescriptor, type With } from "./utils.ts";
+import {
+  assert,
+  matchMethod,
+  Method,
+  toPropertyDescriptor,
+  type With,
+} from "./utils.ts";
 
 interface PathParams<Path extends string = string> {
   /** URL path parameters. */
@@ -557,12 +563,8 @@ export class Router
 }
 
 function routeToMiddleware(route: MethodsPatternRoute): Middleware {
-  function matchMethod(method: string): boolean {
-    return !route.methods.length || route.methods.includes(method);
-  }
-
-  return (request, next) => {
-    if (!matchMethod(request.method)) return next(request);
+  const middleware: Middleware = (request, next) => {
+    if (!matchMethod(route.methods, request.method)) return next(request);
 
     const result = route.pattern.exec(request.url);
 
@@ -574,12 +576,17 @@ function routeToMiddleware(route: MethodsPatternRoute): Middleware {
     };
 
     const properties = mapValues(context, toPropertyDescriptor);
-    const responseWithContext = Object.defineProperties(request, properties) as
+    const responseWithContext = Object.defineProperties(
+      request.clone(),
+      properties,
+    ) as
       & Request
       & RouteContext;
 
     return route.handler(responseWithContext, next);
   };
+
+  return middleware;
 }
 
 function concatPrefix(
