@@ -42,7 +42,7 @@ export interface RouteContext<Path extends string = string>
 
 export interface MethodsPatternRoute {
   readonly methods: readonly string[];
-  readonly pattern: URLPatternInit;
+  readonly pattern: URLPattern;
 
   readonly handler: With<RouteContext, Middleware>;
 }
@@ -566,8 +566,8 @@ export class Router
     method?: string,
   ): void {
     const is = isString(pathOrHandler);
-    const pathname = is ? pathOrHandler : undefined;
-    const pattern: URLPatternInit = { pathname };
+    const pathname = is ? pathOrHandler : "*";
+    const pattern = new URLPattern({ pathname });
     const middleware = is ? handler : pathOrHandler;
 
     assert(middleware);
@@ -611,9 +611,8 @@ function concatPrefix(
   route: MethodsPatternRoute,
   prefix: string,
 ): MethodsPatternRoute {
-  const path = concatPath(prefix, route.pattern.pathname ?? "");
-  const pathname = path ? path : undefined;
-  const pattern: URLPatternInit = { ...route.pattern, pathname };
+  const pathname = concatPath(prefix, route.pattern.pathname);
+  const pattern = new URLPattern({ ...route.pattern, pathname });
 
   return { ...route, pattern };
 }

@@ -34,7 +34,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
 
       assertEquals(router.routes, [{
         methods: [upperMethod],
-        pattern: { pathname: undefined },
+        pattern: new URLPattern({}),
         handler,
       }]);
     });
@@ -45,7 +45,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
 
       assertEquals(router.routes, [{
         methods: [upperMethod],
-        pattern: { pathname: "/api" },
+        pattern: new URLPattern({ pathname: "/api/*" }),
         handler,
       }]);
     });
@@ -76,7 +76,7 @@ describe("Router", () => {
 
     assertEquals(new Router().all(handler).routes, [{
       methods: [],
-      pattern: { pathname: undefined },
+      pattern: new URLPattern({}),
       handler,
     }]);
   });
@@ -162,7 +162,7 @@ describe("Router", () => {
 
     assertEquals(apiRouter.routes, [{
       methods: [],
-      pattern: { pathname: undefined },
+      pattern: new URLPattern({}),
       handler,
     }]);
   });
@@ -174,7 +174,7 @@ describe("Router", () => {
 
     assertEquals(router.routes, [{
       methods: ["GET"],
-      pattern: { pathname: "/api/users" },
+      pattern: new URLPattern({ pathname: "/api/users" }),
       handler,
     }]);
   });
@@ -197,10 +197,18 @@ describe("Router", () => {
       .use(apiRouter);
 
     assertEquals(router.routes, [
-      { handler, methods: [], pattern: { pathname: undefined } },
-      { handler, methods: [], pattern: { pathname: "/api" } },
-      { handler, methods: ["GET"], pattern: { pathname: "/api/users/" } },
-      { handler, methods: ["GET"], pattern: { pathname: "/api/users/:id" } },
+      { handler, methods: [], pattern: new URLPattern({}) },
+      { handler, methods: [], pattern: new URLPattern({ pathname: "/api/*" }) },
+      {
+        handler,
+        methods: ["GET"],
+        pattern: new URLPattern({ pathname: "/api/users/" }),
+      },
+      {
+        handler,
+        methods: ["GET"],
+        pattern: new URLPattern({ pathname: "/api/users/:id" }),
+      },
     ]);
   });
 });
