@@ -104,4 +104,46 @@ describe("Router", () => {
     assertSpyCalls(fn, 1);
     assert(equalsResponse(response, init));
   });
+
+  it("should call next handler when the next is called", async () => {
+    const init = new Response("ok");
+    const fn = spy();
+
+    const router = new Router()
+      .all((req, next) => {
+        fn();
+        return next(req);
+      })
+      .get("/match", () => init);
+
+    const response = await router.handler(new Request("http://test/match"));
+
+    assertSpyCalls(fn, 1);
+    assert(equalsResponse(response, init));
+  });
+
+  it("should bind another router", () => {
+    const handler = () => Response.json("");
+
+    const userRouter = new Router().all(handler);
+    const apiRouter = new Router().use(userRouter);
+
+    assertEquals(apiRouter.routes, [{
+      methods: [],
+      pattern: new URLPattern({}),
+      handler,
+    }]);
+  });
+
+  it("should add base prefix", () => {
+    const handler = () => Response.json("");
+
+    const router = new Router({ base: "/api" }).get("/users", handler);
+
+    assertEquals(router.routes, [{
+      methods: ["GET"],
+      pattern: new URLPattern({ pathname: "/api/users" }),
+      handler,
+    }]);
+  });
 });
