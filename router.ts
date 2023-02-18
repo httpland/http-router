@@ -23,9 +23,9 @@ import {
   type With,
 } from "./utils.ts";
 
-interface PathParams<Path extends string = string> {
+export interface ParamsContext<Context = unknown> {
   /** URL path parameters. */
-  readonly params: ParseUrlParams<Path>;
+  readonly params: Context;
 }
 
 interface URLMatch {
@@ -38,11 +38,11 @@ interface RequestMethod<Method extends string = string> {
 
 /** Context for built-in routing. */
 export interface RouteContext<Path extends string = string>
-  extends PathParams<Path>, URLMatch {}
+  extends ParamsContext<ParseUrlParams<Path>>, URLMatch {}
 
 export interface MethodsPatternRoute {
   readonly methods: readonly string[];
-  readonly pattern: URLPattern;
+  readonly pattern: URLPatternInit;
 
   readonly handler: With<RouteContext, Middleware>;
 }
@@ -75,8 +75,19 @@ export class Router
     this.#base = options?.base;
   }
 
-  use(router: RouterLike): this {
-    this.#routes = this.#routes.concat(router.routes);
+  /** Register routes from router
+   * @example
+   * ```ts
+   * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   * const router = new Router();
+   *
+   * ```
+   */
+  use(...routers: readonly RouterLike[]): this {
+    this.#routes = [
+      ...this.#routes,
+      ...routers.map((router) => router.routes).flat(),
+    ];
 
     return this;
   }
@@ -136,7 +147,12 @@ export class Router
    */
   get<Path extends string>(
     path: Path,
-    handler: With<RouteContext<Path> & RequestMethod<Method.Get>, Middleware>,
+    handler: With<
+      & RouteContext<Path>
+      & RequestMethod<Method.Get>
+      & ParamsContext<ParseUrlParams<Path>>,
+      Middleware
+    >,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
    * @param handler HTTP handler
@@ -550,12 +566,12 @@ export class Router
     method?: string,
   ): void {
     const is = isString(pathOrHandler);
-    const path = is ? pathOrHandler : "*";
+    const pathname = is ? pathOrHandler : undefined;
+    const pattern: URLPatternInit = { pathname };
     const middleware = is ? handler : pathOrHandler;
 
     assert(middleware);
 
-    const pattern = new URLPattern({ pathname: path });
     const methods = isString(method) ? [method] : [];
 
     this.#routes.push({ methods, handler: middleware, pattern });
@@ -563,10 +579,12 @@ export class Router
 }
 
 function routeToMiddleware(route: MethodsPatternRoute): Middleware {
+  const pattern = new URLPattern(route.pattern);
+
   const middleware: Middleware = (request, next) => {
     if (!matchMethod(route.methods, request.method)) return next(request);
 
-    const result = route.pattern.exec(request.url);
+    const result = pattern.exec(request.url);
 
     if (!result) return next(request);
 
@@ -593,8 +611,9 @@ function concatPrefix(
   route: MethodsPatternRoute,
   prefix: string,
 ): MethodsPatternRoute {
-  const pathname = concatPath(prefix, route.pattern.pathname);
-  const pattern = new URLPattern({ ...route.pattern, pathname });
+  const path = concatPath(prefix, route.pattern.pathname ?? "");
+  const pathname = path ? path : undefined;
+  const pattern: URLPatternInit = { ...route.pattern, pathname };
 
   return { ...route, pattern };
 }

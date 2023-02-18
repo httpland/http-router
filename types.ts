@@ -1,7 +1,10 @@
 // Copyright 2023-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Handler } from "./deps.ts";
+/** HTTP request handler. */
+export interface Handler<Context = unknown> {
+  (request: Request & Context): Promise<Response> | Response;
+}
 
 /** HTTP request method routing API. */
 export interface MethodRouting {

@@ -9,8 +9,8 @@ import {
   it,
   spy,
 } from "./_dev_deps.ts";
-import type { Handler } from "./deps.ts";
 import { assert } from "./utils.ts";
+import type { Handler } from "./types.ts";
 
 const method: Lowercase<HttpMethod>[] = [
   "get",
@@ -34,7 +34,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
 
       assertEquals(router.routes, [{
         methods: [upperMethod],
-        pattern: new URLPattern({}),
+        pattern: { pathname: undefined },
         handler,
       }]);
     });
@@ -45,7 +45,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
 
       assertEquals(router.routes, [{
         methods: [upperMethod],
-        pattern: new URLPattern({ pathname: "/api/*" }),
+        pattern: { pathname: "/api" },
         handler,
       }]);
     });
@@ -76,7 +76,7 @@ describe("Router", () => {
 
     assertEquals(new Router().all(handler).routes, [{
       methods: [],
-      pattern: new URLPattern({}),
+      pattern: { pathname: undefined },
       handler,
     }]);
   });
@@ -162,7 +162,7 @@ describe("Router", () => {
 
     assertEquals(apiRouter.routes, [{
       methods: [],
-      pattern: new URLPattern({}),
+      pattern: { pathname: undefined },
       handler,
     }]);
   });
@@ -174,8 +174,33 @@ describe("Router", () => {
 
     assertEquals(router.routes, [{
       methods: ["GET"],
-      pattern: new URLPattern({ pathname: "/api/users" }),
+      pattern: { pathname: "/api/users" },
       handler,
     }]);
+  });
+
+  it("should complex nested routes", () => {
+    const handler = () => new Response();
+    const userRouter = new Router()
+      .get("/:id", handler);
+
+    const usersRouter = new Router({ base: "/users" })
+      .get("/", handler)
+      .use(userRouter);
+
+    const apiRouter = new Router({ base: "/api" })
+      .all(handler)
+      .use(usersRouter);
+
+    const router = new Router()
+      .all(handler)
+      .use(apiRouter);
+
+    assertEquals(router.routes, [
+      { handler, methods: [], pattern: { pathname: undefined } },
+      { handler, methods: [], pattern: { pathname: "/api" } },
+      { handler, methods: ["GET"], pattern: { pathname: "/api/users/" } },
+      { handler, methods: ["GET"], pattern: { pathname: "/api/users/:id" } },
+    ]);
   });
 });
