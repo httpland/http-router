@@ -1,3 +1,16 @@
+# [3.0.0-beta.3](https://github.com/httpland/http-router/compare/3.0.0-beta.2...3.0.0-beta.3) (2023-02-18)
+
+
+### Features
+
+* delete API ([181c7c6](https://github.com/httpland/http-router/commit/181c7c62513d8c26c1213b6e8457ff85a4fc1694)), closes [#31](https://github.com/httpland/http-router/issues/31)
+* **router.ts:** add new router and types ([4e9479e](https://github.com/httpland/http-router/commit/4e9479e190e8fc4016b5c9e6e04e4682707cc4dc))
+
+
+### BREAKING CHANGES
+
+* delete `MethodRouter`, `URLRouter` and releated types
+
 # [3.0.0-beta.2](https://github.com/httpland/http-router/compare/3.0.0-beta.1...3.0.0-beta.2) (2023-02-16)
 
 
