@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "start": "deno run -A main.ts"
+  },
+  "importMap": "./import_map.json",
+  "compilerOptions": {
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
