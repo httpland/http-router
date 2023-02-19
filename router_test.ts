@@ -89,12 +89,13 @@ describe("Router", () => {
     const init = new Response();
 
     const fn = spy();
-    const router = new Router().get("/:id", (request) => {
+    const router = new Router().get("/:id", function (request) {
       fn();
-      assertEquals(request.params, { id: "100" });
+
+      assertEquals(this.params, { id: "100" });
 
       const result = new URLPattern({ pathname: "/:id" }).exec(request.url);
-      assertEquals(request.match, result);
+      assertEquals(this.match, result);
 
       return init;
     });

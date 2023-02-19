@@ -5,7 +5,6 @@ import {
   chain,
   concatPath,
   isString,
-  mapValues,
   type Middleware,
   type ParseUrlParams,
 } from "./deps.ts";
@@ -15,36 +14,28 @@ import type {
   MethodRouting,
   Routing,
 } from "./types.ts";
-import {
-  assert,
-  matchMethod,
-  Method,
-  toPropertyDescriptor,
-  type With,
-} from "./utils.ts";
+import { assert, matchMethod, Method, type This } from "./utils.ts";
 
-export interface ParamsContext<Context = unknown> {
+/** Context of `params`. */
+export interface ParamsContext<K extends string> {
   /** URL path parameters. */
-  readonly params: Context;
+  readonly params: { readonly [k in K]: string };
 }
 
-interface URLMatch {
+/** Context of `match`. */
+export interface MatchContext {
+  /** URL pattern matching result. */
   readonly match: URLPatternResult;
 }
 
-interface RequestMethod<Method extends string = string> {
-  readonly method: Method;
-}
-
-/** Context for built-in routing. */
-export interface RouteContext<Path extends string = string>
-  extends ParamsContext<ParseUrlParams<Path>>, URLMatch {}
+export interface RouteContext<K extends string = string>
+  extends ParamsContext<K>, MatchContext {}
 
 export interface MethodsPatternRoute {
   readonly methods: readonly string[];
   readonly pattern: URLPattern;
 
-  readonly handler: With<RouteContext, Middleware>;
+  readonly handler: This<RouteContext, Middleware>;
 }
 
 export interface RouterOptions {
@@ -84,10 +75,9 @@ export class Router
    * ```
    */
   use(...routers: readonly RouterLike[]): this {
-    this.#routes = [
-      ...this.#routes,
-      ...routers.map((router) => router.routes).flat(),
-    ];
+    this.#routes = this.#routes.concat(
+      routers.map((router) => router.routes).flat(),
+    );
 
     return this;
   }
@@ -110,7 +100,7 @@ export class Router
    */
   all<Path extends string>(
     path: Path,
-    handler: With<RouteContext<Path>, Middleware>,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
@@ -127,7 +117,7 @@ export class Router
   all(handler: Middleware): this;
   all(
     pathOrHandler: Middleware | string,
-    handler?: With<RouteContext, Middleware>,
+    handler?: Middleware,
   ): this {
     this.#register(pathOrHandler, handler);
 
@@ -142,17 +132,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().get("/:id", (request) => Response.json(request.params.id))
+   * new Router().get("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   get<Path extends string>(
     path: Path,
-    handler: With<
-      & RouteContext<Path>
-      & RequestMethod<Method.Get>
-      & ParamsContext<ParseUrlParams<Path>>,
-      Middleware
-    >,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
    * @param handler HTTP handler
@@ -167,13 +154,9 @@ export class Router
   get(handler: Middleware): this;
   get(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler as With<RouteContext, Middleware>,
-      Method.Get,
-    );
+    this.#register(pathOrHandler, handler, Method.Get);
 
     return this;
   }
@@ -186,12 +169,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().head("/:id", (request) => Response.json(request.params.id))
+   * new Router().head("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   head<Path extends string>(
     path: Path,
-    handler: With<RouteContext<Path> & RequestMethod<Method.Head>, Middleware>,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `HEAD`.
    * @param handler HTTP handler
@@ -204,13 +189,10 @@ export class Router
    * ```
    */
   head(handler: Middleware): this;
-  head(
-    pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
-  ): this {
+  head(pathOrHandler: string | Middleware, handler?: Middleware): this {
     this.#register(
       pathOrHandler,
-      handler as With<RouteContext, Middleware>,
+      handler,
       Method.Head,
     );
 
@@ -225,12 +207,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().post("/:id", (request) => Response.json(request.params.id))
+   * new Router().post("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   post<Path extends string>(
     path: Path,
-    handler: With<RouteContext<Path> & RequestMethod<Method.Post>, Middleware>,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `POST`.
    * @param handler HTTP handler
@@ -245,13 +229,9 @@ export class Router
   post(handler: Middleware): this;
   post(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler as With<RouteContext, Middleware>,
-      Method.Post,
-    );
+    this.#register(pathOrHandler, handler, Method.Post);
 
     return this;
   }
@@ -264,12 +244,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().put("/:id", (request) => Response.json(request.params.id))
+   * new Router().put("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   put<Path extends string>(
     path: Path,
-    handler: With<RouteContext<Path> & RequestMethod<Method.Put>, Middleware>,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PUT`.
    * @param handler HTTP handler
@@ -284,13 +266,9 @@ export class Router
   put(handler: Middleware): this;
   put(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler as With<RouteContext, Middleware>,
-      Method.Put,
-    );
+    this.#register(pathOrHandler, handler, Method.Put);
 
     return this;
   }
@@ -303,15 +281,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().delete("/:id", (request) => Response.json(request.params.id))
+   * new Router().delete("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   delete<Path extends string>(
     path: Path,
-    handler: With<
-      RouteContext<Path> & RequestMethod<Method.Delete>,
-      Middleware
-    >,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `DELETE`.
    * @param handler HTTP handler
@@ -326,11 +303,11 @@ export class Router
   delete(handler: Middleware): this;
   delete(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
     this.#register(
       pathOrHandler,
-      handler as With<RouteContext, Middleware>,
+      handler,
       Method.Delete,
     );
 
@@ -345,15 +322,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().patch("/:id", (request) => Response.json(request.params.id))
+   * new Router().patch("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   patch<Path extends string>(
     path: Path,
-    handler: With<
-      RouteContext<Path> & RequestMethod<Method.Patch>,
-      Middleware
-    >,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PATCH`.
    * @param handler HTTP handler
@@ -368,11 +344,11 @@ export class Router
   patch(handler: Middleware): this;
   patch(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
     this.#register(
       pathOrHandler,
-      handler as With<RouteContext, Middleware>,
+      handler,
       Method.Patch,
     );
 
@@ -387,15 +363,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().options("/:id", (request) => Response.json(request.params.id))
+   * new Router().options("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   options<Path extends string>(
     path: Path,
-    handler: With<
-      RouteContext<Path> & RequestMethod<Method.Options>,
-      Middleware
-    >,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `OPTIONS`.
    * @param handler HTTP handler
@@ -410,11 +385,11 @@ export class Router
   options(handler: Middleware): this;
   options(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
     this.#register(
       pathOrHandler,
-      handler as With<RouteContext, Middleware>,
+      handler,
       Method.Options,
     );
 
@@ -429,15 +404,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().trace("/:id", (request) => Response.json(request.params.id))
+   * new Router().trace("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   trace<Path extends string>(
     path: Path,
-    handler: With<
-      RouteContext<Path> & RequestMethod<Method.Trace>,
-      Middleware
-    >,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `TRACE`.
    * @param handler HTTP handler
@@ -452,11 +426,11 @@ export class Router
   trace(handler: Middleware): this;
   trace(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
     this.#register(
       pathOrHandler,
-      handler as With<RouteContext, Middleware>,
+      handler,
       Method.Trace,
     );
 
@@ -471,15 +445,14 @@ export class Router
    * ```ts
    * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
-   * new Router().connect("/:id", (request) => Response.json(request.params.id))
+   * new Router().connect("/:id", function (request) {
+   *   return Response.json(this.params.id)
+   * })
    * ```
    */
   connect<Path extends string>(
     path: Path,
-    handler: With<
-      RouteContext<Path> & RequestMethod<Method.Connect>,
-      Middleware
-    >,
+    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `CONNECT`.
    * @param handler HTTP handler
@@ -494,11 +467,11 @@ export class Router
   connect(handler: Middleware): this;
   connect(
     pathOrHandler: string | Middleware,
-    handler?: With<RouteContext & RequestMethod<never>, Middleware>,
+    handler?: Middleware,
   ): this {
     this.#register(
       pathOrHandler,
-      handler as With<RouteContext, Middleware>,
+      handler,
       Method.Connect,
     );
 
@@ -562,7 +535,7 @@ export class Router
    */
   #register(
     pathOrHandler: string | Middleware,
-    handler: With<RouteContext, Middleware> | undefined,
+    handler: Middleware | undefined,
     method?: string,
   ): void {
     const is = isString(pathOrHandler);
@@ -576,6 +549,16 @@ export class Router
 
     this.#routes.push({ methods, handler: middleware, pattern });
   }
+
+  x<T>(
+    handler: (this: T, request: Request) => Response | Promise<Response>,
+  ): this;
+  x(
+    handler: (request: Request) => Response | Promise<Response>,
+  ): this {
+    this.#register("", handler);
+    return this;
+  }
 }
 
 function routeToMiddleware(route: MethodsPatternRoute): Middleware {
@@ -588,20 +571,12 @@ function routeToMiddleware(route: MethodsPatternRoute): Middleware {
 
     if (!result) return next(request);
 
-    const context = {
+    const context: RouteContext = {
       match: result,
       params: result.pathname.groups,
     };
 
-    const properties = mapValues(context, toPropertyDescriptor);
-    const responseWithContext = Object.defineProperties(
-      request.clone(),
-      properties,
-    ) as
-      & Request
-      & RouteContext;
-
-    return route.handler(responseWithContext, next);
+    return route.handler.bind(context)(request, next);
   };
 
   return middleware;

@@ -23,21 +23,6 @@ export const enum Method {
   Patch = "PATCH",
 }
 
-/** Expand first argument of any function. */
-export type With<
-  T,
-  // deno-lint-ignore no-explicit-any
-  F extends (...args: any) => any,
-> = F extends (...args: [infer First, ...infer Rest]) => infer R
-  ? (...args: readonly [First & T, ...Rest]) => R
-  : never;
-
-const DefaultDescriptor: PropertyDescriptor = { writable: true };
-
-export function toPropertyDescriptor(value: unknown): PropertyDescriptor {
-  return { ...DefaultDescriptor, value };
-}
-
 export function matchMethod(
   candidates: readonly string[],
   method: string,
@@ -57,4 +42,9 @@ export function matchMethod(
 export function toList<T>(input: T): T extends readonly unknown[] ? T : [T] {
   // deno-lint-ignore no-explicit-any
   return Array.isArray(input) ? input as any : [input];
+}
+
+// deno-lint-ignore no-explicit-any
+export interface This<T, F extends (...args: any) => any> {
+  (this: T, ...args: Parameters<F>): ReturnType<F>;
 }
