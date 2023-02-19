@@ -8,14 +8,14 @@ const handleUsers: Handler = () => {
   return Response.json(db.users);
 };
 
-const handleUser: Handler<ParamsContext<{ id: string }>> = (request) => {
-  const id = request.params.id;
+function handleUser(this: ParamsContext<"id">): Response {
+  const id = this.params.id;
   const user = db.users.find((user) => user.id === id);
 
   if (user) return Response.json(user);
 
   return new Response(null, { status: 404 });
-};
+}
 
 const router = new Router()
   .all(logger())

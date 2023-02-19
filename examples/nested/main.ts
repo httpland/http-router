@@ -6,20 +6,20 @@ import logger from "https://deno.land/x/http_log@1.0.0-beta.2/mod.ts";
 
 const handleUsers: Handler = () => Response.json(db.users);
 
-const handleUser: Handler<ParamsContext<{ id: string }>> = (request) => {
-  const id = request.params.id;
+function handleUser(this: ParamsContext<"id">) {
+  const id = this.params.id;
   const user = db.users.find((user) => user.id === id);
 
   if (user) return Response.json(user);
 
   return new Response(null, { status: 404 });
-};
+}
 
 const userRouter = new Router()
   .get("/:id", handleUser);
 
 const usersRouter = new Router({ base: "/users" })
-  .get(handleUsers)
+  .get("/", handleUsers)
   .use(userRouter);
 
 const apiRouter = new Router({ base: "/api" })
@@ -29,8 +29,6 @@ const apiRouter = new Router({ base: "/api" })
 const router = new Router()
   .all(logger())
   .use(apiRouter);
-
-console.log(router.routes);
 
 serve(router.handler, {
   onError: (error) => {
