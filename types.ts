@@ -123,11 +123,6 @@ export interface Handling {
   readonly handler: Handler;
 }
 
-export interface Routing {
-  readonly routes: Iterable<Route>;
-}
-
-export interface Route {
-  // deno-lint-ignore no-explicit-any
-  readonly handler: (...args: any) => Response | Promise<Response>;
-}
+export type Params<T extends PropertyKey> = {
+  readonly [k in T]: string;
+};

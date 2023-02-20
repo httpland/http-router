@@ -7,14 +7,14 @@ import type {
   MethodPathRouting,
   MethodRouting,
   Middleware,
-  Routing,
+  Params,
 } from "./types.ts";
 import { assert, matchMethod, Method } from "./utils.ts";
 
 /** Context of `params`. */
-export interface ParamsContext<K extends string = string> {
+export interface ParamsContext<T extends string = string> {
   /** URL path parameters. */
-  readonly params: { readonly [k in K]: string };
+  readonly params: Params<T>;
 }
 
 /** Context of `match`. */
@@ -26,15 +26,22 @@ export interface MatchContext {
 export interface RouteContext<T extends string = string>
   extends ParamsContext<T>, MatchContext {}
 
-export interface MethodsPatternRoute {
+export interface Route {
+  /** Match with HTTP methods.
+   * Empty matching that it matches all method.
+   */
   readonly methods: readonly string[];
+
+  /** Match with URL pattern. */
   readonly pattern: URLPattern;
 
+  /** {@link RouteContext}-dependent middleware */
   readonly handler: Middleware<RouteContext>;
 }
 
-interface RouterLike {
-  readonly routes: readonly MethodsPatternRoute[];
+export interface RouterLike {
+  /** All route. */
+  readonly routes: readonly Route[];
 }
 
 /** HTTP router builder.
@@ -48,8 +55,8 @@ interface RouterLike {
  * ```
  */
 export class Router
-  implements MethodRouting, MethodPathRouting, Routing, Handling {
-  #routes: MethodsPatternRoute[] = [];
+  implements MethodRouting, MethodPathRouting, Handling, RouterLike {
+  #routes: Route[] = [];
 
   /** Use the different routers.
    *
@@ -159,10 +166,10 @@ export class Router
    */
   get(handler: Middleware): this;
   get(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware,
     handler?: Middleware<RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Get);
+    this.#register(that, handler, Method.Get);
 
     return this;
   }
@@ -520,7 +527,7 @@ export class Router
    * assertEquals(router.routes.length, 1);
    * ```
    */
-  get routes(): readonly MethodsPatternRoute[] {
+  get routes(): readonly Route[] {
     return this.#routes;
   }
 
@@ -551,7 +558,7 @@ export class Router
   }
 }
 
-function routeToMiddleware(route: MethodsPatternRoute): Middleware {
+function routeToMiddleware(route: Route): Middleware {
   const pattern = new URLPattern(route.pattern);
 
   const middleware: Middleware = (request, next) => {
@@ -573,9 +580,9 @@ function routeToMiddleware(route: MethodsPatternRoute): Middleware {
 }
 
 function concatPrefix(
-  route: MethodsPatternRoute,
+  route: Route,
   prefix: string,
-): MethodsPatternRoute {
+): Route {
   const pathname = concatPath(prefix, route.pattern.pathname);
   console.log(pathname);
   const pattern = new URLPattern({ ...route.pattern, pathname });
