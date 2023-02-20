@@ -33,11 +33,6 @@ export interface MethodsPatternRoute {
   readonly handler: Middleware<RouteContext>;
 }
 
-export interface RouterOptions {
-  /** Base URL path. */
-  readonly base: string;
-}
-
 interface RouterLike {
   readonly routes: readonly MethodsPatternRoute[];
 }
@@ -55,23 +50,37 @@ interface RouterLike {
 export class Router
   implements MethodRouting, MethodPathRouting, Routing, Handling {
   #routes: MethodsPatternRoute[] = [];
-  #base: string | undefined;
 
-  constructor(options?: RouterOptions) {
-    this.#base = options?.base;
-  }
-
-  /** Register routes from router
+  /** Use the different routers.
+   *
    * @example
    * ```ts
-   * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-   * const router = new Router();
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
    *
+   * declare const handler: Handler;
+   *
+   * const userRouter = new Router().get("/:id", handler);
+   * const usersRouter = new Router().use("/users", userRouter);
+   * const apiRouter = new Router().use("/api", userRouter);
    * ```
    */
-  use(...routers: readonly RouterLike[]): this {
+  use(
+    path: string,
+    ...routers: readonly RouterLike[]
+  ): this;
+  use(...routers: readonly RouterLike[]): this;
+  use(
+    pathOrRouter: string | RouterLike,
+    ...routers: readonly RouterLike[]
+  ): this {
+    const is = isString(pathOrRouter);
+    const pathname = is ? pathOrRouter : "";
+    const $routers = is ? routers : [pathOrRouter, ...routers];
+
     this.#routes = this.#routes.concat(
-      routers.map((router) => router.routes).flat(),
+      $routers.map((router) =>
+        router.routes.map((route) => concatPrefix(route, pathname))
+      ).flat(),
     );
 
     return this;
@@ -510,21 +519,12 @@ export class Router
    * ```
    */
   get routes(): readonly MethodsPatternRoute[] {
-    const base = this.base;
-
-    if (!isString(base)) return this.#routes;
-
-    return this.#routes.map((route) => concatPrefix(route, base));
+    return this.#routes;
   }
 
   /** Registered all middleware. */
   get middleware(): readonly Middleware[] {
     return this.routes.map(routeToMiddleware);
-  }
-
-  /** Relative base path. */
-  get base(): string | undefined {
-    return this.#base;
   }
 
   /** Add route.
@@ -575,6 +575,7 @@ function concatPrefix(
   prefix: string,
 ): MethodsPatternRoute {
   const pathname = concatPath(prefix, route.pattern.pathname);
+  console.log(pathname);
   const pattern = new URLPattern({ ...route.pattern, pathname });
 
   return { ...route, pattern };

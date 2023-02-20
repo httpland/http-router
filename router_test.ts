@@ -38,17 +38,6 @@ function methodTest(method: Lowercase<HttpMethod>) {
         handler,
       }]);
     });
-
-    it("should change root path", () => {
-      const handler = () => new Response("hello");
-      const router = new Router({ base: "/api" })[method](handler);
-
-      assertEquals(router.routes, [{
-        methods: [upperMethod],
-        pattern: new URLPattern({ pathname: "/api/*" }),
-        handler,
-      }]);
-    });
   });
 }
 
@@ -159,47 +148,39 @@ describe("Router", () => {
     const handler = () => Response.json("");
 
     const userRouter = new Router().all(handler);
-    const apiRouter = new Router().use(userRouter);
+    const apiRouter = new Router().use("/api", userRouter);
 
     assertEquals(apiRouter.routes, [{
       methods: [],
-      pattern: new URLPattern({}),
-      handler,
-    }]);
-  });
-
-  it("should add base prefix", () => {
-    const handler = () => Response.json("");
-
-    const router = new Router({ base: "/api" }).get("/users", handler);
-
-    assertEquals(router.routes, [{
-      methods: ["GET"],
-      pattern: new URLPattern({ pathname: "/api/users" }),
+      pattern: new URLPattern({ pathname: "/api/*" }),
       handler,
     }]);
   });
 
   it("should complex nested routes", () => {
     const handler = () => new Response();
-    const userRouter = new Router()
+    const idRouter = new Router()
       .get("/:id", handler);
 
-    const usersRouter = new Router({ base: "/users" })
+    const usersRouter = new Router()
       .get("/", handler)
-      .use(userRouter);
+      .use(idRouter);
 
-    const apiRouter = new Router({ base: "/api" })
+    const apiRouter = new Router()
       .all(handler)
-      .use(usersRouter);
+      .use("/users", usersRouter);
 
     const router = new Router()
       .all(handler)
-      .use(apiRouter);
+      .use("/api", apiRouter);
 
     assertEquals(router.routes, [
       { handler, methods: [], pattern: new URLPattern({}) },
-      { handler, methods: [], pattern: new URLPattern({ pathname: "/api/*" }) },
+      {
+        handler,
+        methods: [],
+        pattern: new URLPattern({ pathname: "/api/*" }),
+      },
       {
         handler,
         methods: ["GET"],
