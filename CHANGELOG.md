@@ -1,3 +1,17 @@
+# [3.0.0-beta.4](https://github.com/httpland/http-router/compare/3.0.0-beta.3...3.0.0-beta.4) (2023-02-20)
+
+
+### Bug Fixes
+
+* **router:** fix merge routes logic ([d22c067](https://github.com/httpland/http-router/commit/d22c06763ed4be1f146ca4fa60b7e6f17e73898d))
+
+
+### Features
+
+* **router:** change handler interface to remove context from request object ([b0d66cd](https://github.com/httpland/http-router/commit/b0d66cd65f3c2cd7f0edfda8e9aa328e0236437c))
+* **router:** change route pattern interface ([56051de](https://github.com/httpland/http-router/commit/56051de80aa9550339ad8c8cab92c074b9d87db6))
+* **types:** improve interface of `Handler` and `Middleware` ([d11598a](https://github.com/httpland/http-router/commit/d11598a5f84aa9896b03cffc4dc29e885c5823bb))
+
 # [3.0.0-beta.3](https://github.com/httpland/http-router/compare/3.0.0-beta.2...3.0.0-beta.3) (2023-02-18)
 
 
