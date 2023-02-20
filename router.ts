@@ -74,12 +74,14 @@ export class Router
     ...routers: readonly RouterLike[]
   ): this {
     const is = isString(pathOrRouter);
-    const pathname = is ? pathOrRouter : "";
+    const pathname = is ? pathOrRouter : undefined;
     const $routers = is ? routers : [pathOrRouter, ...routers];
 
     this.#routes = this.#routes.concat(
       $routers.map((router) =>
-        router.routes.map((route) => concatPrefix(route, pathname))
+        router.routes.map((route) =>
+          pathname ? concatPrefix(route, pathname) : route
+        )
       ).flat(),
     );
 
