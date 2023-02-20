@@ -1,9 +1,11 @@
 {
   "imports": {
     "https://deno.land/x/http_router@$VERSION/": "./",
-    "https://deno.land/std@$VERSION/": "https://deno.land/std@0.176.0/",
+    "https://deno.land/std@$VERSION/": "https://deno.land/std@0.177.0/",
     "https://deno.land/x/cors_protocol@$VERSION/": "https://deno.land/x/cors_protocol@1.0.0-beta.5/",
     "https://deno.land/x/http_log@$VERSION/": "https://deno.land/x/http_log@1.0.0-beta.2/",
-    "https://deno.land/x/http_cors@$VERSION/": "https://deno.land/x/http_cors@1.0.0-beta.1/"
+    "https://deno.land/x/http_cors@$VERSION/": "https://deno.land/x/http_cors@1.0.0-beta.1/",
+    "https://deno.land/x/http_auth@$VERSION/": "https://deno.land/x/http_auth@1.0.0-beta.2/",
+    "https://deno.land/x/http_etag@$VERSION/": "https://deno.land/x/http_etag@1.0.0-beta.2/"
   }
 }
