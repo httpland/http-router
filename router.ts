@@ -549,16 +549,6 @@ export class Router
 
     this.#routes.push({ methods, handler: middleware, pattern });
   }
-
-  x<T>(
-    handler: (this: T, request: Request) => Response | Promise<Response>,
-  ): this;
-  x(
-    handler: (request: Request) => Response | Promise<Response>,
-  ): this {
-    this.#register("", handler);
-    return this;
-  }
 }
 
 function routeToMiddleware(route: MethodsPatternRoute): Middleware {
