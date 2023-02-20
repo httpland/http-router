@@ -43,8 +43,3 @@ export function toList<T>(input: T): T extends readonly unknown[] ? T : [T] {
   // deno-lint-ignore no-explicit-any
   return Array.isArray(input) ? input as any : [input];
 }
-
-// deno-lint-ignore no-explicit-any
-export interface This<T, F extends (...args: any) => any> {
-  (this: T, ...args: Parameters<F>): ReturnType<F>;
-}

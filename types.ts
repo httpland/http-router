@@ -3,7 +3,16 @@
 
 /** HTTP request handler. */
 export interface Handler<Context = unknown> {
-  (request: Request & Context): Promise<Response> | Response;
+  (this: Context, request: Request): Promise<Response> | Response;
+}
+
+/** HTTP middleware. */
+export interface Middleware<Context = unknown> {
+  (
+    this: Context,
+    request: Request,
+    next: Handler,
+  ): Promise<Response> | Response;
 }
 
 /** HTTP request method routing API. */

@@ -1,23 +1,18 @@
 // Copyright 2023-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  chain,
-  concatPath,
-  isString,
-  type Middleware,
-  type ParseUrlParams,
-} from "./deps.ts";
+import { chain, concatPath, isString, type ParseUrlParams } from "./deps.ts";
 import type {
   Handling,
   MethodPathRouting,
   MethodRouting,
+  Middleware,
   Routing,
 } from "./types.ts";
-import { assert, matchMethod, Method, type This } from "./utils.ts";
+import { assert, matchMethod, Method } from "./utils.ts";
 
 /** Context of `params`. */
-export interface ParamsContext<K extends string> {
+export interface ParamsContext<K extends string = string> {
   /** URL path parameters. */
   readonly params: { readonly [k in K]: string };
 }
@@ -28,14 +23,14 @@ export interface MatchContext {
   readonly match: URLPatternResult;
 }
 
-export interface RouteContext<K extends string = string>
-  extends ParamsContext<K>, MatchContext {}
+export interface RouteContext<T extends string = string>
+  extends ParamsContext<T>, MatchContext {}
 
 export interface MethodsPatternRoute {
   readonly methods: readonly string[];
   readonly pattern: URLPattern;
 
-  readonly handler: This<RouteContext, Middleware>;
+  readonly handler: Middleware<RouteContext>;
 }
 
 export interface RouterOptions {
@@ -100,7 +95,7 @@ export class Router
    */
   all<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
@@ -117,7 +112,7 @@ export class Router
   all(handler: Middleware): this;
   all(
     pathOrHandler: Middleware | string,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(pathOrHandler, handler);
 
@@ -139,7 +134,7 @@ export class Router
    */
   get<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
    * @param handler HTTP handler
@@ -154,7 +149,7 @@ export class Router
   get(handler: Middleware): this;
   get(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(pathOrHandler, handler, Method.Get);
 
@@ -176,7 +171,7 @@ export class Router
    */
   head<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `HEAD`.
    * @param handler HTTP handler
@@ -189,7 +184,10 @@ export class Router
    * ```
    */
   head(handler: Middleware): this;
-  head(pathOrHandler: string | Middleware, handler?: Middleware): this {
+  head(
+    pathOrHandler: string | Middleware,
+    handler?: Middleware<RouteContext>,
+  ): this {
     this.#register(
       pathOrHandler,
       handler,
@@ -214,7 +212,7 @@ export class Router
    */
   post<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `POST`.
    * @param handler HTTP handler
@@ -229,7 +227,7 @@ export class Router
   post(handler: Middleware): this;
   post(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(pathOrHandler, handler, Method.Post);
 
@@ -251,7 +249,7 @@ export class Router
    */
   put<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PUT`.
    * @param handler HTTP handler
@@ -266,7 +264,7 @@ export class Router
   put(handler: Middleware): this;
   put(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(pathOrHandler, handler, Method.Put);
 
@@ -288,7 +286,7 @@ export class Router
    */
   delete<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `DELETE`.
    * @param handler HTTP handler
@@ -303,7 +301,7 @@ export class Router
   delete(handler: Middleware): this;
   delete(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(
       pathOrHandler,
@@ -329,7 +327,7 @@ export class Router
    */
   patch<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PATCH`.
    * @param handler HTTP handler
@@ -344,7 +342,7 @@ export class Router
   patch(handler: Middleware): this;
   patch(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(
       pathOrHandler,
@@ -370,7 +368,7 @@ export class Router
    */
   options<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `OPTIONS`.
    * @param handler HTTP handler
@@ -385,7 +383,7 @@ export class Router
   options(handler: Middleware): this;
   options(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(
       pathOrHandler,
@@ -411,7 +409,7 @@ export class Router
    */
   trace<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `TRACE`.
    * @param handler HTTP handler
@@ -426,7 +424,7 @@ export class Router
   trace(handler: Middleware): this;
   trace(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(
       pathOrHandler,
@@ -452,7 +450,7 @@ export class Router
    */
   connect<Path extends string>(
     path: Path,
-    handler: This<RouteContext<ParseUrlParams<Path>>, Middleware>,
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `CONNECT`.
    * @param handler HTTP handler
@@ -467,7 +465,7 @@ export class Router
   connect(handler: Middleware): this;
   connect(
     pathOrHandler: string | Middleware,
-    handler?: Middleware,
+    handler?: Middleware<RouteContext>,
   ): this {
     this.#register(
       pathOrHandler,
@@ -535,7 +533,7 @@ export class Router
    */
   #register(
     pathOrHandler: string | Middleware,
-    handler: Middleware | undefined,
+    handler: Middleware<RouteContext> | undefined,
     method?: string,
   ): void {
     const is = isString(pathOrHandler);
