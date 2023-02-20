@@ -584,7 +584,6 @@ function concatPrefix(
   prefix: string,
 ): Route {
   const pathname = concatPath(prefix, route.pattern.pathname);
-  console.log(pathname);
   const pattern = new URLPattern({ ...route.pattern, pathname });
 
   return { ...route, pattern };
