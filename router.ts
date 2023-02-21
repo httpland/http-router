@@ -1,7 +1,7 @@
 // Copyright 2023-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { chain, isString, type ParseUrlParams } from "./deps.ts";
+import { chain, concatPath, isString, type ParseUrlParams } from "./deps.ts";
 import type {
   Handler,
   MethodPathRouting,
@@ -39,11 +39,11 @@ export interface Route<GlobalContext = unknown> {
   readonly handler: Middleware<GlobalContext & RouteContext>;
 }
 
-export interface Handling<GlobalContext = undefined> {
+export interface Handling<GlobalContext = unknown> {
   readonly handler: Handler<GlobalContext>;
 }
 
-export interface RouterLike<GlobalContext = undefined> {
+export interface RouterLike<GlobalContext = unknown> {
   /** All route. */
   readonly routes: readonly Route<GlobalContext>[];
 }
@@ -65,6 +65,43 @@ export class Router<GlobalContext = unknown>
     Handling<GlobalContext>,
     RouterLike<GlobalContext> {
   #routes: Route<GlobalContext>[] = [];
+
+  /** Use the different routers.
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   *
+   * const userRouter = new Router().get("/:id", handler);
+   * const usersRouter = new Router().use("/users", userRouter);
+   * const apiRouter = new Router().use("/api", userRouter);
+   * ```
+   */
+  use(
+    base: string,
+    ...routers: readonly RouterLike<GlobalContext>[]
+  ): this;
+  use(...routers: readonly RouterLike<GlobalContext>[]): this;
+  use(
+    baseOrRouter: string | RouterLike<GlobalContext>,
+    ...routers: readonly RouterLike[]
+  ): this {
+    const is = isString(baseOrRouter);
+    const pathname = is ? baseOrRouter : undefined;
+    const $routers = is ? routers : [baseOrRouter, ...routers];
+
+    this.#routes = this.#routes.concat(
+      $routers.map((router) =>
+        router.routes.map((route) =>
+          pathname ? concatPrefix(route, pathname) : route
+        )
+      ).flat(),
+    );
+
+    return this;
+  }
 
   /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
@@ -525,4 +562,14 @@ function routeToMiddleware<Context>(
   };
 
   return middleware;
+}
+
+function concatPrefix<C>(
+  route: Route<C>,
+  prefix: string,
+): Route<C> {
+  const pathname = concatPath(prefix, route.pattern.pathname);
+  const pattern = new URLPattern({ ...route.pattern, pathname });
+
+  return { ...route, pattern };
 }
