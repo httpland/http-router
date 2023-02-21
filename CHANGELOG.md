@@ -1,3 +1,13 @@
+# [3.0.0-beta.5](https://github.com/httpland/http-router/compare/3.0.0-beta.4...3.0.0-beta.5) (2023-02-21)
+
+
+### Features
+
+* **mod:** export interface and types ([765a5af](https://github.com/httpland/http-router/commit/765a5af4eed402478db8324713aab26b2d4769df))
+* **router:** add providing global scope context, remove nested route feature ([462d45a](https://github.com/httpland/http-router/commit/462d45aacf07a1e8ff123187b92b73d05026f5ee))
+* **router:** remove base option, change `use` interface types ([2e08dac](https://github.com/httpland/http-router/commit/2e08dac58edd6a45005b7e818e59d5e963792fef))
+* **router:** revert to add `use` interface ([4a1e244](https://github.com/httpland/http-router/commit/4a1e244668a0777df77b210713bcd839f3defc78))
+
 # [3.0.0-beta.4](https://github.com/httpland/http-router/compare/3.0.0-beta.3...3.0.0-beta.4) (2023-02-20)
 
 
