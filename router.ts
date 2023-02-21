@@ -1,9 +1,9 @@
 // Copyright 2023-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { chain, concatPath, isString, type ParseUrlParams } from "./deps.ts";
+import { chain, isString, type ParseUrlParams } from "./deps.ts";
 import type {
-  Handling,
+  Handler,
   MethodPathRouting,
   MethodRouting,
   Middleware,
@@ -26,7 +26,7 @@ export interface MatchContext {
 export interface RouteContext<T extends string = string>
   extends ParamsContext<T>, MatchContext {}
 
-export interface Route {
+export interface Route<GlobalContext = unknown> {
   /** Match with HTTP methods.
    * Empty matching that it matches all method.
    */
@@ -36,12 +36,16 @@ export interface Route {
   readonly pattern: URLPattern;
 
   /** {@link RouteContext}-dependent middleware */
-  readonly handler: Middleware<RouteContext>;
+  readonly handler: Middleware<GlobalContext & RouteContext>;
 }
 
-export interface RouterLike {
+export interface Handling<GlobalContext = undefined> {
+  readonly handler: Handler<GlobalContext>;
+}
+
+export interface RouterLike<GlobalContext = undefined> {
   /** All route. */
-  readonly routes: readonly Route[];
+  readonly routes: readonly Route<GlobalContext>[];
 }
 
 /** HTTP router builder.
@@ -54,46 +58,13 @@ export interface RouterLike {
  * const response = await router.handler(new Request("http://localhost"));
  * ```
  */
-export class Router
-  implements MethodRouting, MethodPathRouting, Handling, RouterLike {
-  #routes: Route[] = [];
-
-  /** Use the different routers.
-   *
-   * @example
-   * ```ts
-   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
-   *
-   * declare const handler: Handler;
-   *
-   * const userRouter = new Router().get("/:id", handler);
-   * const usersRouter = new Router().use("/users", userRouter);
-   * const apiRouter = new Router().use("/api", userRouter);
-   * ```
-   */
-  use(
-    path: string,
-    ...routers: readonly RouterLike[]
-  ): this;
-  use(...routers: readonly RouterLike[]): this;
-  use(
-    pathOrRouter: string | RouterLike,
-    ...routers: readonly RouterLike[]
-  ): this {
-    const is = isString(pathOrRouter);
-    const pathname = is ? pathOrRouter : undefined;
-    const $routers = is ? routers : [pathOrRouter, ...routers];
-
-    this.#routes = this.#routes.concat(
-      $routers.map((router) =>
-        router.routes.map((route) =>
-          pathname ? concatPrefix(route, pathname) : route
-        )
-      ).flat(),
-    );
-
-    return this;
-  }
+export class Router<GlobalContext = unknown>
+  implements
+    MethodRouting,
+    MethodPathRouting,
+    Handling<GlobalContext>,
+    RouterLike<GlobalContext> {
+  #routes: Route<GlobalContext>[] = [];
 
   /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
@@ -152,7 +123,7 @@ export class Router
    */
   get<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
    * @param handler HTTP handler
@@ -167,7 +138,7 @@ export class Router
   get(handler: Middleware): this;
   get(
     that: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Get);
 
@@ -189,7 +160,7 @@ export class Router
    */
   head<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `HEAD`.
    * @param handler HTTP handler
@@ -204,13 +175,9 @@ export class Router
   head(handler: Middleware): this;
   head(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler,
-      Method.Head,
-    );
+    this.#register(pathOrHandler, handler, Method.Head);
 
     return this;
   }
@@ -230,7 +197,7 @@ export class Router
    */
   post<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `POST`.
    * @param handler HTTP handler
@@ -245,7 +212,7 @@ export class Router
   post(handler: Middleware): this;
   post(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(pathOrHandler, handler, Method.Post);
 
@@ -267,7 +234,7 @@ export class Router
    */
   put<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PUT`.
    * @param handler HTTP handler
@@ -282,7 +249,7 @@ export class Router
   put(handler: Middleware): this;
   put(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(pathOrHandler, handler, Method.Put);
 
@@ -304,7 +271,7 @@ export class Router
    */
   delete<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `DELETE`.
    * @param handler HTTP handler
@@ -319,13 +286,9 @@ export class Router
   delete(handler: Middleware): this;
   delete(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler,
-      Method.Delete,
-    );
+    this.#register(pathOrHandler, handler, Method.Delete);
 
     return this;
   }
@@ -345,7 +308,7 @@ export class Router
    */
   patch<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PATCH`.
    * @param handler HTTP handler
@@ -360,13 +323,9 @@ export class Router
   patch(handler: Middleware): this;
   patch(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler,
-      Method.Patch,
-    );
+    this.#register(pathOrHandler, handler, Method.Patch);
 
     return this;
   }
@@ -386,7 +345,7 @@ export class Router
    */
   options<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `OPTIONS`.
    * @param handler HTTP handler
@@ -401,13 +360,9 @@ export class Router
   options(handler: Middleware): this;
   options(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler,
-      Method.Options,
-    );
+    this.#register(pathOrHandler, handler, Method.Options);
 
     return this;
   }
@@ -427,7 +382,7 @@ export class Router
    */
   trace<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `TRACE`.
    * @param handler HTTP handler
@@ -442,13 +397,9 @@ export class Router
   trace(handler: Middleware): this;
   trace(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler,
-      Method.Trace,
-    );
+    this.#register(pathOrHandler, handler, Method.Trace);
 
     return this;
   }
@@ -468,7 +419,7 @@ export class Router
    */
   connect<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `CONNECT`.
    * @param handler HTTP handler
@@ -483,19 +434,14 @@ export class Router
   connect(handler: Middleware): this;
   connect(
     pathOrHandler: string | Middleware,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(
-      pathOrHandler,
-      handler,
-      Method.Connect,
-    );
+    this.#register(pathOrHandler, handler, Method.Connect);
 
     return this;
   }
 
-  /**
-   * @param request
+  /** Get composed handler.
    *
    * @example
    * ```ts
@@ -508,11 +454,16 @@ export class Router
    * assertEquals(await response.text(), "hello");
    * ```
    */
-  handler = (request: Request): Promise<Response> => {
+  get handler(): Handler<GlobalContext> {
+    const routes = this.routes;
     const initResponse = new Response(null, { status: 404 });
 
-    return Promise.resolve(chain(request, initResponse, ...this.middleware));
-  };
+    return function (request: Request): Promise<Response> {
+      const middleware = routes.map((route) => routeToMiddleware(route, this));
+
+      return Promise.resolve(chain(request, initResponse, ...middleware));
+    };
+  }
 
   /** Registered all routes.
    *
@@ -527,13 +478,8 @@ export class Router
    * assertEquals(router.routes.length, 1);
    * ```
    */
-  get routes(): readonly Route[] {
+  get routes(): readonly Route<GlobalContext>[] {
     return this.#routes;
-  }
-
-  /** Registered all middleware. */
-  get middleware(): readonly Middleware[] {
-    return this.routes.map(routeToMiddleware);
   }
 
   /** Add route.
@@ -542,7 +488,7 @@ export class Router
    */
   #register(
     pathOrHandler: string | Middleware,
-    handler: Middleware<RouteContext> | undefined,
+    handler: Middleware<GlobalContext & RouteContext> | undefined,
     method?: string,
   ): void {
     const is = isString(pathOrHandler);
@@ -558,33 +504,25 @@ export class Router
   }
 }
 
-function routeToMiddleware(route: Route): Middleware {
-  const pattern = new URLPattern(route.pattern);
-
+function routeToMiddleware<Context>(
+  route: Route<Context>,
+  ctx: Context,
+) {
   const middleware: Middleware = (request, next) => {
     if (!matchMethod(route.methods, request.method)) return next(request);
 
-    const result = pattern.exec(request.url);
+    const result = route.pattern.exec(request.url);
 
     if (!result) return next(request);
 
-    const context: RouteContext = {
+    const context: Context & RouteContext = {
+      ...ctx,
       match: result,
       params: result.pathname.groups,
     };
 
-    return route.handler.bind(context)(request, next);
+    return route.handler.call(context, request, next);
   };
 
   return middleware;
-}
-
-function concatPrefix(
-  route: Route,
-  prefix: string,
-): Route {
-  const pathname = concatPath(prefix, route.pattern.pathname);
-  const pattern = new URLPattern({ ...route.pattern, pathname });
-
-  return { ...route, pattern };
 }

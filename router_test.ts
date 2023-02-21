@@ -144,53 +144,53 @@ describe("Router", () => {
     assert(equalsResponse(response, init));
   });
 
-  it("should bind another router", () => {
-    const handler = () => Response.json("");
+  // it("should bind another router", () => {
+  //   const handler = () => Response.json("");
 
-    const userRouter = new Router().all(handler);
-    const apiRouter = new Router().use("/api", userRouter);
+  //   const userRouter = new Router().all(handler);
+  //   const apiRouter = new Router().use("/api", userRouter);
 
-    assertEquals(apiRouter.routes, [{
-      methods: [],
-      pattern: new URLPattern({ pathname: "/api/*" }),
-      handler,
-    }]);
-  });
+  //   assertEquals(apiRouter.routes, [{
+  //     methods: [],
+  //     pattern: new URLPattern({ pathname: "/api/*" }),
+  //     handler,
+  //   }]);
+  // });
 
-  it("should complex nested routes", () => {
-    const handler = () => new Response();
-    const idRouter = new Router()
-      .get("/:id", handler);
+  // it("should complex nested routes", () => {
+  //   const handler = () => new Response();
+  //   const idRouter = new Router()
+  //     .get("/:id", handler);
 
-    const usersRouter = new Router()
-      .get("/", handler)
-      .use(idRouter);
+  //   const usersRouter = new Router()
+  //     .get("/", handler)
+  //     .use(idRouter);
 
-    const apiRouter = new Router()
-      .all(handler)
-      .use("/users", usersRouter);
+  //   const apiRouter = new Router()
+  //     .all(handler)
+  //     .use("/users", usersRouter);
 
-    const router = new Router()
-      .all(handler)
-      .use("/api", apiRouter);
+  //   const router = new Router()
+  //     .all(handler)
+  //     .use("/api", apiRouter);
 
-    assertEquals(router.routes, [
-      { handler, methods: [], pattern: new URLPattern({}) },
-      {
-        handler,
-        methods: [],
-        pattern: new URLPattern({ pathname: "/api/*" }),
-      },
-      {
-        handler,
-        methods: ["GET"],
-        pattern: new URLPattern({ pathname: "/api/users/" }),
-      },
-      {
-        handler,
-        methods: ["GET"],
-        pattern: new URLPattern({ pathname: "/api/users/:id" }),
-      },
-    ]);
-  });
+  //   assertEquals(router.routes, [
+  //     { handler, methods: [], pattern: new URLPattern({}) },
+  //     {
+  //       handler,
+  //       methods: [],
+  //       pattern: new URLPattern({ pathname: "/api/*" }),
+  //     },
+  //     {
+  //       handler,
+  //       methods: ["GET"],
+  //       pattern: new URLPattern({ pathname: "/api/users/" }),
+  //     },
+  //     {
+  //       handler,
+  //       methods: ["GET"],
+  //       pattern: new URLPattern({ pathname: "/api/users/:id" }),
+  //     },
+  //   ]);
+  // });
 });

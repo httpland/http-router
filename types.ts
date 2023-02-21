@@ -119,10 +119,6 @@ export interface MethodPathRouting {
   readonly trace: (path: string, handler: Handler) => this;
 }
 
-export interface Handling {
-  readonly handler: Handler;
-}
-
 export type Params<T extends PropertyKey> = {
   readonly [k in T]: string;
 };
