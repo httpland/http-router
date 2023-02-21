@@ -256,39 +256,223 @@ const router = new Router()
 
 Context is a dependency.
 
-In HTTP, the core context is the `Request` object.
+Context keeps middleware simple.
 
-The `Request` object is treated as a first-class context because it is
-universal.
+There is a way for passing contexts between middleware and routers in a
+type-safe and declarative.
 
-Therefore, the middleware accepts a `Request` object as its first argument. API.
+### Context and middleware
 
-Other contexts can be accessed via `this`.
+When referring to a context, the middleware does the following.
 
-### Route context
+For example, suppose you want to refer to `ConnInfo` in `std/http`.
 
-Router provides `URLPattern` matching results.
+```ts
+import { type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { type ConnInfo } from "https://deno.land/std/http/mod.ts";
+
+type Context = {
+  readonly connInfo: ConnInfo;
+};
+
+function handler(this: Context): Response {
+  return Response.json(this.connInfo);
+}
+```
+
+Or, with types and function expression:
+
+```ts
+import {
+  type Handler,
+  type Middleware,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { type ConnInfo } from "https://deno.land/std/http/mod.ts";
+
+type Context = {
+  readonly connInfo: ConnInfo;
+};
+
+const middleware: Middleware<Context> = function (request, next) {
+  return Response.json(this.connInfo);
+};
+declare const handler: Handler<Context>;
+```
+
+Contexts are referenced via `this`, using the JavaScript context mechanism as
+is.
+
+Note that you **can't** use the arrow function.
+
+### Context and router
+
+Declare to the router that you want to use the context.
+
+```ts
+import {
+  type Middleware,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { type ConnInfo } from "https://deno.land/std/http/mod.ts";
+
+type Context = {
+  readonly connInfo: ConnInfo;
+};
+
+const router = new Router<Context>();
+```
+
+You can reference the context type-safely throughout the router.
+
+```ts
+import {
+  type Middleware,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { type ConnInfo } from "https://deno.land/std/http/mod.ts";
+
+type Context = {
+  readonly connInfo: ConnInfo;
+};
+
+declare const router: Router<Context>;
+declare const middleware: Middleware<Context>;
+
+router
+  .get("/", middleware)
+  .post("/:id", function () {
+    return Response.json(this.connInfo);
+  });
+```
+
+#### Context and handler
+
+If creating a handler from a router with a context declared, the context is
+needed to invoke the handler.
+
+```ts
+import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+declare const router: Router<{ readonly deps: readonly string[] }>;
+
+const handler = router.handler;
+
+// handler(new Request("test:")) this is type error
+handler.call({ deps: [] }, new Request("test:"));
+```
+
+All of this can be done type-safely.
+
+A practical example:
+
+```ts
+import {
+  type Middleware,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import { type ConnInfo, serve } from "https://deno.land/std/http/mod.ts";
+
+type Context = {
+  readonly connInfo: ConnInfo;
+};
+
+const router = new Router<Context>();
+router.get("/", function () {
+  return Response.json(this.connInfo);
+});
+
+serve((request, connInfo) => router.handler.call({ connInfo }, request));
+```
+
+### First-class context
+
+In HTTP, the `Request` object is also a context.
+
+However, the `Request` object need not be declared as a context.
+
+The `Request` object is treated as a first-class context because it is common.
+
+Therefore, the middleware accepts a `Request` object as its first argument.
+
+The router also treats the route context as a first-class context.
+
+#### Route context
+
+Router provides the result of match using the URLPattern API.
 
 | Name   | Type                     |
 | ------ | ------------------------ |
 | match  | `URLPatternResult`       |
 | params | `Record<string, string>` |
 
+`match` is the return value of `URLPattern.#exec`.
+
 `params` is a shortcut for `match.pathname.group`.
 
-`params` parses the URL Path at the type level and guarantees type safety.
+Also, `params` parses the URL Path at the type level to ensure type safety.
 
 ```ts
 import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 
-const router = new Router().get("/:id", function () {
-  const id = this.params.id; // type safe
-  // this.params.any is type error
-  const matched = this.match;
+const router = new Router()
+  .get("/:id", function () {
+    const id = this.params.id; // type safe
+    // this.params.any is type error
+    const matched = this.match;
 
-  return new Response(id);
-});
+    return new Response(id);
+  });
 ```
+
+### Context and scope
+
+Context have the concept of scope.
+
+- Global
+- Local
+
+#### Global context
+
+Global context is a context on which the entire router depends.
+
+A `Request` object corresponds to a global context.
+
+If multiple middleware depend on the context, it may be better to define it as a
+global context.
+
+Global context requires a type declaration to the router.
+
+#### Local context
+
+A local context is a context that can only be referenced by the routing
+middleware.
+
+The Route context corresponds to the local context.
+
+Currently, there is no mechanism for injecting local context, but this may be
+added in the future.
+
+### Mutability
+
+The router does not do anything with the context.
+
+If you define types of the context so that it can be changed.
+
+```ts
+import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+new Router<{ mutable: string[]; readonly immutable: readonly string[] }>()
+  .get("/", function () {
+    this.mutable.push("Mutate!");
+    this.mutable = [];
+
+    return new Response();
+  });
+```
+
+In general, immutability removes unwanted bugs.
+
+Context changes should be done with care.
 
 ## API
 
