@@ -75,16 +75,16 @@ export class Router<GlobalContext = unknown>
    * declare const handler: Handler;
    *
    * const userRouter = new Router().get("/:id", handler);
-   * const usersRouter = new Router().use("/users", userRouter);
-   * const apiRouter = new Router().use("/api", userRouter);
+   * const usersRouter = new Router().route("/users", userRouter);
+   * const apiRouter = new Router().route("/api", userRouter);
    * ```
    */
-  use(
+  route(
     base: string,
     ...routers: readonly RouterLike<GlobalContext>[]
   ): this;
-  use(...routers: readonly RouterLike<GlobalContext>[]): this;
-  use(
+  route(...routers: readonly RouterLike<GlobalContext>[]): this;
+  route(
     baseOrRouter: string | RouterLike<GlobalContext>,
     ...routers: readonly RouterLike[]
   ): this {

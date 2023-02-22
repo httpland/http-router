@@ -148,7 +148,7 @@ describe("Router", () => {
     const handler = () => Response.json("");
 
     const userRouter = new Router().all(handler);
-    const apiRouter = new Router().use("/api", userRouter);
+    const apiRouter = new Router().route("/api", userRouter);
 
     assertEquals(apiRouter.routes, [{
       methods: [],
@@ -164,15 +164,15 @@ describe("Router", () => {
 
     const usersRouter = new Router()
       .get("/", handler)
-      .use(idRouter);
+      .route(idRouter);
 
     const apiRouter = new Router()
       .all(handler)
-      .use("/users", usersRouter);
+      .route("/users", usersRouter);
 
     const router = new Router()
       .all(handler)
-      .use("/api", apiRouter);
+      .route("/api", apiRouter);
 
     assertEquals(router.routes, [
       { handler, methods: [], pattern: new URLPattern({}) },
