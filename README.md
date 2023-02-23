@@ -252,6 +252,30 @@ const router = new Router()
   .get("/admin", () => new Response("hello admin"));
 ```
 
+### Nested routing
+
+Router support nested route.
+
+```ts
+import { type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+declare const handler: Handler;
+const idRouter = new Router()
+  .get("/:id", handler);
+
+const usersRouter = new Router()
+  .get("/", handler)
+  .route(idRouter);
+
+const apiRouter = new Router()
+  .all(handler)
+  .route("/users", usersRouter);
+
+const router = new Router()
+  .all(handler)
+  .route("/api", apiRouter);
+```
+
 ## Context
 
 Context is a dependency.
