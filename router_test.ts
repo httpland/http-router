@@ -38,6 +38,32 @@ function methodTest(method: Lowercase<HttpMethod>) {
         handler,
       }]);
     });
+
+    it("should register method and pathname", () => {
+      const handler = () => new Response("hello");
+      const pathname = "/test";
+      const router = new Router()[method](pathname, handler);
+
+      assertEquals(router.routes, [{
+        methods: [upperMethod],
+        pattern: new URLPattern({ pathname }),
+        handler,
+      }]);
+    });
+
+    it("should register method and pattern", () => {
+      const handler = () => new Response("hello");
+      const router = new Router()[method](
+        { search: "q", hash: "test" },
+        handler,
+      );
+
+      assertEquals(router.routes, [{
+        methods: [upperMethod],
+        pattern: new URLPattern({ search: "q", hash: "test" }),
+        handler,
+      }]);
+    });
   });
 }
 

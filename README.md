@@ -203,6 +203,30 @@ All syntaxes of
 [URLPattern API](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern)
 are available.
 
+### Route with URLPattern
+
+All features of URLPattern are available.
+
+```ts
+import {
+  type Handler,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+declare const handler: Handler;
+
+new Router()
+  .get({ username: ":username", password: ":password" }, function () {
+    const username = this.match.username.groups["username"];
+    const password = this.match.password.groups["password"];
+
+    // check as Basic Authentication
+
+    return new Response(null, { status: 401 });
+  })
+  .post({ hostname: "{*.}?example.com" }, handler);
+```
+
 ### Respond to request
 
 The purpose of router is to compose any handler and answer HTTP requests.
@@ -257,7 +281,10 @@ const router = new Router()
 Router support nested route.
 
 ```ts
-import { type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+import {
+  type Handler,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
 
 declare const handler: Handler;
 const idRouter = new Router()

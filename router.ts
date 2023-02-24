@@ -1,7 +1,13 @@
 // Copyright 2023-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { chain, concatPath, isString, type ParseUrlParams } from "./deps.ts";
+import {
+  chain,
+  concatPath,
+  isFunction,
+  isString,
+  type ParseUrlParams,
+} from "./deps.ts";
 import type {
   Handler,
   MethodPathRouting,
@@ -145,6 +151,22 @@ export class Router<GlobalContext = unknown>
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `GET`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().get({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  get<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -174,7 +196,7 @@ export class Router<GlobalContext = unknown>
    */
   get(handler: Middleware): this;
   get(
-    that: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Get);
@@ -182,6 +204,22 @@ export class Router<GlobalContext = unknown>
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `HEAD`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().head({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  head<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `HEAD`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -211,14 +249,30 @@ export class Router<GlobalContext = unknown>
    */
   head(handler: Middleware): this;
   head(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Head);
+    this.#register(that, handler, Method.Head);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `POST`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().post({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  post<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `POST`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -248,14 +302,30 @@ export class Router<GlobalContext = unknown>
    */
   post(handler: Middleware): this;
   post(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Post);
+    this.#register(that, handler, Method.Post);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `PUT`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().put({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  put<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PUT`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -285,14 +355,30 @@ export class Router<GlobalContext = unknown>
    */
   put(handler: Middleware): this;
   put(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Put);
+    this.#register(that, handler, Method.Put);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `DELETE`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().delete({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  delete<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `DELETE`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -322,14 +408,30 @@ export class Router<GlobalContext = unknown>
    */
   delete(handler: Middleware): this;
   delete(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Delete);
+    this.#register(that, handler, Method.Delete);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `PATCH`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().patch({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  patch<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PATCH`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -359,14 +461,30 @@ export class Router<GlobalContext = unknown>
    */
   patch(handler: Middleware): this;
   patch(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Patch);
+    this.#register(that, handler, Method.Patch);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `OPTIONS`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().options({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  options<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `OPTIONS`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -396,14 +514,30 @@ export class Router<GlobalContext = unknown>
    */
   options(handler: Middleware): this;
   options(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Options);
+    this.#register(that, handler, Method.Options);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `TRACE`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().trace({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  trace<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `TRACE`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -433,14 +567,30 @@ export class Router<GlobalContext = unknown>
    */
   trace(handler: Middleware): this;
   trace(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Trace);
+    this.#register(that, handler, Method.Trace);
 
     return this;
   }
 
+  /** Register handler that matched on HTTP request URL and HTTP method of `CONNECT`.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().connect({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  connect<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+  ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `CONNECT`.
    * @param path Path or pattern
    * @param handler HTTP handler
@@ -470,10 +620,10 @@ export class Router<GlobalContext = unknown>
    */
   connect(handler: Middleware): this;
   connect(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler, Method.Connect);
+    this.#register(that, handler, Method.Connect);
 
     return this;
   }
@@ -524,14 +674,16 @@ export class Router<GlobalContext = unknown>
    * @throws {Error} If path or pattern is invalid.
    */
   #register(
-    pathOrHandler: string | Middleware,
+    that: string | Middleware | URLPatternInit,
     handler: Middleware<GlobalContext & RouteContext> | undefined,
     method?: string,
   ): void {
-    const is = isString(pathOrHandler);
-    const pathname = is ? pathOrHandler : "*";
-    const pattern = new URLPattern({ pathname });
-    const middleware = is ? handler : pathOrHandler;
+    const is = isFunction(that);
+    const pathnameOrPattern = is ? "*" : that;
+    const pattern = isString(pathnameOrPattern)
+      ? new URLPattern({ pathname: pathnameOrPattern })
+      : new URLPattern(pathnameOrPattern);
+    const middleware = is ? that : handler;
 
     assert(middleware);
 
