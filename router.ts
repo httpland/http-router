@@ -123,7 +123,7 @@ export class Router<GlobalContext = unknown>
    */
   all<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
@@ -143,7 +143,7 @@ export class Router<GlobalContext = unknown>
    */
   all<Path extends string>(
     path: Path,
-    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
   ): this;
   /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
@@ -160,7 +160,7 @@ export class Router<GlobalContext = unknown>
   all(handler: Middleware): this;
   all(
     that: string | Middleware | URLPatternInit,
-    handler?: Middleware<RouteContext>,
+    handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler);
 
