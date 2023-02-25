@@ -96,6 +96,16 @@ describe("Router", () => {
     }]);
   });
 
+  it("should register url pattern via all", () => {
+    const handler = () => Response.json("");
+
+    assertEquals(new Router().all({ hash: ":hash" }, handler).routes, [{
+      methods: [],
+      pattern: new URLPattern({ hash: ":hash" }),
+      handler,
+    }]);
+  });
+
   it("should throw error when avoid type checking", () => {
     assertThrows(() => new Router().all("/", undefined as unknown as Handler));
   });

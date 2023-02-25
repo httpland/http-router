@@ -110,6 +110,22 @@ export class Router<GlobalContext = unknown>
   }
 
   /** Register handler that matched on HTTP request URL.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   *
+   * @example
+   * ```ts
+   * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
+   *
+   * declare const handler: Handler;
+   * new Router().all({ hostname: "{*.}?example.com" }, handler)
+   * ```
+   */
+  all<Path extends string>(
+    pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
+    handler: Middleware<RouteContext<ParseUrlParams<Path>>>,
+  ): this;
+  /** Register handler that matched on HTTP request URL.
    * @param path Path or pattern
    * @param handler HTTP handler
    *
@@ -143,10 +159,10 @@ export class Router<GlobalContext = unknown>
    */
   all(handler: Middleware): this;
   all(
-    pathOrHandler: Middleware | string,
+    that: string | Middleware | URLPatternInit,
     handler?: Middleware<RouteContext>,
   ): this {
-    this.#register(pathOrHandler, handler);
+    this.#register(that, handler);
 
     return this;
   }
