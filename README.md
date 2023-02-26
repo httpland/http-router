@@ -227,6 +227,22 @@ new Router()
   .post({ hostname: "{*.}?example.com" }, handler);
 ```
 
+### Route with URL
+
+URL is a superset of URLPattern and can be used as is.
+
+```ts
+import {
+  type Handler,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+declare const handler: Handler;
+
+new Router()
+  .get(new URL("https://external.test"), handler);
+```
+
 ### Respond to request
 
 The purpose of router is to compose any handler and answer HTTP requests.
