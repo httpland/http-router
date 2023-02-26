@@ -695,14 +695,15 @@ export class Router<GlobalContext = unknown>
     method?: string,
   ): void {
     const is = isFunction(that);
-    const pathnameOrPattern = is ? "*" : that;
-    const pattern = isString(pathnameOrPattern)
-      ? new URLPattern({ pathname: pathnameOrPattern })
-      : new URLPattern(pathnameOrPattern);
     const middleware = is ? that : handler;
 
     assert(middleware);
 
+    const pathnameOrPattern = is ? "*" : that;
+    const init = isString(pathnameOrPattern)
+      ? { pathname: pathnameOrPattern }
+      : pathnameOrPattern;
+    const pattern = new URLPattern(init);
     const methods = isString(method) ? [method] : [];
 
     this.#routes.push({ methods, handler: middleware, pattern });
