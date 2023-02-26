@@ -51,6 +51,18 @@ function methodTest(method: Lowercase<HttpMethod>) {
       }]);
     });
 
+    it("should register method and absolute URL", () => {
+      const handler = () => new Response("hello");
+      const url = "http://test.test";
+      const router = new Router()[method](new URL(url), handler);
+
+      assertEquals(router.routes, [{
+        methods: [upperMethod],
+        pattern: new URLPattern(new URL(url)),
+        handler,
+      }]);
+    });
+
     it("should register method and pattern", () => {
       const handler = () => new Response("hello");
       const router = new Router()[method](
