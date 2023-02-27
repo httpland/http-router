@@ -178,34 +178,66 @@ const serverInfo: Middleware = async (request, next) => {
 
 ## Router
 
-Router routes HTTP requests. Routing supports HTTP request method and
-`URLPattern` as the first class.
+Router routes HTTP requests. It use a combination of HTTP method and URL or a
+subset thereof for routing.
 
 Specify middleware as the routing destination.
+
+### Route with HTTP method
+
+Supports HTTP methods based on
+[RFC9110, 9. Methods](https://www.rfc-editor.org/rfc/rfc9110.html#section-9).
 
 ```ts
 import {
   type Handler,
-  type Middleware,
   Router,
 } from "https://deno.land/x/http_router@$VERSION/mod.ts";
 
 declare const handler: Handler;
-declare const middleware: Middleware;
+
+new Router()
+  .get(handler)
+  .head(handler)
+  .post(handler);
+```
+
+`all` matches all HTTP methods. This can be used as an escape hatch for other
+routers or for your own routing.
+
+```ts
+import {
+  type Handler,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+declare const handler: Handler;
+
+new Router().all(handler);
+```
+
+### Route with path
+
+Relative path routing is first-class support.
+
+```ts
+import {
+  type Handler,
+  Router,
+} from "https://deno.land/x/http_router@$VERSION/mod.ts";
+
+declare const handler: Handler;
 
 const router = new Router()
-  .all(middleware)
   .all("/api*", handler)
   .get("/api/users/:id", handler);
 ```
 
-All syntaxes of
-[URLPattern API](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern)
-are available.
-
 ### Route with URLPattern
 
-All features of URLPattern are available.
+All features of
+[URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) are
+available.
 
 ```ts
 import {
