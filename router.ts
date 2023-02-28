@@ -109,7 +109,7 @@ export class Router<GlobalContext = unknown>
     this.#routes = this.#routes.concat(
       $routers.map((router) =>
         router.routes.map((route) =>
-          pathname ? concatPrefix(route, pathname) : route
+          isString(pathname) ? concatPrefix(route, pathname) : route
         )
       ).flat(),
     );
