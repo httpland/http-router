@@ -45,7 +45,8 @@ export interface Route<GlobalContext = unknown> {
    * The absolute pattern must not be nested. */
   readonly isAbsolute: boolean;
 
-  /** {@link RouteContext}-dependent middleware */
+  /** The routing handler.
+   * {@link RouteContext}-dependent middleware */
   readonly handler: Middleware<GlobalContext & RouteContext>;
 }
 

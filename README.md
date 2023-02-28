@@ -183,6 +183,26 @@ subset thereof for routing.
 
 Specify middleware as the routing destination.
 
+### Routes
+
+The router keeps all routing information in `routes`.
+
+`routes` is a list of `route`.
+
+`route` contains the following fields:
+
+| Name       | Description                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| methods    | `readonly string[]`<br /> Match with HTTP methods.<br />Empty matching that it matches all method. |
+| pattern    | `URLPattern`<br />Match with URL pattern.                                                          |
+| isAbsolute | `boolean`<br />Whether the pattern is absolute or not.                                             |
+| handler    | `Middleware`<br />The routing handler.                                                             |
+
+`isAbsolute` indicates whether the pattern is an absolute pattern or not. This
+is mainly used when merging route.
+
+See the section on [Nested routing](#nested-routing) for more detail.
+
 ### Route with HTTP method
 
 Supports HTTP methods based on
@@ -327,6 +347,8 @@ const router = new Router()
 ### Nested routing
 
 Router support nested route.
+
+Only routes that are not absolute patterns are merged.
 
 ```ts
 import {
