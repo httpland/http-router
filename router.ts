@@ -24,14 +24,14 @@ export interface ParamsContext<T extends string = string> {
   readonly params: Params<T>;
 }
 
-/** Context of `match`. */
-export interface MatchContext {
+/** Context of `matchResult`. */
+export interface MatchResultContext {
   /** URL pattern matching result. */
-  readonly match: URLPatternResult;
+  readonly matchResult: URLPatternResult;
 }
 
 export interface RouteContext<T extends string = string>
-  extends ParamsContext<T>, MatchContext {}
+  extends ParamsContext<T>, MatchResultContext {}
 
 export interface Route<GlobalContext = unknown> {
   /** Match with HTTP methods.
@@ -52,6 +52,7 @@ export interface Route<GlobalContext = unknown> {
 }
 
 export interface Handling<GlobalContext = unknown> {
+  /** Get composite handler. */
   readonly handler: Handler<GlobalContext>;
 }
 
@@ -733,14 +734,14 @@ function routeToMiddleware<Context>(
   const middleware: Middleware = (request, next) => {
     if (!matchMethod(route.methods, request.method)) return next(request);
 
-    const result = pattern.exec(request.url);
+    const matchResult = pattern.exec(request.url);
 
-    if (!result) return next(request);
+    if (!matchResult) return next(request);
 
     const context: Context & RouteContext = {
       ...ctx,
-      match: result,
-      params: result.pathname.groups,
+      matchResult,
+      params: matchResult.pathname.groups,
     };
 
     return route.handler.call(context, request, next);

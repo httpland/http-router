@@ -269,8 +269,8 @@ declare const handler: Handler;
 
 new Router()
   .get({ username: ":username", password: ":password" }, function () {
-    const username = this.match.username.groups["username"];
-    const password = this.match.password.groups["password"];
+    const username = this.matchResult.username.groups["username"];
+    const password = this.matchResult.password.groups["password"];
 
     // check as Basic Authentication
 
@@ -521,14 +521,14 @@ The router also treats the route context as a first-class context.
 
 Router provides the result of match using the URLPattern API.
 
-| Name   | Type                     |
-| ------ | ------------------------ |
-| match  | `URLPatternResult`       |
-| params | `Record<string, string>` |
+| Name        | Type                     |
+| ----------- | ------------------------ |
+| matchResult | `URLPatternResult`       |
+| params      | `Record<string, string>` |
 
-`match` is the return value of `URLPattern.#exec`.
+`matchResult` is the return value of `URLPattern.#exec`.
 
-`params` is a shortcut for `match.pathname.group`.
+`params` is a shortcut for `matchResult.pathname.group`.
 
 Also, `params` parses the URL Path at the type level to ensure type safety.
 
@@ -539,7 +539,7 @@ const router = new Router()
   .get("/:id", function () {
     const id = this.params.id; // type safe
     // this.params.any is type error
-    const matched = this.match;
+    const result = this.matchResult;
 
     return new Response(id);
   });

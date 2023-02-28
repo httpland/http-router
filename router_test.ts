@@ -138,7 +138,7 @@ describe("Router", () => {
       assertEquals(this.params, { id: "100" });
 
       const result = new URLPattern({ pathname: "/:id" }).exec(request.url);
-      assertEquals(this.match, result);
+      assertEquals(this.matchResult, result);
 
       return init;
     });

@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 export {
-  type MatchContext,
+  type MatchResultContext,
   type ParamsContext,
   type Route,
   type RouteContext,
