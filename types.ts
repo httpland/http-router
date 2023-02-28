@@ -15,7 +15,7 @@ export interface Middleware<Context = unknown> {
   ): Promise<Response> | Response;
 }
 
-/** HTTP request method routing API. */
+/** HTTP method routing API. */
 export interface MethodRouting {
   /** HTTP request `GET` matching API.
    * @param handler HTTP handler
@@ -63,6 +63,7 @@ export interface MethodRouting {
   readonly trace: (handler: Handler) => this;
 }
 
+/** HTTP method and path routing API. */
 export interface MethodPathRouting {
   /** HTTP request `GET` and URL path matching API.
    * @param path URL path
@@ -117,6 +118,63 @@ export interface MethodPathRouting {
    * @param handler HTTP handler
    */
   readonly trace: (path: string, handler: Handler) => this;
+}
+
+/** HTTP method and URL pattern routing API. */
+export interface MethodPatternRouting {
+  /** HTTP request `GET` and URL pattern matching API.
+   * @param pattern URL pattern
+   * @param handler HTTP handler
+   */
+  readonly get: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `HEAD` and URL pattern matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly head: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `POST` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly post: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `PUT` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly put: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `DELETE` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly delete: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `PATCH` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly patch: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `OPTIONS` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly options: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `CONNECT` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly connect: (pattern: URLPatternInit, handler: Handler) => this;
+
+  /** HTTP request `TRACE` and URL path matching API.
+   * @param path URL path
+   * @param handler HTTP handler
+   */
+  readonly trace: (pattern: URLPatternInit, handler: Handler) => this;
 }
 
 export type Params<T extends PropertyKey> = {

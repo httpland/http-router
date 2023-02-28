@@ -9,4 +9,10 @@ export {
   Router,
   type RouterLike,
 } from "./router.ts";
-export type { Handler, Middleware } from "./types.ts";
+export type {
+  Handler,
+  MethodPathRouting,
+  MethodPatternRouting,
+  MethodRouting,
+  Middleware,
+} from "./types.ts";

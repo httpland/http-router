@@ -11,6 +11,7 @@ import {
 import type {
   Handler,
   MethodPathRouting,
+  MethodPatternRouting,
   MethodRouting,
   Middleware,
   Params,
@@ -73,6 +74,7 @@ export class Router<GlobalContext = unknown>
   implements
     MethodRouting,
     MethodPathRouting,
+    MethodPatternRouting,
     Handling<GlobalContext>,
     RouterLike<GlobalContext> {
   #routes: Route<GlobalContext>[] = [];
