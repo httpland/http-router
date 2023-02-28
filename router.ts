@@ -161,9 +161,9 @@ export class Router<GlobalContext = unknown>
    * const router = new Router().all(logger())
    * ```
    */
-  all(handler: Middleware): this;
+  all(handler: Middleware<GlobalContext & RouteContext>): this;
   all(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler);
@@ -214,9 +214,9 @@ export class Router<GlobalContext = unknown>
    * new Router().get((request, next) => new Response("Hello"))
    * ```
    */
-  get(handler: Middleware): this;
+  get(handler: Middleware<GlobalContext & RouteContext>): this;
   get(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Get);
@@ -267,9 +267,9 @@ export class Router<GlobalContext = unknown>
    * new Router().head((request, next) => new Response("Hello"))
    * ```
    */
-  head(handler: Middleware): this;
+  head(handler: Middleware<GlobalContext & RouteContext>): this;
   head(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Head);
@@ -320,9 +320,9 @@ export class Router<GlobalContext = unknown>
    * new Router().post((request, next) => new Response("Hello"))
    * ```
    */
-  post(handler: Middleware): this;
+  post(handler: Middleware<GlobalContext & RouteContext>): this;
   post(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Post);
@@ -373,9 +373,9 @@ export class Router<GlobalContext = unknown>
    * new Router().put((request, next) => new Response("Hello"))
    * ```
    */
-  put(handler: Middleware): this;
+  put(handler: Middleware<GlobalContext & RouteContext>): this;
   put(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Put);
@@ -426,9 +426,9 @@ export class Router<GlobalContext = unknown>
    * new Router().delete((request, next) => new Response("Hello"))
    * ```
    */
-  delete(handler: Middleware): this;
+  delete(handler: Middleware<GlobalContext & RouteContext>): this;
   delete(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Delete);
@@ -479,9 +479,9 @@ export class Router<GlobalContext = unknown>
    * new Router().patch((request, next) => new Response("Hello"))
    * ```
    */
-  patch(handler: Middleware): this;
+  patch(handler: Middleware<GlobalContext & RouteContext>): this;
   patch(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Patch);
@@ -532,9 +532,9 @@ export class Router<GlobalContext = unknown>
    * new Router().options((request, next) => new Response("Hello"))
    * ```
    */
-  options(handler: Middleware): this;
+  options(handler: Middleware<GlobalContext & RouteContext>): this;
   options(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Options);
@@ -585,9 +585,9 @@ export class Router<GlobalContext = unknown>
    * new Router().trace((request, next) => new Response("Hello"))
    * ```
    */
-  trace(handler: Middleware): this;
+  trace(handler: Middleware<GlobalContext & RouteContext>): this;
   trace(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Trace);
@@ -638,9 +638,9 @@ export class Router<GlobalContext = unknown>
    * new Router().connect((request, next) => new Response("Hello"))
    * ```
    */
-  connect(handler: Middleware): this;
+  connect(handler: Middleware<GlobalContext & RouteContext>): this;
   connect(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler?: Middleware<GlobalContext & RouteContext>,
   ): this {
     this.#register(that, handler, Method.Connect);
@@ -694,7 +694,7 @@ export class Router<GlobalContext = unknown>
    * @throws {Error} If path or pattern is invalid.
    */
   #register(
-    that: string | Middleware | URLPatternInit,
+    that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
     handler: Middleware<GlobalContext & RouteContext> | undefined,
     method?: string,
   ): void {
