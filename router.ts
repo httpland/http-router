@@ -66,7 +66,7 @@ export interface RouterLike<GlobalContext = unknown> {
  * @example
  * ```ts
  * import { Router } from "https://deno.land/x/http_router@$VERSION/mod.ts";
- * const router = new Router().get("/api/greet", () => Response.json(`{ hello: "world" }`));
+ * const router = new Router().get("/api/greet", () => Response.json({ hello: "world" }));
  *
  * const response = await router.handler(new Request("http://localhost"));
  * ```
