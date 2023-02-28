@@ -35,6 +35,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
       assertEquals(router.routes, [{
         methods: [upperMethod],
         pattern: new URLPattern({}),
+        isAbsolute: false,
         handler,
       }]);
     });
@@ -47,6 +48,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
       assertEquals(router.routes, [{
         methods: [upperMethod],
         pattern: new URLPattern({ pathname }),
+        isAbsolute: false,
         handler,
       }]);
     });
@@ -59,6 +61,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
       assertEquals(router.routes, [{
         methods: [upperMethod],
         pattern: new URLPattern(new URL(url)),
+        isAbsolute: true,
         handler,
       }]);
     });
@@ -73,6 +76,7 @@ function methodTest(method: Lowercase<HttpMethod>) {
       assertEquals(router.routes, [{
         methods: [upperMethod],
         pattern: new URLPattern({ search: "q", hash: "test" }),
+        isAbsolute: true,
         handler,
       }]);
     });
@@ -104,6 +108,7 @@ describe("Router", () => {
     assertEquals(new Router().all(handler).routes, [{
       methods: [],
       pattern: new URLPattern({}),
+      isAbsolute: false,
       handler,
     }]);
   });
@@ -114,6 +119,7 @@ describe("Router", () => {
     assertEquals(new Router().all({ hash: ":hash" }, handler).routes, [{
       methods: [],
       pattern: new URLPattern({ hash: ":hash" }),
+      isAbsolute: true,
       handler,
     }]);
   });
@@ -201,6 +207,7 @@ describe("Router", () => {
     assertEquals(apiRouter.routes, [{
       methods: [],
       pattern: new URLPattern({ pathname: "/api/*" }),
+      isAbsolute: false,
       handler,
     }]);
   });
@@ -223,22 +230,46 @@ describe("Router", () => {
       .route("/api", apiRouter);
 
     assertEquals(router.routes, [
-      { handler, methods: [], pattern: new URLPattern({}) },
+      { handler, methods: [], pattern: new URLPattern({}), isAbsolute: false },
       {
         handler,
         methods: [],
         pattern: new URLPattern({ pathname: "/api/*" }),
+        isAbsolute: false,
       },
       {
         handler,
         methods: ["GET"],
         pattern: new URLPattern({ pathname: "/api/users/" }),
+        isAbsolute: false,
       },
       {
         handler,
         methods: ["GET"],
         pattern: new URLPattern({ pathname: "/api/users/:id" }),
+        isAbsolute: false,
       },
     ]);
   });
+
+  it(
+    "should not mutate nested routes if the route is absolute",
+    () => {
+      const handler = () => new Response();
+      const idRouter = new Router()
+        .get(new URL("https://test.test"), handler);
+
+      const router = new Router()
+        .route("/api", idRouter);
+
+      assertEquals(router.routes, [
+        {
+          handler,
+          methods: ["GET"],
+          pattern: new URLPattern(new URL("https://test.test")),
+          isAbsolute: true,
+        },
+      ]);
+    },
+  );
 });

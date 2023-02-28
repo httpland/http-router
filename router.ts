@@ -41,6 +41,10 @@ export interface Route<GlobalContext = unknown> {
   /** Match with URL pattern. */
   readonly pattern: URLPattern;
 
+  /** Whether the pattern is absolute or not.
+   * The absolute pattern must not be nested. */
+  readonly isAbsolute: boolean;
+
   /** {@link RouteContext}-dependent middleware */
   readonly handler: Middleware<GlobalContext & RouteContext>;
 }
@@ -699,14 +703,21 @@ export class Router<GlobalContext = unknown>
 
     assert(middleware);
 
-    const pathnameOrPattern = is ? "*" : that;
-    const init = isString(pathnameOrPattern)
-      ? { pathname: pathnameOrPattern }
-      : pathnameOrPattern;
+    const init: URLPatternInit = is
+      ? {}
+      : isString(that)
+      ? { pathname: that }
+      : that;
     const pattern = new URLPattern(init);
+    const isRelative = is || isString(that);
     const methods = isString(method) ? [method] : [];
 
-    this.#routes.push({ methods, handler: middleware, pattern });
+    this.#routes.push({
+      methods,
+      handler: middleware,
+      pattern,
+      isAbsolute: !isRelative,
+    });
   }
 }
 
@@ -714,10 +725,12 @@ function routeToMiddleware<Context>(
   route: Route<Context>,
   ctx: Context,
 ) {
+  const pattern = new URLPattern(route.pattern);
+
   const middleware: Middleware = (request, next) => {
     if (!matchMethod(route.methods, request.method)) return next(request);
 
-    const result = route.pattern.exec(request.url);
+    const result = pattern.exec(request.url);
 
     if (!result) return next(request);
 
@@ -737,8 +750,11 @@ function concatPrefix<C>(
   route: Route<C>,
   prefix: string,
 ): Route<C> {
+  if (route.isAbsolute) return route;
+
   const pathname = concatPath(prefix, route.pattern.pathname);
-  const pattern = new URLPattern({ ...route.pattern, pathname });
+  const init = { ...route.pattern, pathname };
+  const pattern = new URLPattern(init);
 
   return { ...route, pattern };
 }
