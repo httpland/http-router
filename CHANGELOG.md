@@ -1,3 +1,19 @@
+# [3.0.0-beta.6](https://github.com/httpland/http-router/compare/3.0.0-beta.5...3.0.0-beta.6) (2023-02-28)
+
+
+### Bug Fixes
+
+* **router:** fix to nest relative pattern, add `isAbsolute` field to route ([6181b2d](https://github.com/httpland/http-router/commit/6181b2d9d207b961275ec852615e3b8cf898220e))
+
+
+### Features
+
+* **router:** accept URL pattern via `all` method ([7a9dccc](https://github.com/httpland/http-router/commit/7a9dccc502f9861094ac0496c469173fc5c5087c))
+* **router:** add type inference to all handler context ([3043da2](https://github.com/httpland/http-router/commit/3043da22ea60e81db2fd5f3e9d131905351d64bd))
+* **router:** change mathod name from `use` to `route` ([0c9df63](https://github.com/httpland/http-router/commit/0c9df634012b1f834c2778c0aef20fd52c60a483))
+* **router:** expand middleware types for context ([b7f719b](https://github.com/httpland/http-router/commit/b7f719bbac5e6d29a4c30d962c3c114fa67c5837))
+* **router:** router accept URLPattern as is ([b57397f](https://github.com/httpland/http-router/commit/b57397f9a144c11bb0040cf6206192bc6aa8a61a))
+
 # [3.0.0-beta.5](https://github.com/httpland/http-router/compare/3.0.0-beta.4...3.0.0-beta.5) (2023-02-21)
 
 
