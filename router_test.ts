@@ -1,16 +1,14 @@
 import { Router } from "./router.ts";
 import {
+  assert,
   assertEquals,
   assertSpyCalls,
-  assertThrows,
   describe,
   equalsResponse,
   type HttpMethod,
   it,
   spy,
 } from "./_dev_deps.ts";
-import { assert } from "./utils.ts";
-import type { Handler } from "./types.ts";
 
 const method: Lowercase<HttpMethod>[] = [
   "get",
@@ -122,10 +120,6 @@ describe("Router", () => {
       isAbsolute: true,
       handler,
     }]);
-  });
-
-  it("should throw error when avoid type checking", () => {
-    assertThrows(() => new Router().all("/", undefined as unknown as Handler));
   });
 
   it("should provide route context", async () => {

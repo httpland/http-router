@@ -17,7 +17,7 @@ import type {
   Middleware,
   Params,
 } from "./types.ts";
-import { assert, matchMethod } from "./utils.ts";
+import { matchMethod } from "./utils.ts";
 
 /** Context of `params`. */
 export interface ParamsContext<T extends string = string> {
@@ -120,7 +120,7 @@ export class Router<GlobalContext = unknown>
 
   /** Register handler that matched on HTTP request URL.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -132,11 +132,13 @@ export class Router<GlobalContext = unknown>
    */
   all<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL.
-   * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param path URL path
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -152,11 +154,12 @@ export class Router<GlobalContext = unknown>
    */
   all<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL.
-   * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -166,19 +169,19 @@ export class Router<GlobalContext = unknown>
    * const router = new Router().all(logger())
    * ```
    */
-  all(handler: Middleware<GlobalContext & RouteContext>): this;
+  all(...middleware: readonly Middleware<GlobalContext & RouteContext>[]): this;
   all(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler);
+    this.#register(that, handlers);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `GET`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -190,11 +193,13 @@ export class Router<GlobalContext = unknown>
    */
   get<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -207,10 +212,12 @@ export class Router<GlobalContext = unknown>
    */
   get<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `GET`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -219,19 +226,19 @@ export class Router<GlobalContext = unknown>
    * new Router().get((request, next) => new Response("Hello"))
    * ```
    */
-  get(handler: Middleware<GlobalContext & RouteContext>): this;
+  get(...middleware: readonly Middleware<GlobalContext & RouteContext>[]): this;
   get(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Get);
+    this.#register(that, handlers, Method.Get);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `HEAD`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -243,11 +250,13 @@ export class Router<GlobalContext = unknown>
    */
   head<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `HEAD`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -260,10 +269,12 @@ export class Router<GlobalContext = unknown>
    */
   head<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `HEAD`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -272,19 +283,21 @@ export class Router<GlobalContext = unknown>
    * new Router().head((request, next) => new Response("Hello"))
    * ```
    */
-  head(handler: Middleware<GlobalContext & RouteContext>): this;
+  head(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   head(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Head);
+    this.#register(that, handlers, Method.Head);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `POST`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -296,11 +309,13 @@ export class Router<GlobalContext = unknown>
    */
   post<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `POST`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -313,10 +328,12 @@ export class Router<GlobalContext = unknown>
    */
   post<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `POST`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -325,19 +342,21 @@ export class Router<GlobalContext = unknown>
    * new Router().post((request, next) => new Response("Hello"))
    * ```
    */
-  post(handler: Middleware<GlobalContext & RouteContext>): this;
+  post(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   post(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Post);
+    this.#register(that, middleware, Method.Post);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `PUT`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -349,11 +368,13 @@ export class Router<GlobalContext = unknown>
    */
   put<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PUT`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -366,10 +387,12 @@ export class Router<GlobalContext = unknown>
    */
   put<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PUT`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -378,19 +401,19 @@ export class Router<GlobalContext = unknown>
    * new Router().put((request, next) => new Response("Hello"))
    * ```
    */
-  put(handler: Middleware<GlobalContext & RouteContext>): this;
+  put(...middleware: readonly Middleware<GlobalContext & RouteContext>[]): this;
   put(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Put);
+    this.#register(that, handlers, Method.Put);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `DELETE`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -402,11 +425,13 @@ export class Router<GlobalContext = unknown>
    */
   delete<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `DELETE`.
-   * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param path URL path
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -419,10 +444,12 @@ export class Router<GlobalContext = unknown>
    */
   delete<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `DELETE`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -431,20 +458,21 @@ export class Router<GlobalContext = unknown>
    * new Router().delete((request, next) => new Response("Hello"))
    * ```
    */
-  delete(handler: Middleware<GlobalContext & RouteContext>): this;
+  delete(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   delete(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Delete);
+    this.#register(that, handlers, Method.Delete);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `PATCH`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
-   *
+   * @param middleware HTTP middleware
    * @example
    * ```ts
    * import { Router, type Handler } from "https://deno.land/x/http_router@$VERSION/mod.ts";
@@ -455,11 +483,13 @@ export class Router<GlobalContext = unknown>
    */
   patch<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PATCH`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -472,10 +502,12 @@ export class Router<GlobalContext = unknown>
    */
   patch<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `PATCH`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -484,19 +516,21 @@ export class Router<GlobalContext = unknown>
    * new Router().patch((request, next) => new Response("Hello"))
    * ```
    */
-  patch(handler: Middleware<GlobalContext & RouteContext>): this;
+  patch(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   patch(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Patch);
+    this.#register(that, handlers, Method.Patch);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `OPTIONS`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -508,11 +542,13 @@ export class Router<GlobalContext = unknown>
    */
   options<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `OPTIONS`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -525,10 +561,12 @@ export class Router<GlobalContext = unknown>
    */
   options<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `OPTIONS`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -537,19 +575,21 @@ export class Router<GlobalContext = unknown>
    * new Router().options((request, next) => new Response("Hello"))
    * ```
    */
-  options(handler: Middleware<GlobalContext & RouteContext>): this;
+  options(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   options(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Options);
+    this.#register(that, handlers, Method.Options);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `TRACE`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -561,11 +601,13 @@ export class Router<GlobalContext = unknown>
    */
   trace<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `TRACE`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -578,10 +620,12 @@ export class Router<GlobalContext = unknown>
    */
   trace<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `TRACE`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -590,19 +634,21 @@ export class Router<GlobalContext = unknown>
    * new Router().trace((request, next) => new Response("Hello"))
    * ```
    */
-  trace(handler: Middleware<GlobalContext & RouteContext>): this;
+  trace(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   trace(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Trace);
+    this.#register(that, handlers, Method.Trace);
 
     return this;
   }
 
   /** Register handler that matched on HTTP request URL and HTTP method of `CONNECT`.
    * @param pattern URL pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -614,11 +660,13 @@ export class Router<GlobalContext = unknown>
    */
   connect<Path extends string>(
     pattern: Readonly<URLPatternInit> & { readonly pathname?: Path },
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `CONNECT`.
    * @param path Path or pattern
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -631,10 +679,12 @@ export class Router<GlobalContext = unknown>
    */
   connect<Path extends string>(
     path: Path,
-    handler: Middleware<GlobalContext & RouteContext<ParseUrlParams<Path>>>,
+    ...middleware: readonly Middleware<
+      GlobalContext & RouteContext<ParseUrlParams<Path>>
+    >[]
   ): this;
   /** Register handler that matched on HTTP request URL and HTTP request method of `CONNECT`.
-   * @param handler HTTP handler
+   * @param middleware HTTP middleware
    *
    * @example
    * ```ts
@@ -643,12 +693,14 @@ export class Router<GlobalContext = unknown>
    * new Router().connect((request, next) => new Response("Hello"))
    * ```
    */
-  connect(handler: Middleware<GlobalContext & RouteContext>): this;
+  connect(
+    ...middleware: readonly Middleware<GlobalContext & RouteContext>[]
+  ): this;
   connect(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler?: Middleware<GlobalContext & RouteContext>,
+    ...handlers: readonly Middleware<GlobalContext & RouteContext>[]
   ): this {
-    this.#register(that, handler, Method.Connect);
+    this.#register(that, handlers, Method.Connect);
 
     return this;
   }
@@ -700,29 +752,30 @@ export class Router<GlobalContext = unknown>
    */
   #register(
     that: string | Middleware<GlobalContext & RouteContext> | URLPatternInit,
-    handler: Middleware<GlobalContext & RouteContext> | undefined,
+    middleware: readonly Middleware<GlobalContext & RouteContext>[],
     method?: string,
   ): void {
-    const is = isFunction(that);
-    const middleware = is ? that : handler;
-
-    assert(middleware);
-
-    const init: URLPatternInit = is
-      ? {}
-      : isString(that)
-      ? { pathname: that }
-      : that;
+    const isFn = isFunction(that);
+    const isStr = isString(that);
+    const init: URLPatternInit = isFn ? {} : isStr ? { pathname: that } : that;
     const pattern = new URLPattern(init);
-    const isRelative = is || isString(that);
+    const isRelative = isFn || isStr;
+    const isAbsolute = !isRelative;
     const methods = isString(method) ? [method] : [];
+    const $middleware = isFn ? [that, ...middleware] : middleware;
 
-    this.#routes.push({
-      methods,
-      handler: middleware,
-      pattern,
-      isAbsolute: !isRelative,
+    const routes = $middleware.map((middleware) => {
+      const route: Route<GlobalContext> = {
+        handler: middleware,
+        methods,
+        pattern,
+        isAbsolute,
+      };
+
+      return route;
     });
+
+    this.#routes = this.#routes.concat(routes);
   }
 }
 
