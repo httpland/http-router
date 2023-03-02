@@ -1,15 +1,6 @@
 // Copyright 2023-latest the httpland authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export function assert(
-  expr: unknown,
-  message = "Assertion failed",
-): asserts expr {
-  if (!expr) {
-    throw new Error(message);
-  }
-}
-
 export function matchMethod(
   candidates: readonly string[],
   method: string,
