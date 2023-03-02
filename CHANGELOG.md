@@ -1,3 +1,12 @@
+# [3.0.0-beta.7](https://github.com/httpland/http-router/compare/3.0.0-beta.6...3.0.0-beta.7) (2023-03-02)
+
+
+### Features
+
+* **router:** expand interface and accept rest middleware ([d3412e9](https://github.com/httpland/http-router/commit/d3412e9e8c9ff64a2487f06f20a7810fe4f42827))
+* **router:** rename context of `match` to `matchResult` ([2560887](https://github.com/httpland/http-router/commit/25608875306a6390d55d597e9a1c450ff10c525b))
+* **types:** export implementation interface ([4820777](https://github.com/httpland/http-router/commit/482077720d26539e8af98e476ac0ae052a1f402f))
+
 # [3.0.0-beta.6](https://github.com/httpland/http-router/compare/3.0.0-beta.5...3.0.0-beta.6) (2023-02-28)
 
 
