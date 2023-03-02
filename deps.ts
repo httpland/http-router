@@ -7,6 +7,7 @@ export {
 } from "https://deno.land/x/isx@1.0.0-beta.24/mod.ts";
 export { concatPath } from "https://deno.land/x/url_concat@1.0.0-beta.1/mod.ts";
 export { chain } from "https://deno.land/x/chain_handler@1.1.0/mod.ts";
+export { Method } from "https://deno.land/x/http_utils@1.0.0-beta.7/method.ts";
 
 type ParamKeyName<NameWithPattern> = NameWithPattern extends
   `${infer Name}{${infer _}` ? Name

@@ -10,19 +10,6 @@ export function assert(
   }
 }
 
-/** HTTP request method enum. */
-export const enum Method {
-  Get = "GET",
-  Head = "HEAD",
-  Post = "POST",
-  Put = "PUT",
-  Delete = "DELETE",
-  Connect = "CONNECT",
-  Options = "OPTIONS",
-  Trace = "TRACE",
-  Patch = "PATCH",
-}
-
 export function matchMethod(
   candidates: readonly string[],
   method: string,

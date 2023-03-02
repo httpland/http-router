@@ -6,6 +6,7 @@ import {
   concatPath,
   isFunction,
   isString,
+  Method,
   type ParseUrlParams,
 } from "./deps.ts";
 import type {
@@ -16,7 +17,7 @@ import type {
   Middleware,
   Params,
 } from "./types.ts";
-import { assert, matchMethod, Method } from "./utils.ts";
+import { assert, matchMethod } from "./utils.ts";
 
 /** Context of `params`. */
 export interface ParamsContext<T extends string = string> {
